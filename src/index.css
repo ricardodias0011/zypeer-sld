@@ -1,0 +1,27 @@
+:root {
+  font-family: 'Poppins', sans-serif, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color: rgba(255, 255, 255, 0.87);
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+button {
+  background-color: transparent;
+  border: transparent;
+  color: #242424;
+  font-family: 'Poppins', sans-serif;
+  cursor: pointer;
+  padding: 8px;
+}
+
+.divider {
+  width: 1px;
+  height: 100%;
+  background-color: #e0e0e0;
+}

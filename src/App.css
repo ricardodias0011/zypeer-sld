@@ -1,0 +1,16 @@
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: #a2a1a7;
+  opacity: .2 !important;
+  border: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgb(64, 66, 92);
+}
+
+::-webkit-scrollbar {
+  width: .5rem;
+  height: .5rem;
+  border: 10px;
+}

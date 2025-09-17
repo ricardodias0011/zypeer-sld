@@ -1,0 +1,123 @@
+@import url(./tab.css);
+@import url(./f.css);
+@import "tailwindcss";
+@import "@radix-ui/colors/purple.css";
+@import "@radix-ui/colors/green.css";
+@import "@radix-ui/colors/violet.css";
+@import "@radix-ui/colors/yellow.css";
+@import "@radix-ui/colors/orange.css";
+
+body {
+  font-family: 'Poppins', sans-serif;
+  background: linear-gradient(0deg, #ffffffbf, #ffffffbf), linear-gradient(108.69deg, #2e2baf50 16.13%, #92a6bd60 39.07%, #93b6ec70 60.25%, #2e2baf80 86.72%, #8c65be90 94.22%) !important;
+}
+
+.radix-themes {
+  --default-font-family: 'Poppins', sans-serif
+}
+
+.btn-gradient {
+  background: linear-gradient(90deg, rgb(46, 43, 175) 20%, rgb(244, 98, 255)) !important;
+}
+
+.dragged {
+  opacity: .5 !important;
+  z-index: 99999;
+}
+
+button {
+  cursor: pointer;
+}
+
+.rt-TextFieldRoot {
+  padding: .5rem;
+  height: auto;
+}
+
+
+.TextFieldRootAutoComplete {
+  height: 37px !important;
+  display: flex;
+  align-items: center;
+}
+
+.TextFieldRootAutoComplete .wrapper {
+  border-color: #00062e32 !important;
+}
+
+.TextFieldRootAutoComplete .wrapper:focus-within {
+  box-shadow: none !important;
+}
+
+.TextFieldRootAutoComplete .wrapper:hover {
+  box-shadow: none !important;
+}
+
+.TextFieldRootAutoComplete input:focus {
+  border-color: #be93e4 !important;
+
+}
+
+.TextFieldRootAutoComplete .wrapper div {
+  min-height: 37px;
+  display: flex;
+  align-items: center;
+  max-height: 150px;
+  overflow: auto;
+  position: relative;
+}
+
+.TextFieldRootAutoComplete .wrapper ul {
+  width: calc(100% - 42px);
+  max-height: 150px;
+}
+
+.slider-loading span .rt-SliderThumb::after {
+  display: none;
+}
+
+.bg-light-col {
+  background: linear-gradient(0deg, rgba(255, 255, 255, 0.75), rgba(255, 255, 255, 0.75)), linear-gradient(108.69deg, #2e2baf50 16.13%, #92a6bd60 39.07%, #93b6ec70 60.25%, #2e2baf80 86.72%, #8c65be90 94.22%);
+  position: relative;
+
+}
+
+.bg-light-col::after {
+  content: ' ';
+  width: 50vh;
+  height: 50vh;
+  position: absolute;
+  top: 0;
+  left: 0;
+  border-radius: 50%;
+  filter: blur(300px);
+  opacity: .1;
+  background-color: #992baf;
+  z-index: -1;
+}
+
+.main-app {
+  height: 100vh;
+}
+
+.box-menu {
+  display: flex;
+}
+
+.box-menu-mobile {
+  display: none;
+}
+
+@media (max-width: 880px) {
+  .box-menu {
+    display: none;
+  }
+
+  .box-menu-mobile {
+    display: flex;
+  }
+
+  .main-app {
+    height: calc(100vh - 60px);
+  }
+}

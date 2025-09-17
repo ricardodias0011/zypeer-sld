@@ -1,0 +1,423 @@
+@import "@radix-ui/colors/black-alpha.css";
+@import "@radix-ui/colors/mauve.css";
+@import "@radix-ui/colors/violet.css";
+@import "@radix-ui/colors/gray.css";
+
+body,
+#root {
+    margin: 0;
+    padding: 0;
+    font-family: sans-serif;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.editor-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
+    background: #fff;
+}
+
+.toolbar-controls-divider {
+    background: #fff;
+    height: 30px;
+    width: 1px;
+    opacity: .3;
+    display: block;
+}
+
+.section-toolbar {
+    align-items: center;
+    display: flex;
+    flex-grow: 1;
+}
+
+.toolbar-controls {
+    align-items: center;
+    padding: 10px;
+    background: linear-gradient(90deg, #a71dd1, rgba(89, 0, 255));
+    text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.4);
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: space-between;
+}
+
+.toolbar-controls button {
+    padding: 8px 15px;
+    border: none;
+    border-radius: 4px;
+    background: transparent;
+    color: white;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.2s ease;
+    font-family: 'Poppins';
+    font-weight: 500;
+}
+
+.toolbar-controls button:hover {
+    background-color: transparent;
+}
+
+.toolbar-controls button:disabled {
+    cursor: not-allowed;
+    opacity: .4;
+}
+
+.toolbar-controls input[type="file"] {
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: #fff;
+    cursor: pointer;
+}
+
+/* Main content area for the canvas, taking available space */
+.body-main {
+    display: flex;
+    flex-direction: row;
+    flex-grow: 1;
+    position: relative;
+    background-color: #f8f8f8;
+    justify-content: center;
+    align-items: center;
+    overflow: auto;
+}
+
+.menu-container {
+    width: 75px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    height: 100vh;
+    padding-top: 1rem;
+    align-items: center;
+    padding: 16px;
+}
+
+.logo-editor {
+    display: block;
+}
+
+.menu-content {
+    min-width: 260px;
+    max-width: 260px;
+    display: flex;
+    gap: 10px;
+    height: calc(100vh - 80px);
+    padding: 10px;
+    padding-top: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    overflow: auto;
+    position: relative;
+}
+
+.menu-content .content-layer-view {
+    width: 100%;
+    align-items: flex-start;
+    display: flex;
+    border: 1px solid #0e131850;
+    margin-inline: 10px;
+    border-radius: 5px;
+    color: #0e1318b2;
+    padding: 10px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    font-size: 14px;
+}
+
+.menu-content .content-layer-view .icon-button {
+    background-color: transparent;
+    border: transparent;
+    color: #242424;
+    font-family: 'Poppins', sans-serif;
+    cursor: pointer;
+    padding-inline: 3px;
+}
+
+.content-img-view {
+    width: 50px;
+    height: 50px;
+}
+
+.canva-wrapper {
+    background-color: #f4f5f8;
+    flex-shrink: 0;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-grow: 1;
+    isolation: isolate;
+    /* overflow: hidden; */
+    width: 100%;
+    position: absolute;
+    left: 0;
+    top: 0;
+}
+
+.editor-main-wrapper {
+    background-color: #f4f5f8;
+    flex-shrink: 0;
+    height: calc(100vh - 67px);
+    display: flex;
+    justify-content: flex-start;
+    flex-grow: 1;
+    isolation: isolate;
+    overflow: hidden;
+    flex-direction: column;
+    position: relative;
+}
+
+.menu-container .button-icon {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    align-items: center;
+    font-size: .7rem;
+    font-weight: 600;
+    color: #0e1318b2;
+}
+
+.main-content {
+    width: 100vw;
+    display: flex;
+    flex-direction: row;
+}
+
+.top-bar-submenu {
+    background-color: white;
+    padding: .2rem;
+    z-index: 2;
+    border-top: 1px solid #f0f0f0;
+}
+
+.top-bar-menu {
+    background-color: white;
+    border-bottom: 1px solid #f0f0f0;
+    width: 100%;
+    justify-content: center;
+    align-items: center;
+    padding: .5rem 1rem;
+    gap: 1rem;
+    align-items: center;
+    display: flex;
+    z-index: 999;
+    overflow-x: auto;
+    /* margin-top: 1rem; */
+}
+
+.mobile__topbar {
+    justify-content: center;
+}
+
+.top-bar-menu button {
+    color: #0e1318b2;
+}
+
+.custom-chrome-picker {
+    width: 100% !important;
+    box-shadow: none !important;
+    border-radius: 8px !important;
+    overflow: hidden;
+    border: 1px solid transparent !important;
+}
+
+.w-color-interactive {
+    border-radius: 1rem !important;
+}
+
+.w-color-interactive {
+    border-radius: 1rem !important;
+}
+
+.custom-chrome-picker .chrome-picker-saturation,
+.custom-chrome-picker .chrome-picker-hue,
+.custom-chrome-picker .chrome-picker-alpha {
+    border-radius: 4px !important;
+    border: 1px solid transparent;
+}
+
+.input {
+    -webkit-appearance: none;
+    appearance: none;
+    background: inherit;
+    box-sizing: border-box;
+    color: inherit;
+    outline: none;
+    padding: .5rem;
+    text-align: center;
+    border: 1px solid var(--gray-8);
+    border-radius: .4rem;
+}
+
+.input:focus {
+
+    border: 1px solid var(--violet-8);
+}
+
+.input-small {
+    -webkit-appearance: none;
+    appearance: none;
+    background: inherit;
+    box-sizing: border-box;
+    width: 50px;
+    color: inherit;
+    font-variant-ligatures: none;
+    min-width: 8px;
+    outline: none;
+    padding: .5rem;
+    text-align: center;
+    border: 1px solid var(--gray-8);
+    border-radius: .4rem;
+}
+
+.input-small:focus {
+
+    border: 1px solid var(--violet-8);
+}
+
+input {
+    text-size-adjust: none;
+    font-family: 'Poppins', 'Inter', Noto Sans, -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif;
+    font-variation-settings: "opsz" 0;
+    font-weight: 400;
+    margin: 0;
+    overflow-wrap: break-word;
+    border: 1px solid var(--grey-3);
+}
+
+.divider-dashad {
+    border-bottom: 1px dashed #0e1318b2;
+}
+
+.border-button {
+    color: #0e1318;
+    border: 1px solid #c5c5c5;
+    width: 50px;
+    border-radius: .4rem;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.bg-primary {
+    background: -webkit-linear-gradient(90deg, #3822fd, #2231fd);
+    background: linear-gradient(90deg, #3822fd, #2231fd);
+}
+
+.delete-color-gradient {
+    position: absolute;
+    top: -20px;
+    right: -20px;
+    display: none;
+    background-color: #0e131880;
+    border-radius: 25px;
+    justify-content: center;
+    align-items: center;
+    z-index: 2;
+}
+
+.preview-btn-color-gradient:hover .delete-color-gradient {
+    display: flex;
+}
+
+.preview-slide-i {
+    width: 120px;
+    height: 65px;
+    position: relative;
+    border-radius: 20px;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+.preview-slide-i:hover .dots-btn-menu-slide {
+    display: block;
+}
+
+.dots-btn-menu-slide {
+    display: none;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 2;
+    background-color: #0e131850;
+}
+
+
+
+
+
+
+
+
+table {
+    border-collapse: collapse;
+    border: 2px solid rgb(140 140 140);
+    font-family: sans-serif;
+    font-size: 0.8rem;
+    letter-spacing: 1px;
+    height: 100%;
+    width: 100%;
+    z-index: -1
+}
+
+caption {
+    caption-side: bottom;
+    padding: 10px;
+    font-weight: bold;
+}
+
+thead,
+tfoot {
+    background-color: rgb(228 240 245);
+}
+
+th,
+td {
+    border: 1px solid rgb(160 160 160);
+    padding: 8px 10px;
+}
+
+td:last-of-type {
+    text-align: center;
+}
+
+tbody>tr:nth-of-type(even) {
+    background-color: rgb(237 238 242);
+}
+
+tfoot th {
+    text-align: right;
+}
+
+tfoot td {
+    font-weight: bold;
+}
+
+
+@media (max-width: 600px) {
+    .menu-container {
+        display: none !important;
+    }
+
+    .logo-editor {
+        display: none;
+    }
+
+    .toolbar-controls-divider {
+        display: none;
+    }
+
+    .mobile__topbar {
+        justify-content: space-between;
+    }
+}
