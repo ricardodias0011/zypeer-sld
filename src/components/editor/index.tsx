@@ -366,7 +366,6 @@ export const Editor = (props: {
         if (index === -1) return;
 
         const [item] = updated.splice(index, 1);
-        console.log(from)
         if (from === 'bottom') {
           updated.unshift(item); // vai para o fundo
         } else {

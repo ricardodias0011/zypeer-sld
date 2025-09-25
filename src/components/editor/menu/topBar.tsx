@@ -1,6 +1,6 @@
 import { TbBorderCornerPill } from "react-icons/tb";
 import RGB_COLOR from "../../../assets/icons/rgb-print.png"
-import { RxBorderWidth, RxFontItalic, RxStrikethrough, RxTransparencyGrid, RxUnderline } from "react-icons/rx";
+import { RxBorderWidth, RxFontItalic, RxMagicWand, RxStrikethrough, RxTransparencyGrid, RxUnderline } from "react-icons/rx";
 import { Box, Button, Flex, Grid, IconButton, Popover, Slider, Text, TextArea } from "@radix-ui/themes";
 import React, { useEffect, useState, type JSX } from "react";
 import { Chrome } from '@uiw/react-color';
@@ -13,6 +13,9 @@ import { fontOptions } from "../../../utils/fonts";
 import { FiCheck, FiEdit2, FiImage, FiX } from "react-icons/fi";
 import useQuery from "../../../hooks/useQuery";
 import { AiOutlineAlignCenter, AiOutlineAlignLeft, AiOutlineAlignRight } from "react-icons/ai";
+import { PiMagicWand } from "react-icons/pi";
+import { ToolsService } from "../../../services/tools";
+import { toast } from "react-toastify";
 interface TopBarMenuProps {
   shape?: Shape
   updateShape: (id: string, attrs: Shape) => void;
@@ -697,6 +700,20 @@ const RenderLeftOptions = ({
   if (shape?.type !== 'Text') return null;
 
   const [newText, setNewText] = useState("");
+  const [loadingRewriter, setLoadingRewriter] = useState(false);
+
+  const reewriter = (text: string) => {
+    setLoadingRewriter(true);
+    ToolsService.rewriter({ originalText: text, description: "" }).then(res => {
+      if (res?.data?.text) {
+        setNewText(res.data.text);
+      }
+    })
+      .catch(err => {
+        toast.error("Error in rewriter:", err?.response?.data?.message ?? "Desculpe, ocorreu um erro.");
+      })
+      .finally(() => setLoadingRewriter(false));
+  }
 
   useEffect(() => {
     if (newText) {
@@ -839,13 +856,24 @@ const RenderLeftOptions = ({
               onChange={e => {
                 setNewText(e.target.value);
               }}
-              onBlur={() => setTextEditSelcted(null)}
+              // onBlur={() => setTextEditSelcted(null)}
               autoFocus
-              style={{ marginTop: 15 }}
+              style={{ marginTop: 15, minWidth: 300 }}
               className="input"
               inputMode="text"
-              rows={4}
+              rows={5}
             />
+            <Button
+              variant="ghost"
+              style={{ marginTop: 10, width: '100%', alignItems: 'center', justifyContent: 'center', gap: 5 }}
+              // color={textEditSelcted ? "purple" : "gray"}
+              onClick={() => reewriter(newText)}
+              loading={loadingRewriter}
+              disabled={loadingRewriter}
+            >
+              Resscrever com IA
+              <PiMagicWand size={20} color={"purple"} />
+            </Button>
           </div>
           : <></>
       }
