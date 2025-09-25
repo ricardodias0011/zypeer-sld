@@ -3,9 +3,11 @@ import type { Shape } from '../../../types/editor';
 import { AssetsService } from '../../../services/assets';
 import { memo, useRef, useState } from 'react';
 import type { FilesProps } from '../../../types/user';
-import { Button, Flex } from '@radix-ui/themes';
+import { Button, Flex, Popover } from '@radix-ui/themes';
 import useQuery from '../../../hooks/useQuery';
 import type { PresentationSlide } from '../../../types/presentations-sliders';
+import { PiMagicWand } from 'react-icons/pi';
+import MagicImage from '../../image';
 
 interface MenuImagesProps {
   saveHistory: (newShapes: Shape[]) => void;
@@ -26,6 +28,8 @@ const MenuImages = (props: MenuImagesProps) => {
   const { saveHistory, shapes, assets, reload, currentSlide, updateVariablesSlide, updateShape } = props;
   const [loadingImage, setLoadingImage] = useState<string>("")
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const [open, setOpen] = useState(false);
 
   const handleTriggerUpload = () => {
     fileInputRef.current?.click();
@@ -58,7 +62,7 @@ const MenuImages = (props: MenuImagesProps) => {
   return (
 
     <div className='menu-content'>
-      <Flex position={'relative'}>
+      <Flex position={'relative'} width={'100%'}>
         <input
           ref={fileInputRef}
           type="file"
@@ -76,8 +80,31 @@ const MenuImages = (props: MenuImagesProps) => {
           color='purple'>
           Faça upload do arquivo
         </Button>
-      </Flex>
 
+      </Flex>
+      <Button
+        variant="solid"
+        style={{ width: '100%' }}
+        disabled={!!loadingImage}
+        size={'2'}
+        onClick={() => setOpen(true)}
+        color='purple'>
+        <PiMagicWand size={20} />
+        Criar imagem com IA
+      </Button>
+      {
+        loadingImage ?
+          <button
+            disabled
+            style={{ opacity: .4 }}
+            onClick={() => {
+            }}>
+            <img width={100} alt={"uploading..."}
+              src={loadingImage}
+            />
+          </button>
+          : <></>
+      }
       {
         assets.map((p) => (
           <button onClick={() => {
@@ -128,22 +155,19 @@ const MenuImages = (props: MenuImagesProps) => {
           </button>
         ))
       }
-      {
-        loadingImage ?
-          <button
-            disabled
-            style={{ opacity: .4 }}
-            onClick={() => {
-            }}>
-            <img width={100} alt={"uploading..."}
-              src={loadingImage}
-            />
-          </button>
-          : <></>
-      }
+      <MagicImage open={open} handleOpen={() => setOpen(false)} selectImage={link => {
 
+        const currnetShape = shapes.find(a => a.id === replaceShapeImage)
+        if (replaceShapeImage && currnetShape && currnetShape.type === 'image') {
+          updateShape(currnetShape.id, {
+            src: link,
+            strokeWidth: 0
+          })
+          handleChangeQuery(null, 'replace_img')
+          return
+        }
+      }} />
     </div>
-
   );
 };
 

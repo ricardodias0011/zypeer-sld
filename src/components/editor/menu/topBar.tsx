@@ -871,7 +871,7 @@ const RenderLeftOptions = ({
               loading={loadingRewriter}
               disabled={loadingRewriter}
             >
-              Resscrever com IA
+              Reescrever com IA
               <PiMagicWand size={20} color={"purple"} />
             </Button>
           </div>
