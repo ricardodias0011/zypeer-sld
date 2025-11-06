@@ -797,8 +797,8 @@ export const Editor = (props: {
                   onValueChange={(e) => {
                     setTypeDownloads(e as "PDF" | "Image")
                   }}>
-                  <Select.Trigger color="purple" style={{ width: '100%' }} />
-                  <Select.Content color="purple">
+                  <Select.Trigger color="cyan" style={{ width: '100%' }} />
+                  <Select.Content color="cyan">
                     <Select.Group>
                       <Select.Label>Numero de slides</Select.Label>
                       <Select.Item value={'PDF'}>PDF</Select.Item>
@@ -815,7 +815,7 @@ export const Editor = (props: {
                     }
                   }}>
                     <Flex align="center" justify="center" direction="row" gap="2">
-                      <Checkbox color="purple" checked={slides.length === downloads.length} />
+                      <Checkbox color="cyan" checked={slides.length === downloads.length} />
                       <RadixText size="2" weight="medium">
                         Todos
                       </RadixText>
@@ -834,7 +834,7 @@ export const Editor = (props: {
                           }
                         }}>
                           <Flex align="center" justify="center" direction="row" gap="2">
-                            <Checkbox color="purple" checked={!!checked} />
+                            <Checkbox color="cyan" checked={!!checked} />
                             <RadixText size="2" weight="medium">
                               Página - {index + 1}
                             </RadixText>
@@ -846,7 +846,7 @@ export const Editor = (props: {
                   <Button
                     style={{ width: "100%" }}
                     mt="4"
-                    color='purple'
+                    color='cyan'
                     disabled={downloads.length === 0 || uploading}
                     onClick={() => {
                       // downloadURI
@@ -874,7 +874,7 @@ export const Editor = (props: {
                     <TextField.Root
                       mt="2"
                       value={"https://slides.zypeer.com.br/docs/show/" + id}
-                      color="purple"
+                      color="cyan"
                     />
                   </label>
                 </Flex>
@@ -888,7 +888,7 @@ export const Editor = (props: {
                   <Dialog.Close onClick={() => {
                     navigator.clipboard.writeText("https://slides.zypeer.com.br" + '/docs/show' + `/${id}`);
                   }}>
-                    <Button color="purple">Copiar</Button>
+                    <Button color="cyan">Copiar</Button>
                   </Dialog.Close>
                 </Flex>
               </Dialog.Content>
@@ -968,7 +968,7 @@ export const Editor = (props: {
               zIndex: 1,
               transform: 'translateY(-50%)'
             }}>
-            {menuOpened ? <BsChevronLeft color="rgba(89, 0, 255)" /> : <BsChevronRight color="rgba(89, 0, 255)" />}
+            {menuOpened ? <BsChevronLeft color="rgba(46, 190, 247)" /> : <BsChevronRight color="rgba(46, 190, 247)" />}
           </IconButton>
         </div>
         <div
@@ -1014,7 +1014,8 @@ export const Editor = (props: {
                   height: 1080,
                   top: 40,
                   width: isSmallScreen ? "1920px" : "100%",
-                  marginLeft: isSmallScreen ? 25 : 0
+                  marginLeft: isSmallScreen ? 25 : 0,
+                  overflow: "auto"
                 }}
                 className='canva-wrapper'>
                 <Stage
@@ -1155,10 +1156,10 @@ export const Editor = (props: {
 
                           }]
                         }}
-                        anchorFill={"rgba(89, 0, 255)"}
-                        borderStroke={"rgba(89, 0, 255)"}
+                        anchorFill={"rgba(46, 190, 247)"}
+                        borderStroke={"rgba(46, 190, 247)"}
                         borderStrokeWidth={isSmallScreen ? 10 : 4}
-                        anchorStroke={"rgba(89, 0, 255)"}
+                        anchorStroke={"rgba(46, 190, 247)"}
                         anchorStrokeWidth={isSmallScreen ? 50 : 4}
                         anchorSize={20}
                         anchorCornerRadius={50}
@@ -1171,8 +1172,8 @@ export const Editor = (props: {
                         y={selectionRect.y}
                         width={selectionRect.width}
                         height={selectionRect.height}
-                        fill="rgba(89, 0, 255, 0.16)"
-                        stroke="rgba(89, 0, 255)"
+                        fill="rgba(46, 190, 247, 0.16)"
+                        stroke="rgba(46, 190, 247)"
                         strokeWidth={1}
                         visible={selectionRect.visible}
                       />
@@ -1184,7 +1185,7 @@ export const Editor = (props: {
             </Grid>
             <Grid
               width={isSmallScreen ? '100vw' : '100%'}
-              height={slidesMenuOpen ? '125px' : '0px'}
+              height={slidesMenuOpen ? '125px' : (isSmallScreen ? '30px' : '0px')}
 
               // position={'absolute'}
               bottom={'0px'}
@@ -1208,9 +1209,20 @@ export const Editor = (props: {
                     top: -20,
                     backgroundColor: 'white'
                   }}>
-                  {slidesMenuOpen ? <BsChevronDown color="rgba(89, 0, 255)" /> : <BsChevronUp color="rgba(89, 0, 255)" />}
+                  {slidesMenuOpen ? <BsChevronDown color="rgba(46, 190, 247)" /> : <BsChevronUp color="rgba(46, 190, 247)" />}
                 </IconButton>
               </Flex>
+              {isSmallScreen ? <Box width={'100%'}>
+                <Slider
+                  variant='surface'
+                  color="cyan"
+                  size={'1'}
+                  min={25}
+                  value={[(scale * 100)]}
+                  onValueChange={(value) => {
+                    setScale(value[0] / 100)
+                  }} />
+              </Box> : null}
               <Flex direction={'row'} wrap={'nowrap'} gap={'2'} overflowX={"auto"}>
                 <DragDropContext onDragEnd={onDragEnd}>
                   <Droppable
@@ -1244,7 +1256,7 @@ export const Editor = (props: {
                                       className='preview-slide-i'
                                       onClick={() => setCurrentSlideIndex(index)}
                                       style={{
-                                        border: `3px solid ` + (index === indexSlide ? 'violet' : 'transparent')
+                                        border: `3px solid ` + (index === indexSlide ? 'rgba(46, 190, 247)' : 'transparent')
                                       }}>
                                       {/* <Popover.Root>
                                         <Popover.Trigger>
@@ -1297,7 +1309,7 @@ export const Editor = (props: {
               </Flex>
             </Grid>
           </Flex>
-          <Flex align="center" justify='center' direction={'row'} className='top-bar-submenu' gap={'4'}>
+          <Flex align="center" justify='center' direction={'row'} className='top-bar-submenu' gap={'4'} pr={"4"}>
             {
               !isSmallScreen ?
                 <Flex align="center" justify='end' gap="4" flexGrow={'1'} display={isSmallScreen ? 'none' : 'flex'}>
@@ -1305,7 +1317,7 @@ export const Editor = (props: {
                   <Box maxWidth={'250px'} width={'100%'}>
                     <Slider
                       variant='surface'
-                      color="purple"
+                      color="cyan"
                       size={'1'}
                       min={25}
                       value={[(scale * 100)]}
@@ -1313,13 +1325,13 @@ export const Editor = (props: {
                         setScale(value[0] / 100)
                       }} />
                   </Box>
-                  <IconButton variant='ghost' color="purple" onClick={targetScale}>
+                  <IconButton variant='ghost' color="cyan" onClick={targetScale}>
                     <FiTarget />
                   </IconButton>
                   <RadixText size={'2'}>{(scale * 100).toFixed(0)}%</RadixText>
                 </Flex>
                 :
-                <>
+                <Flex align={"center"} justify={"center"} mt="2" direction={"column"} gap="2">
                   <Flex align="center" justify='center' gap="4" flexGrow={'1'} height={'30px'} style={{ gap: 32 }}>
                     <button onClick={() => navigate("/")}>
                       <FiHome size={25} />
@@ -1343,7 +1355,7 @@ export const Editor = (props: {
                       </RadixText>
                     </Button>
                   </Flex>
-                </>
+                </Flex>
             }
           </Flex>
         </div>

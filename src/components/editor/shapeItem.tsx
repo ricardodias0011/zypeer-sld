@@ -587,6 +587,9 @@ const ShapeItem = ({
               {...commonProps}
               draggable={!onlyPreview && commonProps.draggable}
               visible={selectedId?.id !== shape.id}
+              onClick={() => {
+                onTextEditSelcted(shape)
+              }}
               onDblClick={() => {
                 onTextEditSelcted(shape)
               }}

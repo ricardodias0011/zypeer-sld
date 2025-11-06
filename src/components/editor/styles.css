@@ -38,7 +38,7 @@ body,
 .toolbar-controls {
     align-items: center;
     padding: 10px;
-    background: linear-gradient(90deg, #a71dd1, rgba(89, 0, 255));
+    background: linear-gradient(90deg, rgb(46, 190, 247) 20%, rgb(98, 135, 255));
     text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.4);
     display: flex;
     gap: 10px;

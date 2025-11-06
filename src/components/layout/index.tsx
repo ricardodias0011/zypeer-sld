@@ -1,9 +1,9 @@
 import { Box, Button, Flex, IconButton, Text } from '@radix-ui/themes';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import Logo from "../../assets/logo.png"
-import { CiHome } from "react-icons/ci";
-import { PiPresentationLight } from "react-icons/pi";
+import { HiMiniPresentationChartBar } from "react-icons/hi2";
 import { useEffect, useState } from 'react';
+import { AiFillHome } from 'react-icons/ai';
 
 const Layout = () => {
   const { pathname } = useLocation();
@@ -29,11 +29,11 @@ const Layout = () => {
           <Flex gap={"4"} direction="column" >
             {
               [
-                { link: 'dashboard', icon: <CiHome size={24} />, title: 'Seus slides' },
-                { link: 'templates', icon: <PiPresentationLight size={24} />, title: 'Modelos' }
+                { link: 'dashboard', icon: <AiFillHome size={24} />, title: 'Seus slides' },
+                { link: 'templates', icon: <HiMiniPresentationChartBar size={24} />, title: 'Modelos' }
               ].map(({ icon, link, title }) => (
                 <Button
-                  color={currentPage === link ? "violet" : "gray"}
+                  color={currentPage === link ? "cyan" : "gray"}
                   style={{ alignItems: 'center', justifyContent: 'flex-start', gap: 8, paddingLeft: currentPage === link ? 10 : 20 }}
                   variant={currentPage === link ? 'soft' : 'ghost'}
                   onClick={_e => navigate("/app/" + link)}
@@ -65,11 +65,11 @@ const Layout = () => {
           <Flex gap={"4"} direction="row" >
             {
               [
-                { link: 'dashboard', icon: <CiHome size={30} />, title: 'Seus slides' },
-                { link: 'templates', icon: <PiPresentationLight size={30} />, title: 'Modelos' }
+                { link: 'dashboard', icon: <AiFillHome size={30} />, title: 'Seus slides' },
+                { link: 'templates', icon: <HiMiniPresentationChartBar size={30} />, title: 'Modelos' }
               ].map(({ icon, link }) => (
                 <IconButton
-                  color={currentPage === link ? "violet" : "gray"}
+                  color={currentPage === link ? "cyan" : "gray"}
                   style={{
                     alignItems: 'center',
                     justifyContent: 'flex-start',

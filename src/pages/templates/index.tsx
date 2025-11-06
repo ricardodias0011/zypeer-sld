@@ -28,8 +28,8 @@ const TemplatesPage = () => {
   }, [user])
 
   return (
-    <Flex gap={"4"} p="8" direction="column" width={"100%"}>
-      <Text size={'5'}>
+    <Flex gap={"4"} p="4" direction="column" width={"100%"}>
+      <Text size={'5'} weight={"bold"}>
         Modelos
       </Text>
       <Flex gap={"4"} wrap="wrap" mt="8">
@@ -99,7 +99,7 @@ const PreviewItem = (p: PresentationProject) => {
         <Flex gap="4" align="center" justify={"center"} direction="column">
           <Flex width={"100%"} align="center" justify={"between"}>
             <Text size={"5"} weight="bold">{p.title}</Text>
-            <Button color="purple" radius="full" style={{ padding: 20 }} disabled={loading} onClick={CreateApresentation}>
+            <Button color="cyan" radius="full" style={{ padding: 20 }} disabled={loading} onClick={CreateApresentation}>
               <Text size={"2"} weight="bold">Usar template</Text>
             </Button>
           </Flex>
@@ -137,7 +137,7 @@ const PreviewItem = (p: PresentationProject) => {
                   style={{
                     borderRadius: 20,
                     borderWidth: 4,
-                    borderColor: index === currentIndex ? "purple" : "gray",
+                    borderColor: index === currentIndex ? "cyan" : "gray",
                     borderStyle: "solid",
                     cursor: "pointer"
                   }}

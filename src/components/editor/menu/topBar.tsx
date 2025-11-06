@@ -504,7 +504,7 @@ const TopBarMenu = (props: TopBarMenuProps) => {
             <Flex gap="3" direction="row" justify="center" align="center">
               <Slider
                 defaultValue={[0]}
-                color="purple"
+                color="cyan"
                 value={[radius]}
                 onValueChange={e => setRadius(e[0])}
                 onChange={e => console.log(e.target)} />
@@ -546,7 +546,7 @@ const TopBarMenu = (props: TopBarMenuProps) => {
                       setDash(option.value)
                     }}
                     variant="outline"
-                    color={isSelected ? "purple" : "gray"}
+                    color={isSelected ? "cyan" : "gray"}
                     aria-label={`Dash option ${i}`}
                   >
                     {option.icon}
@@ -558,7 +558,7 @@ const TopBarMenu = (props: TopBarMenuProps) => {
             <Flex gap="3" direction="row" justify="center" align="center">
               <Slider
                 defaultValue={[0]}
-                color="purple"
+                color="cyan"
                 value={[stroke ?? 0]}
                 onValueChange={e => {
                   if (e[0] > 0 && dash === null) {
@@ -616,7 +616,7 @@ const TopBarMenu = (props: TopBarMenuProps) => {
             <Flex gap="3" direction="row" justify="center" align="center">
               <Slider
                 defaultValue={[1]}
-                color="purple"
+                color="cyan"
                 value={[opacity ?? 0]}
                 onValueChange={e => setOpacity(e[0])}
                 min={0}
@@ -722,8 +722,9 @@ const RenderLeftOptions = ({
   }, [newText])
 
   useEffect(() => {
-    if (textEditSelcted?.text)
+    if (textEditSelcted?.text) {
       setNewText(textEditSelcted.text)
+    }
   }, [textEditSelcted])
 
   return (
@@ -793,19 +794,19 @@ const RenderLeftOptions = ({
       </Popover.Root>
       <IconButton
         variant="ghost"
-        color={textEditSelcted ? "purple" : "gray"}
+        color={textEditSelcted ? "cyan" : "gray"}
         onClick={() => setTextEditSelcted(textEditSelcted ? null : shape)}
       >
-        <FiEdit2 size={18} color={textEditSelcted ? "purple" : "gray"} />
+        <FiEdit2 size={18} color={textEditSelcted ? "cyan" : "gray"} />
       </IconButton>
       {textStyleOptions.map(({ icon, isActive, toggle, key }) => (
         <IconButton
           key={key}
           variant="ghost"
-          color={isActive(shape) ? "purple" : "gray"}
+          color={isActive(shape) ? "cyan" : "gray"}
           onClick={() => toggle(shape)}
         >
-          {React.cloneElement(icon, { color: isActive(shape) ? "purple" : "gray" })}
+          {React.cloneElement(icon, { color: isActive(shape) ? "cyan" : "gray" })}
         </IconButton>
       ))}
       <Popover.Root>
@@ -823,10 +824,10 @@ const RenderLeftOptions = ({
               <IconButton
                 key={f.value}
                 variant="ghost"
-                color={shape.align === f.value ? "purple" : "gray"}
+                color={shape.align === f.value ? "cyan" : "gray"}
                 onClick={() => handleText('align', f.value)}
               >
-                {React.cloneElement(f.icon, { color: shape.align === f.value ? "purple" : "gray", size: 22 })}
+                {React.cloneElement(f.icon, { color: shape.align === f.value ? "cyan" : "gray", size: 22 })}
               </IconButton>
             ))}
           </Flex>
@@ -866,13 +867,13 @@ const RenderLeftOptions = ({
             <Button
               variant="ghost"
               style={{ marginTop: 10, width: '100%', alignItems: 'center', justifyContent: 'center', gap: 5 }}
-              // color={textEditSelcted ? "purple" : "gray"}
+              // color={textEditSelcted ? "cyan" : "gray"}
               onClick={() => reewriter(newText)}
               loading={loadingRewriter}
               disabled={loadingRewriter}
             >
               Reescrever com IA
-              <PiMagicWand size={20} color={"purple"} />
+              <PiMagicWand size={20} color={"cyan"} />
             </Button>
           </div>
           : <></>

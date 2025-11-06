@@ -17,7 +17,7 @@ body {
 }
 
 .btn-gradient {
-  background: linear-gradient(90deg, rgb(46, 43, 175) 20%, rgb(244, 98, 255)) !important;
+  background: linear-gradient(90deg, rgb(46, 190, 247) 20%, rgb(98, 135, 255)) !important;
 }
 
 .dragged {

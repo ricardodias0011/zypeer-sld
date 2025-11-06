@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import { PresentationsService } from "../../services/presentations";
 import useAuth from "../../context/auth";
-import { Box, Button, Dialog, Flex, Grid, Text, TextField, Select, Slider, Popover, IconButton } from "@radix-ui/themes";
+import { Box, Button, Dialog, Flex, Grid, Text, TextField, Select, Slider, Popover, IconButton, Badge } from "@radix-ui/themes";
 import { BsStars } from "react-icons/bs";
 import { FiLock } from "react-icons/fi";
 import moment from "moment"
@@ -42,12 +42,10 @@ const HomePage = () => {
   }
 
   const getPresentations = () => {
-    // setLoading(true);
     PresentationsService.list()
       .then(({ data }) => {
         setApresentations(data);
       })
-    // .finally(() => setLoading(false))
   }
 
   const CreateApresentation = (_data: CreateApresentationProps) => {
@@ -100,14 +98,14 @@ const HomePage = () => {
   }, [user])
 
   return (
-    <Flex gap={"4"} p="8" direction="column" width={"100%"}>
-      <Text size={'5'}>
+    <Flex gap={"4"} p="4" direction="column" width={"100%"}>
+      <Text size={'5'} weight={"bold"}>
         Seus Slides
       </Text>
-      <Flex gap={"4"} wrap={"wrap"}>
+      <Flex gap={"4"} wrap={"wrap"} width={"100%"}>
         <Dialog.Root>
           <Dialog.Trigger>
-            <Button className="btn-gradient" style={{ padding: 20, minWidth: 240 }} radius="full">
+            <Button className="btn-gradient w-full min-w-[100%]! md:min-w-[240px]!" style={{ padding: 20 }} radius="full">
               <BsStars size={20} />
               <Text weight="medium" size={'3'}>
                 Criar com IA
@@ -121,7 +119,7 @@ const HomePage = () => {
         </Dialog.Root>
         <Dialog.Root>
           <Dialog.Trigger>
-            <Button color="violet" variant="outline" style={{ padding: 20 }} radius="full">
+            <Button color="blue" className="min-w-[100%]! md:min-w-[240px]!" variant="soft" style={{ padding: 20 }} radius="full">
               <FaPlus />
               <Text weight="medium" size={'3'}>
                 Criar novo em branco
@@ -149,7 +147,6 @@ export default HomePage;
 const PreviewItem = (props: { project: PresentationProject, reload: () => void; }) => {
   const { project: p, reload } = props;
   const navigate = useNavigate();
-  // const [imageBg, setImageBg] = useState(p?.thumbnail);
   const [loading, setLoading] = useState(false);
   const [title, setTitle] = useState(p.title);
 
@@ -180,15 +177,18 @@ const PreviewItem = (props: { project: PresentationProject, reload: () => void; 
   return (
     <Grid
       style={{
-        borderRadius: 10,
+        borderRadius: 21,
         overflow: "hidden",
         cursor: 'pointer',
         position: 'relative',
         width: 280,
+        border: '1px solid var(--gray-a5)',
+        boxShadow: 'var(--shadow-3)',
       }}
+      className="w-[100%]! md:w-[280px]! bg-white"
     >
       <Grid
-        width={'280px'}
+        className="w-[100%]! md:w-[280px]!"
         height={'150px'}
         position={'relative'}
         overflow={'hidden'}
@@ -202,14 +202,10 @@ const PreviewItem = (props: { project: PresentationProject, reload: () => void; 
           {p.title}
         </Text>
         <Flex gap={"2"} direction={"row"} align={"center"} justify="between">
-          <Box maxWidth={'90px'}>
-            <Flex gap={"2"} p="2" direction={"row"} style={{ background: "#00000020", borderRadius: 10 }}>
-              <FiLock />
-              <Text size={'1'}>
-                Privado
-              </Text>
-            </Flex>
-          </Box>
+          <Badge color="gray" variant="soft" radius="full" size="1">
+            <FiLock size={12} style={{ marginRight: '4px' }} />
+            Privado
+          </Badge>
           <Box>
             <Popover.Root>
               <Popover.Trigger>
@@ -238,7 +234,7 @@ const PreviewItem = (props: { project: PresentationProject, reload: () => void; 
                             mt="2"
                             value={title}
                             onChange={e => setTitle(e.target.value)}
-                            color="purple"
+                            color="blue"
                             radius="full"
                           />
                         </label>
@@ -250,7 +246,7 @@ const PreviewItem = (props: { project: PresentationProject, reload: () => void; 
                           </Popover.Close>
                           <Popover.Close>
                             <Button
-                              color="purple"
+                              color="blue"
                               disabled={loading}
                               onClick={updateProject}>
                               Atualizar
@@ -338,14 +334,14 @@ const CreateSlide = (props: {
         <Text as="div" size="2" color="gray">
           Criando seu slide, aguarde...
         </Text>
-        <Slider defaultValue={[0]} value={[((statusCreate ?? 0) / 4 * 100)]} onValueChange={() => { }} color="purple" spellCheck={false} className="slider-loading" />
+        <Slider defaultValue={[0]} value={[((statusCreate ?? 0) / 4 * 100)]} color="blue" className="slider-loading" />
       </Flex>
     )
   }
 
   return (
     <Flex
-      direction="column" gap="1">
+      direction="column" gap="3">
       <div>
         <label>
           <Text as="div" size="2" color="gray">
@@ -355,7 +351,7 @@ const CreateSlide = (props: {
             mt="2"
             value={title}
             onChange={e => setTitle(e.target.value)}
-            color="purple"
+            color="blue"
             radius="full"
           />
         </label>
@@ -375,13 +371,6 @@ const CreateSlide = (props: {
               <Text style={{ width: '100%' }}>{a.name}</Text>
             )}
           />
-          {/* <TextField.Root
-            mt="2"
-            value={discipline}
-            onChange={e => setDiscipline(e.target.value)}
-            color="purple"
-            radius="full"
-          /> */}
         </label>
       </div>
       <div>
@@ -393,7 +382,7 @@ const CreateSlide = (props: {
             mt="2"
             value={subject}
             onChange={e => setsubject(e.target.value)}
-            color="purple"
+            color="blue"
             radius="full"
           />
         </label>
@@ -407,7 +396,7 @@ const CreateSlide = (props: {
             mt="2"
             value={context}
             onChange={e => setContext(e.target.value)}
-            color="purple"
+            color="blue"
             radius="full"
           />
         </label>
@@ -424,8 +413,8 @@ const CreateSlide = (props: {
             onValueChange={(e) => {
               setNumberSlides(e)
             }}>
-            <Select.Trigger radius="full" color="purple" style={{ width: '100%' }} />
-            <Select.Content color="purple">
+            <Select.Trigger radius="full" color="blue" style={{ width: '100%' }} />
+            <Select.Content color="blue">
               <Select.Group>
                 <Select.Label>Numero de slides</Select.Label>
                 <Select.Item value={'1'}>1</Select.Item>
@@ -436,13 +425,6 @@ const CreateSlide = (props: {
               </Select.Group>
             </Select.Content>
           </Select.Root>
-          {/* <Select.Root
-                  value={String(numberSlides)}
-                  onValueChange={e => {
-                    setNumberSlides(Number(e))
-                  }}>
-                  <Select.Item value={'1'}>1</Select.Item>
-                </Select.Root> */}
         </label>
       </div> : <></>}
       <Flex gap="3" mt="4" justify="end">
@@ -451,7 +433,7 @@ const CreateSlide = (props: {
             Fechar
           </Button>
         </Dialog.Close>
-        <Button color="purple"
+        <Button color="blue"
           disabled={!title || loading || (type === "auto" && subject.length < 4)}
           onClick={() => {
             CreateApresentation({
