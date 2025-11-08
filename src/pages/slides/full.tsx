@@ -1,12 +1,12 @@
+import { Flex, Grid, IconButton } from "@radix-ui/themes";
 import { useEffect, useRef, useState } from "react";
+import { BsFullscreen, BsFullscreenExit } from "react-icons/bs";
+import { FiX } from "react-icons/fi";
+import { TfiArrowLeft, TfiArrowRight, TfiLightBulb } from "react-icons/tfi";
+import { useNavigate, useParams } from "react-router-dom";
 import PreviewSlide from "../../components/editor/preview";
 import { PresentationsService } from "../../services/presentations";
 import type { PresentationProject, PresentationSlide } from "../../types/presentations-sliders";
-import { useNavigate, useParams } from "react-router-dom";
-import { Flex, Grid, IconButton } from "@radix-ui/themes";
-import { FiX } from "react-icons/fi";
-import { TfiArrowLeft, TfiArrowRight, TfiLightBulb } from "react-icons/tfi";
-import { BsFullscreen, BsFullscreenExit } from "react-icons/bs";
 
 
 const FullApresentation = () => {
@@ -132,7 +132,7 @@ const FullApresentation = () => {
   }, [currentSlide, fullScreen]);
 
   const getPresentations = () => {
-    PresentationsService.list(id)
+    PresentationsService.show(id)
       .then(({ data }) => {
         setApresentation(data);
         if (data?.presentations?.length > 0) {

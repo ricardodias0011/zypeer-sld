@@ -4,6 +4,7 @@ import { Chrome } from '@uiw/react-color';
 import { useEffect, useState } from "react";
 import { FaRegTrashAlt } from "react-icons/fa";
 import { FiImage, FiX } from "react-icons/fi";
+import { RxText } from 'react-icons/rx';
 import RGB_COLOR from "../../../assets/icons/rgb-print.png";
 import useQuery from "../../../hooks/useQuery";
 import type { PresentationSlide } from "../../../types/presentations-sliders";
@@ -12,14 +13,15 @@ interface TopBarMenuProps {
   currentSlide: PresentationSlide | null;
   updateVariablesSlide: (a: PresentationSlide) => void;
   deleteCurrentSlide: (a: PresentationSlide) => void;
-  lenghtSlides: number
+  lenghtSlides: number;
+  handleMenu: (e: string) => void;
 }
 
 
 
 const TopBarMenuDefault = (props: TopBarMenuProps) => {
   const { handleChangeQuery } = useQuery();
-  const { currentSlide, updateVariablesSlide, deleteCurrentSlide, lenghtSlides } = props;
+  const { currentSlide, updateVariablesSlide, deleteCurrentSlide, lenghtSlides, handleMenu } = props;
 
   const [color, setColor] = useState("#131313");
   const [gradientSteps, setGradientSteps] = useState<string[]>([]);
@@ -150,6 +152,9 @@ const TopBarMenuDefault = (props: TopBarMenuProps) => {
         </Popover.Content>
       </Popover.Root>
       <div className="divider" style={{ height: 30 }} />
+      <button className='button-icon' onClick={() => handleMenu("text")}>
+        <RxText size={25} />
+      </button>
       <IconButton variant="ghost" onClick={() => {
         if (currentSlide) {
           handleChangeQuery(currentSlide?.id ?? '', 'replace_bg_img');

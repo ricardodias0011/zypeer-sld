@@ -1,42 +1,42 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Stage, Layer, Transformer, Line, Text, Rect } from 'react-konva';
+import { Layer, Line, Rect, Stage, Text, Transformer } from 'react-konva';
 
 import { v4 as uuidv4 } from 'uuid';
 import type { Shape } from '../../types/editor';
 
-import "./styles.css"
+import { LuFolder } from 'react-icons/lu';
 import { RiArrowGoBackLine, RiArrowGoForwardLine, RiLayout5Line } from 'react-icons/ri';
 import { RxText } from 'react-icons/rx';
-import { LuFolder } from 'react-icons/lu';
 import { TbIcons } from 'react-icons/tb';
-import ShapeItem from './shapeItem';
-import { MenuShapes } from './menu/shapes';
-import { MenuLayers } from './menu/layers';
 import MenuImages from './menu/images';
+import { MenuLayers } from './menu/layers';
+import { MenuShapes } from './menu/shapes';
+import ShapeItem from './shapeItem';
+import "./styles.css";
 // import type { Photos } from '../../types/image';
-import { MenuText } from './menu/text';
+import { Box, Button, Checkbox, Dialog, Flex, Grid, IconButton, Popover, Text as RadixText, Select, Slider, TextField } from '@radix-ui/themes';
+import { saveAs } from 'file-saver';
+import JSZip from 'jszip';
 import Konva from 'konva';
-import TopBarMenu from './menu/topBar';
-import { AssetsService } from '../../services/assets';
-import type { FilesProps } from '../../types/user';
-import type { PresentationSlide } from '../../types/presentations-sliders';
-import { Box, Flex, Grid, IconButton, Slider, Text as RadixText, Button, Dialog, TextField, Popover, Checkbox, Select } from '@radix-ui/themes';
-import PreviewSlide from './preview';
-import { FiHome, FiMenu, FiPlus, FiTarget } from 'react-icons/fi';
-import { BsChevronDown, BsChevronLeft, BsChevronRight, BsChevronUp } from 'react-icons/bs';
-import TopBarMenuDefault from './menu/topBarDefault';
-import Logo from "../../assets/logo-white.png"
-import useQuery from '../../hooks/useQuery';
-import { IoIosLink } from "react-icons/io";
 import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
+import { BsChevronDown, BsChevronLeft, BsChevronRight, BsChevronUp } from 'react-icons/bs';
+import { FiHome, FiMenu, FiPlus, FiTarget } from 'react-icons/fi';
+import { IoIosLink } from "react-icons/io";
 import { IoPlayOutline } from 'react-icons/io5';
 import { useNavigate, useParams } from 'react-router-dom';
+import { toast } from 'react-toastify';
+import Logo from "../../assets/logo-white.png";
+import useQuery from '../../hooks/useQuery';
+import { AssetsService } from '../../services/assets';
+import { PresentationsService } from '../../services/presentations';
+import type { PresentationSlide } from '../../types/presentations-sliders';
+import type { FilesProps } from '../../types/user';
 import { labelStatusSaving } from '../../utils';
 import { Templates } from './menu/templates';
-import { PresentationsService } from '../../services/presentations';
-import { toast } from 'react-toastify';
-import JSZip from 'jszip';
-import { saveAs } from 'file-saver';
+import { MenuText } from './menu/text';
+import TopBarMenu from './menu/topBar';
+import TopBarMenuDefault from './menu/topBarDefault';
+import PreviewSlide from './preview';
 
 export const Editor = (props: {
   onlyPreview?: boolean,
@@ -987,6 +987,7 @@ export const Editor = (props: {
             /> :
             <TopBarMenuDefault
               currentSlide={currentSlide}
+              handleMenu={handleMenu}
               deleteCurrentSlide={deleteCurrentSlide}
               updateVariablesSlide={updateVariablesSlide}
               lenghtSlides={slides.length}

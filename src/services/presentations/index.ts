@@ -25,8 +25,10 @@ export class PresentationsService {
         return api.put(`/presentations/${idPresentation}`, data);
     }
 
-    static async list(id?: string) {
-        return api.get(`/presentations${id ? `/${id}` : ''}`);
+    static async list(id?: string, show?: boolean) {
+        return api.get(`/presentations${id ? `/${id}` : ''}`, {
+            params: { show }
+        });
     }
 
     static async listTemplate() {
