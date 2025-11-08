@@ -1,11 +1,11 @@
 import { Navigate, useRoutes } from "react-router-dom"
-import UserStorage from "../services/storage/auth"
 import Layout from "../components/layout"
-import FullApresentation from "../pages/slides/full"
-import SlidePage from "../pages/slides"
-import HomePage from "../pages/home"
-import TemplatesPage from "../pages/templates"
 import { LoginRequiredPage } from "../pages/auth"
+import HomePage from "../pages/home"
+import SlidePage from "../pages/slides"
+import FullApresentation from "../pages/slides/full"
+import TemplatesPage from "../pages/templates"
+import UserStorage from "../services/storage/auth"
 
 const Routes = () => {
   const account = UserStorage.getTokenStorage()
@@ -52,6 +52,10 @@ const Routes = () => {
     {
       path: '/auth/required',
       Component: LoginRequiredPage
+    },
+    {
+      path: '/docs/show/:id',
+      Component: FullApresentation
     }
   ])
 }

@@ -1,12 +1,12 @@
-import { v4 } from 'uuid';
-import type { Shape } from '../../../types/editor';
-import { AssetsService } from '../../../services/assets';
+import { Button, Flex } from '@radix-ui/themes';
 import { memo, useRef, useState } from 'react';
-import type { FilesProps } from '../../../types/user';
-import { Button, Flex, Popover } from '@radix-ui/themes';
-import useQuery from '../../../hooks/useQuery';
-import type { PresentationSlide } from '../../../types/presentations-sliders';
 import { PiMagicWand } from 'react-icons/pi';
+import { v4 } from 'uuid';
+import useQuery from '../../../hooks/useQuery';
+import { AssetsService } from '../../../services/assets';
+import type { Shape } from '../../../types/editor';
+import type { PresentationSlide } from '../../../types/presentations-sliders';
+import type { FilesProps } from '../../../types/user';
 import MagicImage from '../../image';
 
 interface MenuImagesProps {

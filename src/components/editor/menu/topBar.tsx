@@ -1,21 +1,21 @@
-import { TbBorderCornerPill } from "react-icons/tb";
-import RGB_COLOR from "../../../assets/icons/rgb-print.png"
-import { RxBorderWidth, RxFontItalic, RxMagicWand, RxStrikethrough, RxTransparencyGrid, RxUnderline } from "react-icons/rx";
-import { Box, Button, Flex, Grid, IconButton, Popover, Slider, Text, TextArea } from "@radix-ui/themes";
-import React, { useEffect, useState, type JSX } from "react";
-import { Chrome } from '@uiw/react-color';
 import * as Tabs from '@radix-ui/react-tabs';
-import type { Shape } from "../../../types/editor";
-import { MdBlock, MdLockOpen, MdLockOutline } from "react-icons/md";
-import { VscBold } from "react-icons/vsc";
-import { IoTextOutline } from "react-icons/io5";
-import { fontOptions } from "../../../utils/fonts";
-import { FiCheck, FiEdit2, FiImage, FiX } from "react-icons/fi";
-import useQuery from "../../../hooks/useQuery";
+import { Box, Button, Flex, Grid, IconButton, Popover, Slider, Text, TextArea } from "@radix-ui/themes";
+import { Chrome } from '@uiw/react-color';
+import React, { useEffect, useState, type JSX } from "react";
 import { AiOutlineAlignCenter, AiOutlineAlignLeft, AiOutlineAlignRight } from "react-icons/ai";
+import { FiCheck, FiEdit2, FiImage, FiX } from "react-icons/fi";
+import { IoTextOutline } from "react-icons/io5";
+import { MdBlock, MdLockOpen, MdLockOutline } from "react-icons/md";
 import { PiMagicWand } from "react-icons/pi";
-import { ToolsService } from "../../../services/tools";
+import { RxBorderWidth, RxFontItalic, RxStrikethrough, RxTransparencyGrid, RxUnderline } from "react-icons/rx";
+import { TbBorderCornerPill } from "react-icons/tb";
+import { VscBold } from "react-icons/vsc";
 import { toast } from "react-toastify";
+import RGB_COLOR from "../../../assets/icons/rgb-print.png";
+import useQuery from "../../../hooks/useQuery";
+import { ToolsService } from "../../../services/tools";
+import type { Shape } from "../../../types/editor";
+import { fontOptions } from "../../../utils/fonts";
 interface TopBarMenuProps {
   shape?: Shape
   updateShape: (id: string, attrs: Shape) => void;

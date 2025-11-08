@@ -1,12 +1,12 @@
-import RGB_COLOR from "../../../assets/icons/rgb-print.png"
-import { Box, Button, Flex, IconButton, Popover, Text } from "@radix-ui/themes";
-import { useEffect, useState } from "react";
-import { Chrome } from '@uiw/react-color';
 import * as Tabs from '@radix-ui/react-tabs';
-import { FiImage, FiX } from "react-icons/fi";
-import type { PresentationSlide } from "../../../types/presentations-sliders";
-import useQuery from "../../../hooks/useQuery";
+import { Box, Button, Flex, IconButton, Popover, Text } from "@radix-ui/themes";
+import { Chrome } from '@uiw/react-color';
+import { useEffect, useState } from "react";
 import { FaRegTrashAlt } from "react-icons/fa";
+import { FiImage, FiX } from "react-icons/fi";
+import RGB_COLOR from "../../../assets/icons/rgb-print.png";
+import useQuery from "../../../hooks/useQuery";
+import type { PresentationSlide } from "../../../types/presentations-sliders";
 
 interface TopBarMenuProps {
   currentSlide: PresentationSlide | null;

@@ -1,8 +1,8 @@
-import { Box, Flex, Grid, IconButton, Slider, Text as RadixText, Button, Dialog, TextField, Popover, Checkbox, Select, TextArea } from '@radix-ui/themes';
+import { Button, Dialog, Flex, Text as RadixText, TextArea } from '@radix-ui/themes';
 import { useEffect, useState } from 'react';
-import { ToolsService } from '../services/tools';
-import { EventsService } from '../services/events';
 import { toast } from 'react-toastify';
+import { EventsService } from '../services/events';
+import { ToolsService } from '../services/tools';
 
 const MagicImage = (props: { open: boolean, handleOpen: VoidFunction; selectImage: (link: string) => void }) => {
   const { handleOpen, open, selectImage } = props;
