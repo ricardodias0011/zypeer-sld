@@ -1,12 +1,12 @@
-import { useEffect, useRef, useState } from "react"
-import { PresentationsService } from "../../services/presentations";
-import useAuth from "../../context/auth";
 import { Flex } from "@radix-ui/themes";
-import { Editor } from "../../components/editor";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import type { PresentationProject, PresentationSlide } from "../../types/presentations-sliders";
-import { v4 } from "uuid";
 import { ToastContainer } from "react-toastify";
+import { v4 } from "uuid";
+import { Editor } from "../../components/editor";
+import useAuth from "../../context/auth";
+import { PresentationsService } from "../../services/presentations";
+import type { PresentationProject, PresentationSlide } from "../../types/presentations-sliders";
 const SlidePage = () => {
   const { user } = useAuth();
   const { id } = useParams();

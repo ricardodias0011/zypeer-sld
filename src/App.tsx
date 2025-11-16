@@ -1,11 +1,11 @@
-import './App.css'
-import "@radix-ui/themes/styles.css";
 import { Theme } from '@radix-ui/themes';
-import { AuthProvider } from './context/auth';
-import { BrowserRouter } from 'react-router-dom';
-import "./assets/styles/index.css"
-import Routes from './routes';
+import "@radix-ui/themes/styles.css";
 import moment from 'moment';
+import { BrowserRouter } from 'react-router-dom';
+import './App.css';
+import "./assets/styles/index.css";
+import { AuthProvider } from './context/auth';
+import Routes from './routes';
 moment.locale('pt-br');
 
 function App() {

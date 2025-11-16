@@ -1,3 +1,4 @@
+import MainSlide from "@/pages/v2/main"
 import { Navigate, useRoutes } from "react-router-dom"
 import Layout from "../components/layout"
 import { LoginRequiredPage } from "../pages/auth"
@@ -32,6 +33,7 @@ const Routes = () => {
         }
       ]
     },
+
     {
       path: '/docs/show/:id',
       Component: FullApresentation
@@ -39,7 +41,11 @@ const Routes = () => {
     {
       path: '/docs/:id',
       Component: SlidePage
-    }
+    },
+    {
+      path: '/docs/v2',
+      Component: MainSlide
+    },
   ] : [
     {
       path: '/',
