@@ -1,10 +1,13 @@
 import { SlidesPanel } from "@/components/v2/panel";
 import { Toolbar } from "@/components/v2/topbar";
 import { isDesktop } from "@/lib/utils";
+import { useSlideStore } from "@/stores/slideStore";
 import { useLayoutEffect, useRef } from "react";
+import { PresentationMode } from "./presentationMode";
 import Slide from "./slide";
 
 const MainSlide = () => {
+  const { isPresentationMode, loadFromLocalStorage, currentSlideId, slides } = useSlideStore();
   const mainRef = useRef<HTMLElement>(null);
   useLayoutEffect(() => {
     if (isDesktop()) {
@@ -28,6 +31,12 @@ const MainSlide = () => {
       return () => window.removeEventListener('resize', handleResize);
     }
   }, []);
+
+
+  if (isPresentationMode) {
+    return <PresentationMode />;
+  }
+
 
   return (
     <div className="bg-gray-100 font-sans text-gray-800" style={{ paddingBottom: '120px', overflow: 'hidden' }}>
