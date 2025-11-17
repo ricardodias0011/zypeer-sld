@@ -1,56 +1,34 @@
 import type { LayoutType } from '@/types/slide-v2';
 import { create } from 'zustand';
 
-export type CardType = 'title' | 'content' | 'imageWithText';
-export type CardWidth = 'small' | 'medium' | 'large';
-export type CardAlignment = 'left' | 'center' | 'right';
-
-
 export type SlideType = 'title' | 'content' | 'imageWithText';
-
-
-export interface Card {
-  id: string;
-  type: SlideType;
-  layout: LayoutType;
-  title: string;
-  content: string;
-  imageUrl: string;
-  bgcolor: string;
-}
 
 export interface Slide {
   id: string;
-  title: string;
-  cards: Card[];
-  backgroundColor?: string;
-  backgroundImage?: string;
-  featuredImage?: string;
-  layoutType: LayoutType;
   order: number;
+  layout: LayoutType;
+  type: SlideType;
+  title: string;
+  content: string;
+  imageUrl?: string;
+  imageFit?: 'cover' | 'contain' | 'fill';
+  bgcolor?: string;
+  backgroundImage?: string;
 }
 
 interface SlideState {
   slides: Slide[];
   currentSlideId: string | null;
-  selectedCardId: string | null;
   isPresentationMode: boolean;
   history: Slide[][];
   historyIndex: number;
 
-  addSlide: () => void;
+  addSlide: (type: SlideType) => void;
   deleteSlide: (id: string) => void;
   duplicateSlide: (id: string) => void;
   updateSlide: (id: string, updates: Partial<Slide>) => void;
   reorderSlides: (startIndex: number, endIndex: number) => void;
   setCurrentSlide: (id: string | null) => void;
-
-  addCard: (slideId: string, type: CardType) => void;
-  deleteCard: (slideId: string, cardId: string) => void;
-  duplicateCard: (slideId: string, cardId: string) => void;
-  updateCard: (slideId: string, cardId: string, updates: Partial<Card>) => void;
-  reorderCards: (slideId: string, startIndex: number, endIndex: number) => void;
-  setSelectedCard: (cardId: string | null) => void;
 
   togglePresentationMode: () => void;
   nextSlide: () => void;
@@ -64,35 +42,29 @@ interface SlideState {
   loadFromLocalStorage: () => void;
 }
 
-const createDefaultSlide = (order: number): Slide => ({
+const createDefaultSlide = (order: number, type: SlideType): Slide => ({
   id: `slide-${Date.now()}-${Math.random()}`,
-  title: 'New Slide',
-  cards: [],
-  layoutType: 'half-right',
   order,
+  type,
+  layout: 'half-right',
+  title: 'Novo Título',
+  content: '# Clique para editar o conteúdo...',
+  imageUrl: '',
+  bgcolor: '#ffffff',
 });
 
-const createDefaultCard = (type: SlideType, order: number): Card => ({
-  id: `card-${Date.now()}-${Math.random()}`,
-  type,
-  title: 'Novo Título',
-  content: 'Clique para editar o conteúdo...',
-  imageUrl: '',
-  layout: 'half-right',
-  bgcolor: '#ffffff'
-});
+const initialSlides = [createDefaultSlide(0, 'title')];
 
 export const useSlideStore = create<SlideState>((set, get) => ({
-  slides: [createDefaultSlide(0)],
-  currentSlideId: null,
-  selectedCardId: null,
+  slides: initialSlides,
+  currentSlideId: initialSlides[0]?.id || null,
   isPresentationMode: false,
-  history: [],
-  historyIndex: -1,
+  history: [initialSlides],
+  historyIndex: 0,
 
-  addSlide: () => {
+  addSlide: (type: SlideType) => {
     const slides = get().slides;
-    const newSlide = createDefaultSlide(slides.length);
+    const newSlide = createDefaultSlide(slides.length, type);
     set({ slides: [...slides, newSlide], currentSlideId: newSlide.id });
     get().saveToHistory();
     get().saveToLocalStorage();
@@ -114,10 +86,6 @@ export const useSlideStore = create<SlideState>((set, get) => ({
     const newSlide: Slide = {
       ...slide,
       id: `slide-${Date.now()}-${Math.random()}`,
-      cards: slide.cards.map(card => ({
-        ...card,
-        id: `card-${Date.now()}-${Math.random()}`,
-      })),
       order: slides.length,
     };
 
@@ -131,7 +99,9 @@ export const useSlideStore = create<SlideState>((set, get) => ({
       slide.id === id ? { ...slide, ...updates } : slide
     );
     set({ slides });
-    get().saveToHistory();
+    // Opcional: Pode ser verboso salvar no histórico a cada 'update' (ex: digitação)
+    // Considere chamar saveToHistory() apenas em eventos específicos (ex: 'onBlur')
+    // get().saveToHistory(); 
     get().saveToLocalStorage();
   },
 
@@ -146,85 +116,6 @@ export const useSlideStore = create<SlideState>((set, get) => ({
   },
 
   setCurrentSlide: (id: string | null) => set({ currentSlideId: id }),
-
-  addCard: (slideId: string, type: CardType) => {
-    const slides = get().slides.map(slide => {
-      if (slide.id === slideId) {
-        const newCard = createDefaultCard(type, slide.cards.length);
-        return { ...slide, cards: [...slide.cards, newCard] };
-      }
-      return slide;
-    });
-    set({ slides });
-    get().saveToHistory();
-    get().saveToLocalStorage();
-  },
-
-  deleteCard: (slideId: string, cardId: string) => {
-    const slides = get().slides.map(slide => {
-      if (slide.id === slideId) {
-        return { ...slide, cards: slide.cards.filter(c => c.id !== cardId) };
-      }
-      return slide;
-    });
-    set({ slides, selectedCardId: null });
-    get().saveToHistory();
-    get().saveToLocalStorage();
-  },
-
-  duplicateCard: (slideId: string, cardId: string) => {
-    const slides = get().slides.map(slide => {
-      if (slide.id === slideId) {
-        const card = slide.cards.find(c => c.id === cardId);
-        if (!card) return slide;
-
-        const newCard: Card = {
-          ...card,
-          id: `card-${Date.now()}-${Math.random()}`
-        };
-
-        return { ...slide, cards: [...slide.cards, newCard] };
-      }
-      return slide;
-    });
-    set({ slides });
-    get().saveToHistory();
-    get().saveToLocalStorage();
-  },
-
-  updateCard: (slideId: string, cardId: string, updates: Partial<Card>) => {
-    const slides = get().slides.map(slide => {
-      if (slide.id === slideId) {
-        return {
-          ...slide,
-          cards: slide.cards.map(card =>
-            card.id === cardId ? { ...card, ...updates } : card
-          ),
-        };
-      }
-      return slide;
-    });
-    set({ slides });
-    get().saveToLocalStorage();
-  },
-
-  reorderCards: (slideId: string, startIndex: number, endIndex: number) => {
-    const slides = get().slides.map(slide => {
-      if (slide.id === slideId) {
-        const cards = [...slide.cards];
-        const [removed] = cards.splice(startIndex, 1);
-        cards.splice(endIndex, 0, removed);
-        const reorderedCards = cards.map((card, index) => ({ ...card, order: index }));
-        return { ...slide, cards: reorderedCards };
-      }
-      return slide;
-    });
-    set({ slides });
-    get().saveToHistory();
-    get().saveToLocalStorage();
-  },
-
-  setSelectedCard: (cardId: string | null) => set({ selectedCardId: cardId }),
 
   togglePresentationMode: () => set({ isPresentationMode: !get().isPresentationMode }),
 
@@ -276,8 +167,15 @@ export const useSlideStore = create<SlideState>((set, get) => ({
     const saved = localStorage.getItem('slides');
     if (saved) {
       try {
-        const slides = JSON.parse(saved);
-        set({ slides, currentSlideId: slides[0]?.id || null });
+        const slides = JSON.parse(saved) as Slide[];
+        if (slides.length > 0) {
+          set({
+            slides,
+            currentSlideId: slides[0]?.id || null,
+            history: [slides],
+            historyIndex: 0
+          });
+        }
       } catch (error) {
         console.error('Failed to load slides from localStorage', error);
       }

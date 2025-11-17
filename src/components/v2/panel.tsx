@@ -1,14 +1,38 @@
 import { Button } from '@/components/v2/ui/button';
 import { cn } from '@/lib/utils';
+import { SlideCard } from '@/pages/v2/slide';
 import { useSlideStore, type Slide } from '@/stores/slideStore';
 import { closestCenter, DndContext, type DragEndEvent } from '@dnd-kit/core';
 import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Copy, Trash2 } from 'lucide-react';
+import { useLayoutEffect, useRef } from 'react';
 
 const SlideThumbnail = ({ slide }: { slide: Slide }) => {
   const { currentSlideId, setCurrentSlide, deleteSlide, duplicateSlide } = useSlideStore();
-  const isActive = currentSlideId === slide.id;
+
+  const slideRef = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    const mainEl = slideRef.current;
+    if (!mainEl) return;
+
+    const handleResize = () => {
+      const targetWidth = 1024;
+      const viewportWidth = 300;
+
+      if (viewportWidth < targetWidth) {
+        const scale = viewportWidth / (targetWidth + 32);
+        (mainEl.style as any).zoom = scale;
+      } else {
+        (mainEl.style as any).zoom = 1;
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    handleResize();
+    return () => window.removeEventListener('resize', handleResize);
+
+  }, []);
 
   const {
     attributes,
@@ -30,32 +54,28 @@ const SlideThumbnail = ({ slide }: { slide: Slide }) => {
       {...attributes}
       {...listeners}
       className={cn(
-        'group relative p-3 rounded-lg border-2 cursor-pointer transition-all',
-        isActive
-          ? 'border-blue-400 bg-card-hover'
-          : 'border-gray-300 hover:border-primary/50 bg-card'
+        'group relative p-3 rounded-lg border-2 cursor-pointer transition-all', 'border-gray-300 hover:border-primary/50 bg-card'
       )}
-      onClick={() => setCurrentSlide(slide.id)}
+      onClick={() => {
+        setCurrentSlide(slide.id)
+      }}
     >
-      <div className="aspect-video bg-gray-100 rounded overflow-hidden mb-2">
-        {slide.cards?.[0]?.imageUrl && (
-          <img
-            src={slide.cards[0].imageUrl}
-            alt={slide.title}
-            className="w-full h-full object-cover"
-          />
-        )}
+      <div className="aspect-video bg-gray-100 rounded overflow-hidden mb-2" ref={slideRef} >
+        {slide ?
+          <SlideCard
+            readOnly
+            key={slide.id}
+            slide={slide}
+            onUpdate={() => { }}
+            onDelete={() => { }}
+          /> : <></>
+        }
+      </div>
+      <div className="text-sm font-medium absolute bottom-2 text-foreground truncate p-2 bg-gray-200 w-8 h-8 rounded-md text-center">
+        {slide.order + 1}
       </div>
 
-      <div className="text-xs text-muted-foreground mb-1">
-        Slide
-      </div>
-
-      <div className="text-sm font-medium text-foreground truncate mb-2">
-        {slide.title}
-      </div>
-
-      <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+      <div className="flex gap-1 absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
         <Button
           variant="ghost"
           size="icon"
@@ -85,7 +105,7 @@ const SlideThumbnail = ({ slide }: { slide: Slide }) => {
 };
 
 export const SlidesPanel = () => {
-  const { slides, reorderSlides } = useSlideStore();
+  const { slides, reorderSlides, addSlide } = useSlideStore();
   const sortedSlides = [...slides].sort((a, b) => a.order - b.order);
 
   const handleDragEnd = (event: DragEndEvent) => {
@@ -101,8 +121,11 @@ export const SlidesPanel = () => {
   return (
     <div className="w-64 bg-white border-r border-gray-300 overflow-y-auto">
       <div className="p-4">
-        <h2 className="text-sm font-semibold text-gray-700 mb-4">Slides</h2>
-
+        <div className='px-2'>
+          <Button onClick={() => {
+            addSlide('imageWithText');
+          }} className='mb-4 w-full px-1 py-1 pr-0' variant={'secondary'}>Novo</Button>
+        </div>
         <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
           <SortableContext items={sortedSlides.map(s => s.id)} strategy={verticalListSortingStrategy}>
             <div className="space-y-3">

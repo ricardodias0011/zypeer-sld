@@ -228,6 +228,9 @@ const TailwindAdvancedEditor = (props: tailwindAdvancedEditorProps) => {
           }
         }}
         onUpdate={({ editor }) => {
+          if (slide.readOnly) {
+            return
+          }
           debouncedUpdates(editor);
           setSaveStatus("Não salvo");
         }}

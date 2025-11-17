@@ -41,7 +41,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
 
   return (
     <div className="w-full space-y-4">
-      <div className="flex justify-between space-x-2">
+      <div className="flex justify-between gap-2">
         {layouts.map((_layout) => {
           const isSelected = layout === _layout.id;
 

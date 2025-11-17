@@ -1,8 +1,8 @@
 import { Button } from '@/components/v2/ui/button';
-import { cn } from '@/lib/utils';
 import { useSlideStore } from '@/stores/slideStore';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
-import { useEffect } from 'react';
+import { useEffect, useLayoutEffect, useRef } from 'react';
+import { SlideCard } from './slide';
 
 export const PresentationMode = () => {
   const {
@@ -13,6 +13,29 @@ export const PresentationMode = () => {
     nextSlide,
     previousSlide
   } = useSlideStore();
+
+  const slideRef = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    const mainEl = slideRef.current;
+    if (!mainEl) return;
+
+    const handleResize = () => {
+      const targetWidth = 1024;
+      const viewportWidth = document.body.clientWidth;
+
+      if (viewportWidth < targetWidth) {
+        const scale = viewportWidth / (targetWidth + 32);
+        (mainEl.style as any).zoom = scale;
+      } else {
+        (mainEl.style as any).zoom = 1;
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    handleResize();
+    return () => window.removeEventListener('resize', handleResize);
+
+  }, []);
 
   const currentSlide = slides.find(s => s.id === currentSlideId) || slides[0];
   const currentIndex = slides.findIndex(s => s.id === currentSlide?.id);
@@ -42,7 +65,7 @@ export const PresentationMode = () => {
 
   if (!currentSlide) return null;
 
-  const sortedCards = [...currentSlide.cards].sort((a, b) => a.order - b.order);
+  const sortedCards = slides.sort((a, b) => a.order - b.order);
 
   return (
     <div className="fixed inset-0 bg-background z-50 flex flex-col">
@@ -57,11 +80,11 @@ export const PresentationMode = () => {
         </Button>
       </div>
 
-      <div className="flex-1 flex items-center justify-center p-8 overflow-y-auto">
+      <div className="flex-1 flex items-center justify-center overflow-y-auto">
         <div
-          className="w-full max-w-6xl rounded-lg p-12 min-h-[600px]"
+          className="w-full rounded-lg min-h-[600px]"
           style={{
-            backgroundColor: currentSlide.backgroundColor || 'transparent',
+            backgroundColor: currentSlide.bgcolor || 'transparent',
             backgroundImage: currentSlide.backgroundImage
               ? `url(${currentSlide.backgroundImage})`
               : undefined,
@@ -69,94 +92,21 @@ export const PresentationMode = () => {
             backgroundPosition: 'center',
           }}
         >
-          {currentSlide.featuredImage && (
-            <div className="mb-8 rounded-lg overflow-hidden">
-              <img
-                src={currentSlide.featuredImage}
-                alt="Featured"
-                className="w-full h-96 object-cover"
-              />
-            </div>
-          )}
 
           <div className="space-y-6">
-            {sortedCards.map(card => {
-              const widthClasses = {
-                small: 'max-w-2xl',
-                medium: 'max-w-4xl',
-                large: 'max-w-6xl',
-              };
-
-              const alignmentClasses = {
-                left: 'mr-auto',
-                center: 'mx-auto',
-                right: 'ml-auto',
-              };
-
-              return (
-                <div
-                  key={card.id}
-                  className={cn(
-                    'rounded-lg transition-all text-xl',
-                    widthClasses[card.width],
-                    alignmentClasses[card.alignment],
-                    card.hasMargins && 'p-8'
-                  )}
-                  style={{
-                    backgroundColor: card.backgroundColor,
-                  }}
-                >
-                  {card.type === 'text' && (
-                    <div className="text-foreground whitespace-pre-wrap">
-                      {card.content}
-                    </div>
-                  )}
-
-                  {card.type === 'image' && (
-                    <div className="space-y-4">
-                      {card.imageUrl && (
-                        <img
-                          src={card.imageUrl}
-                          alt="Content"
-                          className="w-full rounded-lg"
-                        />
-                      )}
-                      {card.content && (
-                        <div className="text-foreground whitespace-pre-wrap">
-                          {card.content}
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  {card.type === 'list' && (
-                    <div className="text-foreground whitespace-pre-wrap">
-                      {card.content}
-                    </div>
-                  )}
-
-                  {card.type === 'split' && (
-                    <div className="grid grid-cols-2 gap-8">
-                      <div className="text-foreground whitespace-pre-wrap">
-                        {card.content}
-                      </div>
-                      {card.imageUrl && (
-                        <img
-                          src={card.imageUrl}
-                          alt="Split content"
-                          className="w-full h-full object-cover rounded-lg"
-                        />
-                      )}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
+            <div className="aspect-video bg-gray-100 rounded overflow-hidden" ref={slideRef} >
+              <SlideCard
+                readOnly
+                key={currentSlide.id}
+                slide={currentSlide}
+                onUpdate={() => { }}
+                onDelete={() => { }}
+              />
+            </div>
           </div>
         </div>
       </div>
-
-      <div className="flex items-center justify-between p-4 bg-panel/80 backdrop-blur">
+      <div className="flex absolute bottom-0 items-center justify-between p-4 bg-panel/80 backdrop-blur">
         <Button
           variant="ghost"
           onClick={previousSlide}
