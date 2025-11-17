@@ -4,28 +4,27 @@ import {
   EditorCommandItem,
   EditorCommandList,
   EditorContent,
-  type EditorInstance,
   EditorRoot,
-  ImageResizer,
   handleCommandNavigation,
   handleImageDrop,
-  handleImagePaste
+  handleImagePaste,
+  ImageResizer,
+  type EditorInstance,
 } from "novel";
+
 import { memo, useEffect, useRef, useState } from "react";
 import { useDebouncedCallback } from "use-debounce";
+
 import { defaultExtensions } from "./extensions";
 import { ColorSelector } from "./selectors/color-selector";
 import { MathSelector } from "./selectors/math-selector";
 import { NodeSelector } from "./selectors/node-selector";
+import { TextButtons } from "./selectors/text-buttons";
 import { Separator } from "./ui/separator";
 
 import GenerativeMenuSwitch from "./generative/generative-menu-switch";
 import { uploadFn } from "./image-upload";
-import { TextButtons } from "./selectors/text-buttons";
 import { slashCommand, suggestionItems } from "./slash-command";
-
-
-
 
 import { cn, textColorFromHex } from "@/lib/utils";
 import type { Slide } from "@/stores/slideStore";
@@ -34,96 +33,87 @@ import hljs from "highlight.js";
 const extensions = [...defaultExtensions, slashCommand];
 
 interface SlideProps extends Slide {
-  readOnly?: boolean
+  readOnly?: boolean;
 }
 
-interface tailwindAdvancedEditorProps {
-  slide: SlideProps
-  onUpdate: (d: string, field: keyof Slide, value: string) => void;
+interface TailwindAdvancedEditorProps {
+  slide: SlideProps;
+  onUpdate: (id: string, field: keyof Slide, value: string) => void;
 }
 
-const TailwindAdvancedEditor = (props: tailwindAdvancedEditorProps) => {
-  const { slide, onUpdate } = props;
+const TailwindAdvancedEditor = ({ slide, onUpdate }: TailwindAdvancedEditorProps) => {
   const [editor, setEditor] = useState<EditorInstance | null>(null);
-
 
   const [openNode, setOpenNode] = useState(false);
   const [openColor, setOpenColor] = useState(false);
   const [openAI, setOpenAI] = useState(false);
 
-  const [content, setContent] = useState('');
+  const [content, setContent] = useState(slide.content ?? "");
   const [canUpdate, setCanUpdate] = useState(false);
 
-  const timeoutRef = useRef<any>(null);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const lastSyncedRef = useRef<string>(slide.content);
 
-  const [colorText, setColorText] = useState('#fff');
+  const [colorText, setColorText] = useState("#fff");
 
-
-
-  const highlightCodeblocks = (content: string) => {
-    const doc = new DOMParser().parseFromString(content, "text/html");
+  const highlightCodeblocks = (html: string) => {
+    const doc = new DOMParser().parseFromString(html, "text/html");
     doc.querySelectorAll("pre code").forEach((el) => {
-      // @ts-ignore
-      // https://highlightjs.readthedocs.io/en/latest/api.html?highlight=highlightElement#highlightelement
-      hljs.highlightElement(el);
+      hljs.highlightElement(el as HTMLElement);
     });
     return new XMLSerializer().serializeToString(doc);
   };
 
-
   const debouncedUpdates = useDebouncedCallback(async (editor: EditorInstance) => {
-    const json = editor.getJSON();
-    window.localStorage.setItem("html-content", highlightCodeblocks(editor.getHTML()));
-    window.localStorage.setItem("novel-content", JSON.stringify(json));
-    setCanUpdate(true);
-    try {
-      const _content = editor.storage.markdown.getMarkdown();
-      setContent(_content)
-    } catch (err) {
-    }
+    const markdown = editor.storage.markdown.getMarkdown();
+    const html = editor.getHTML();
 
-    window.localStorage.setItem("markdown", editor.storage.markdown.getMarkdown());
+    window.localStorage.setItem("markdown", markdown);
+    window.localStorage.setItem("novel-content", JSON.stringify(editor.getJSON()));
+    window.localStorage.setItem("html-content", highlightCodeblocks(html));
+    lastSyncedRef.current = markdown;
+    setContent(markdown);
+    setCanUpdate(true);
   }, 500);
 
-
+  useEffect(() => {
+    const type = textColorFromHex(slide.bgcolor ?? "#fff");
+    setColorText(type === "dark" ? "text-zinc-800" : "text-zinc-100");
+  }, [slide.bgcolor]);
 
   useEffect(() => {
-    const ct = textColorFromHex(slide?.bgcolor ?? '#fff') === 'dark' ? 'text-zinc-800' : 'text-zinc-100';
-    setColorText(ct);
-  }, [slide.bgcolor])
+    if (!content || !canUpdate) return;
 
-  useEffect(() => {
-    if (content && canUpdate) {
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+
+    timeoutRef.current = setTimeout(() => {
+      onUpdate(slide.id, "content", content);
+    }, 1500);
+
+    return () => {
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
       }
-      timeoutRef.current = setTimeout(() => {
-        onUpdate(slide.id, 'content', content);
-      }, 1500);
-      return () => {
-        if (timeoutRef.current) {
-          clearTimeout(timeoutRef.current);
-        }
-      };
-    }
+    };
   }, [content, canUpdate]);
 
   useEffect(() => {
-    if (slide.content !== content) {
-      setContent(slide.content)
+    if (slide.content !== lastSyncedRef.current) {
+      setContent(slide.content);
+      lastSyncedRef.current = slide.content;
     }
-  }, [slide])
+  }, [slide.content]);
 
 
   return (
     <EditorRoot>
       <EditorContent
-        onCreate={e => {
-          e.editor.commands.setContent(content ?? `Questão`);
-          setEditor(e.editor);
+        onCreate={({ editor }) => {
+          setEditor(editor);
+          editor.commands.setContent(content || "Questão");
         }}
-        extensions={extensions as any}
-        className={cn(colorText, "relative w-full max-w-screen-lg bg-background  sm:rounded-lg")}
+        extensions={extensions}
+        className={cn(colorText, "relative w-full max-w-screen-lg bg-background sm:rounded-lg")}
         editorProps={{
           handleDOMEvents: {
             keydown: (_view, event) => handleCommandNavigation(event),
@@ -133,28 +123,28 @@ const TailwindAdvancedEditor = (props: tailwindAdvancedEditorProps) => {
           attributes: {
             class:
               "prose prose-lg dark:prose-invert prose-headings:font-title font-default focus:outline-none max-w-full",
-          }
+          },
         }}
         onUpdate={({ editor }) => {
-          if (slide?.readOnly) {
-            return
-          }
-          debouncedUpdates(editor);
+          if (!slide.readOnly) debouncedUpdates(editor);
         }}
         slotAfter={<ImageResizer />}
       >
-        <EditorCommand className="pointer-events-auto z-50 h-auto editor-command max-h-[330px] overflow-y-auto rounded-md  bg-background px-1 py-2 shadow-md transition-all">
-          <EditorCommandEmpty className="px-2 text-muted-foreground">Sem resultados</EditorCommandEmpty>
+        <EditorCommand className="pointer-events-auto z-50 max-h-[330px] overflow-y-auto rounded-md bg-background px-1 py-2 shadow-md">
+          <EditorCommandEmpty className="px-2 text-muted-foreground">
+            Sem resultados
+          </EditorCommandEmpty>
+
           <EditorCommandList>
             {suggestionItems.map((item) => (
               <EditorCommandItem
-                value={item.title}
-                // @ts-ignore
-                onCommand={(val) => item?.command(val)}
-                className="editor-command-item flex w-full text-black items-center space-x-2 bg-background rounded-md px-2 py-1 text-left text-sm hover:bg-accent aria-selected:bg-accent"
                 key={item.title}
+                value={item.title}
+                // @ts-ignore 
+                onCommand={(val) => item?.command(val)}
+                className="editor-command-item flex w-full items-center space-x-2 rounded-md bg-background px-2 py-1 text-left text-sm hover:bg-accent aria-selected:bg-accent"
               >
-                <div className="flex h-10 w-10 items-center justify-center rounded-md dark:border-zinc-700 border-zinc-200 bg-background">
+                <div className="flex h-10 w-10 items-center justify-center rounded-md border border-zinc-200 dark:border-zinc-700 bg-background">
                   {item.icon}
                 </div>
                 <div>
@@ -165,11 +155,11 @@ const TailwindAdvancedEditor = (props: tailwindAdvancedEditorProps) => {
             ))}
           </EditorCommandList>
         </EditorCommand>
+
+        {/* ---------------------- Toolbars ---------------------- */}
         <GenerativeMenuSwitch open={openAI} onOpenChange={setOpenAI}>
           <Separator orientation="vertical" />
           <NodeSelector open={openNode} onOpenChange={setOpenNode} />
-          {/* <Separator orientation="vertical" /> */}
-          {/* <LinkSelector open={openLink} onOpenChange={setOpenLink} /> */}
           <Separator orientation="vertical" />
           <MathSelector />
           <Separator orientation="vertical" />
@@ -181,6 +171,5 @@ const TailwindAdvancedEditor = (props: tailwindAdvancedEditorProps) => {
     </EditorRoot>
   );
 };
-
 
 export default memo(TailwindAdvancedEditor);

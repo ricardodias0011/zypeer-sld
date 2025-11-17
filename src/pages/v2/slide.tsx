@@ -10,13 +10,13 @@ import StylePopover from './settingsPanel';
 export type SlideType = 'title' | 'content' | 'imageWithText';
 interface SlideEditor extends Slide {
   readOnly?: boolean;
-  onUpdate: (d: string, field: keyof Slide, value: string) => void;
+  onUpdate?: (d: string, field: keyof Slide, value: string) => void;
 }
 
 const Textarea: React.FC<SlideEditor> = (props) => {
   return (
     <div className='flex my-8'>
-      <TailwindAdvancedEditor onUpdate={props.onUpdate} slide={props} />
+      <TailwindAdvancedEditor onUpdate={props?.onUpdate || (() => { })} slide={props} />
     </div>
   );
 };
