@@ -17,7 +17,7 @@ type SlideLayout = 'left' | 'right' | 'top' | 'bottom' | 'full';
 
 interface SlideCardProps {
   slide: Slide;
-  onUpdate: (slide: Partial<Slide>) => void;
+  onUpdate: (d: string, field: keyof Slide, value: any) => void;
   onDelete: () => void;
   readOnly?: boolean;
 }
@@ -90,9 +90,6 @@ const Modal: React.FC<{
   );
 };
 
-/**
- * Conteúdo para o Modal "Gerar IA"
- */
 const GenerateAIModal: React.FC<{
   onClose: () => void;
   onGenerate: (prompt: string) => void;
@@ -104,7 +101,6 @@ const GenerateAIModal: React.FC<{
 
   const handleGenerate = () => {
     setIsLoading(true);
-    // Simular chamada de API
     setTimeout(() => {
       onGenerate(prompt);
       setIsLoading(false);
@@ -369,29 +365,26 @@ export const ImageCard: React.FC<SlideCardProps> = ({
 
   const handleGenerateImageAction = (prompt: string) => {
     console.log('Gerando imagem com prompt:', prompt);
-    onUpdate({
-      imageUrl: `https://placehold.co/600x400/random/white?text=IA:${prompt.substring(
-        0,
-        10
-      )}...`,
-    });
+    onUpdate(slide.id, 'imageUrl', `https://placehold.co/600x400/random/white?text=IA:${prompt.substring(
+      0,
+      10
+    )}`);
   };
 
   const handleReplaceImageAction = (file: File) => {
     console.log('Substituindo imagem por:', file.name);
     // Criar uma URL local para preview
     const newUrl = URL.createObjectURL(file);
-    onUpdate({ imageUrl: newUrl });
+    onUpdate(slide.id, 'imageUrl', newUrl);
   };
 
   const handleAdjustImageAction = (fit: Slide['imageFit']) => {
     console.log('Ajustando fit para:', fit);
-    onUpdate({ imageFit: fit });
+    onUpdate(slide.id, 'imageFit', fit);
   };
 
   const handleDeleteImageAction = () => {
-    console.log('Excluindo imagem');
-    onUpdate({ imageUrl: undefined });
+    onUpdate(slide.id, 'imageFit', undefined);
   };
 
   const ImageToolbar = ({

@@ -8,18 +8,22 @@ import { ImageCard } from './image';
 import StylePopover from './settingsPanel';
 
 export type SlideType = 'title' | 'content' | 'imageWithText';
+interface SlideEditor extends Slide {
+  readOnly?: boolean;
+  onUpdate: (d: string, field: keyof Slide, value: string) => void;
+}
 
-const Textarea: React.FC<Slide> = (props) => {
+const Textarea: React.FC<SlideEditor> = (props) => {
   return (
     <div className='flex my-8'>
-      <TailwindAdvancedEditor slide={props} />
+      <TailwindAdvancedEditor onUpdate={props.onUpdate} slide={props} />
     </div>
   );
 };
 
 interface SlideCardProps {
-  slide: Slide;
-  onUpdate: (id: string, field: keyof Slide, value: string) => void;
+  slide: SlideEditor;
+  onUpdate: (d: string, field: keyof Slide, value: string) => void;
   onDelete: (id: string) => void;
   readOnly?: boolean;
 }
@@ -30,7 +34,7 @@ interface ImageWithTextSlideProps {
   isVertical: boolean;
   mobile: boolean;
   ht: string;
-  readOnly?: ConstrainBooleanParameters;
+  readOnly?: boolean;
 }
 
 export const SlideCard = memo(({ slide, onUpdate, onDelete, readOnly }: SlideCardProps) => {
@@ -70,19 +74,15 @@ export const SlideCard = memo(({ slide, onUpdate, onDelete, readOnly }: SlideCar
         className={cn(
           'flex-1 p-6 z-30 w-full',
           ht
-          // slide.layout === 'full' ? 'absolute' : ''
         )}
       >
-        <Textarea {...slide} readOnly={readOnly} />
+        <Textarea {...slide} readOnly={readOnly} onUpdate={onUpdate} />
       </div>
-      {slide.layout !== 'empty' ? <ImageCard slide={slide} onDelete={() => { }} onUpdate={onUpdate} ht={ht} /> : null}
+      {slide.layout !== 'empty' ? <ImageCard slide={slide} onDelete={() => { }} onUpdate={onUpdate} /> : null}
     </div>
   );
-
-  // Sua função principal, agora mais limpa
   const renderInputs = () => {
     switch (slide.type) {
-      // 1. Casos 'title' e 'content' combinados
       case 'title':
       case 'content':
         return (
@@ -90,8 +90,6 @@ export const SlideCard = memo(({ slide, onUpdate, onDelete, readOnly }: SlideCar
             <Textarea {...slide} />
           </div>
         );
-
-      // 2. 'imageWithText' usa seu próprio componente
       case 'imageWithText':
         return (
           <ImageWithTextSlide
@@ -100,7 +98,6 @@ export const SlideCard = memo(({ slide, onUpdate, onDelete, readOnly }: SlideCar
             mobile={mobile}
             ht={ht}
             readOnly={readOnly}
-            TextareaComponent={Textarea}
           />
         );
 
@@ -166,23 +163,22 @@ export const SlideCard = memo(({ slide, onUpdate, onDelete, readOnly }: SlideCar
 
 
 const App: React.FC = () => {
-  // const [slides, setSlides] = useState<Slide[]>([]);
-  const { slides, addSlide } = useSlideStore();
+  const { slides, updateSlide, deleteSlide } = useSlideStore();
 
-  const handleAddSlide = (type: SlideType) => {
-  };
 
   const handleDeleteSlide = (id: string) => {
-
+    deleteSlide(id);
   };
 
   const handleUpdateSlide = (id: string, field: keyof Slide, value: string) => {
-
+    updateSlide(id, {
+      [field]: value
+    })
   };
 
   return (
     <div className='w-6xl'>
-      {slides?.map((slide, index) => (
+      {slides?.map((slide, _index) => (
         <SlideCard
           key={slide.id}
           slide={slide}

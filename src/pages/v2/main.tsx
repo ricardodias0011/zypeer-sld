@@ -7,7 +7,7 @@ import { PresentationMode } from "./presentationMode";
 import Slide from "./slide";
 
 const MainSlide = () => {
-  const { isPresentationMode, loadFromLocalStorage, currentSlideId, slides } = useSlideStore();
+  const { isPresentationMode } = useSlideStore();
   const mainRef = useRef<HTMLElement>(null);
   useLayoutEffect(() => {
     if (isDesktop()) {

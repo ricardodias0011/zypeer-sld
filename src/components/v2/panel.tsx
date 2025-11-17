@@ -18,7 +18,7 @@ const SlideThumbnail = ({ slide }: { slide: Slide }) => {
 
     const handleResize = () => {
       const targetWidth = 1024;
-      const viewportWidth = 300;
+      const viewportWidth = 260;
 
       if (viewportWidth < targetWidth) {
         const scale = viewportWidth / (targetWidth + 32);
@@ -54,7 +54,7 @@ const SlideThumbnail = ({ slide }: { slide: Slide }) => {
       {...attributes}
       {...listeners}
       className={cn(
-        'group relative p-3 rounded-lg border-2 cursor-pointer transition-all', 'border-gray-300 hover:border-primary/50 bg-card'
+        'group relative rounded-lg border-2 cursor-pointer transition-all', 'border-gray-300 hover:border-primary/50 bg-card'
       )}
       onClick={() => {
         setCurrentSlide(slide.id)
@@ -77,7 +77,7 @@ const SlideThumbnail = ({ slide }: { slide: Slide }) => {
 
       <div className="flex gap-1 absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
         <Button
-          variant="ghost"
+          variant="default"
           size="icon"
           className="h-7 w-7"
           onClick={(e) => {
@@ -89,7 +89,7 @@ const SlideThumbnail = ({ slide }: { slide: Slide }) => {
         </Button>
 
         <Button
-          variant="ghost"
+          variant="default"
           size="icon"
           className="h-7 w-7"
           onClick={(e) => {
@@ -119,9 +119,9 @@ export const SlidesPanel = () => {
   };
 
   return (
-    <div className="w-64 bg-white border-r border-gray-300 overflow-y-auto">
-      <div className="p-4">
-        <div className='px-2'>
+    <div className="w-64 hidden md:flex bg-white border-r border-gray-300 overflow-y-auto">
+      <div className="p-4 w-full">
+        <div className='px-2 w-full'>
           <Button onClick={() => {
             addSlide('imageWithText');
           }} className='mb-4 w-full px-1 py-1 pr-0' variant={'secondary'}>Novo</Button>
