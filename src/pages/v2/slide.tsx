@@ -1,8 +1,9 @@
 import TailwindAdvancedEditor from '@/components/v2';
+import { Button } from '@/components/v2/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/v2/ui/popover';
 import { cn, isMobile } from '@/lib/utils';
 import { useSlideStore, type Slide } from '@/stores/slideStore';
-import { Palette, Trash2 } from 'lucide-react';
+import { Image, Palette, Plus, Text, Trash2 } from 'lucide-react';
 import React, { memo, useState } from 'react';
 import { ImageCard } from './image';
 import StylePopover from './settingsPanel';
@@ -73,7 +74,8 @@ export const SlideCard = memo(({ slide, onUpdate, onDelete, readOnly }: SlideCar
       <div
         className={cn(
           'flex-1 p-6 z-30 w-full',
-          ht
+          ht,
+          slide.type === 'Quote' ? 'border-l-4 border-primary' : 'border-l-4 border-primary'
         )}
       >
         <Textarea {...slide} readOnly={readOnly} onUpdate={onUpdate} />
@@ -81,7 +83,7 @@ export const SlideCard = memo(({ slide, onUpdate, onDelete, readOnly }: SlideCar
       {slide.layout !== 'empty' ? <ImageCard slide={slide} onDelete={() => { }} onUpdate={onUpdate} /> : null}
     </div>
   );
-  const renderInputs = () => {
+  const RenderInputs = memo(() => {
     switch (slide.type) {
       case 'title':
       case 'content':
@@ -89,6 +91,16 @@ export const SlideCard = memo(({ slide, onUpdate, onDelete, readOnly }: SlideCar
           <div className="p-6">
             <Textarea {...slide} />
           </div>
+        );
+      case 'Quote':
+        return (
+          <ImageWithTextSlide
+            slide={slide}
+            isVertical={isVertical}
+            mobile={mobile}
+            ht={ht}
+            readOnly={readOnly}
+          />
         );
       case 'imageWithText':
         return (
@@ -104,7 +116,7 @@ export const SlideCard = memo(({ slide, onUpdate, onDelete, readOnly }: SlideCar
       default:
         return null;
     }
-  };
+  });
 
   return (
     <div
@@ -113,7 +125,7 @@ export const SlideCard = memo(({ slide, onUpdate, onDelete, readOnly }: SlideCar
       }}
       className={cn(readOnly ? 'h-full' : '', "overflow-hidden rounded-xl mb-6 transition-all duration-300 hover:shadow-xl focus-within:shadow-xl focus-within:ring-2 focus-within:ring-blue-500")}>
       <div className={readOnly ? 'h-full' : ''}>
-        {renderInputs()}
+        <RenderInputs />
       </div>
       {readOnly ? null : <div className="border-t border-gray-100 px-6 py-3 flex justify-between items-center bg-gray-50 rounded-b-xl relative">
         <div className="flex items-center gap-2">
@@ -144,6 +156,60 @@ export const SlideCard = memo(({ slide, onUpdate, onDelete, readOnly }: SlideCar
               // }}
               />
             </PopoverContent>
+          </Popover>
+          <Popover>
+            <PopoverTrigger>
+              <button
+                onClick={() => setIsPopoverOpen(!isPopoverOpen)}
+                className="flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-blue-600 transition-colors p-1 -ml-1 rounded"
+              >
+                <Plus size={22} />
+              </button>
+            </PopoverTrigger>
+            <PopoverContent className="w-60 p-3">
+              <div className="flex flex-col gap-2">
+
+                <Button
+                  variant="secondary"
+                  className="flex items-center justify-start gap-3 px-4 py-0"
+                >
+                  <Image className="w-5 h-5 text-blue-600" />
+                  <span className="text-gray-700 font-medium">Adicionar imagem</span>
+                </Button>
+
+                <Button
+                  variant="secondary"
+                  className="flex items-center justify-start gap-3 px-4 py-0"
+                >
+                  <Text className="w-5 h-5 text-purple-600" />
+                  <span className="text-gray-700 font-medium">Adicionar texto</span>
+                </Button>
+
+                <Button
+                  variant="secondary"
+                  className="flex items-center justify-start gap-3 px-4 py-0"
+                >
+                  <span className="text-emerald-600 text-xl leading-none">“</span>
+                  <span className="text-gray-700 font-medium">Citação</span>
+                </Button>
+
+                <Button
+                  variant="secondary"
+                  className="flex items-center justify-start gap-3 px-4 py-0"
+                >
+                  <div className="w-5 h-5 text-orange-600 grid grid-cols-2 gap-0.5">
+                    <div className="bg-orange-600/60 rounded-sm" />
+                    <div className="bg-orange-600/60 rounded-sm" />
+                    <div className="bg-orange-600/60 rounded-sm" />
+                    <div className="bg-orange-600/60 rounded-sm" />
+                  </div>
+                  <span className="text-gray-700 font-medium">Duas colunas</span>
+                </Button>
+
+              </div>
+            </PopoverContent>
+
+
           </Popover>
         </div>
         {/* {isPopoverOpen && (

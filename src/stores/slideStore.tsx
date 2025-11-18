@@ -1,7 +1,7 @@
 import type { LayoutType } from '@/types/slide-v2';
 import { create } from 'zustand';
 
-export type SlideType = 'title' | 'content' | 'imageWithText';
+export type SlideType = 'title' | 'content' | 'imageWithText' | 'Quote' | 'Columns';
 
 export interface Slide {
   id: string;
