@@ -96,6 +96,8 @@ export const PresentationMode = () => {
           <div className="space-y-6">
             <div className="aspect-video bg-gray-100 rounded overflow-hidden" ref={slideRef} >
               <SlideCard
+                addText={() => { }}
+                addImage={() => { }}
                 readOnly
                 key={currentSlide.id}
                 slide={currentSlide}

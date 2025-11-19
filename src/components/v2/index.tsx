@@ -27,7 +27,7 @@ import { uploadFn } from "./image-upload";
 import { slashCommand, suggestionItems } from "./slash-command";
 
 import { cn, textColorFromHex } from "@/lib/utils";
-import type { Slide } from "@/stores/slideStore";
+import type { Slide, SlideContentType } from "@/stores/slideStore";
 import hljs from "highlight.js";
 
 const extensions = [...defaultExtensions, slashCommand];
@@ -38,21 +38,22 @@ interface SlideProps extends Slide {
 
 interface TailwindAdvancedEditorProps {
   slide: SlideProps;
-  onUpdate: (id: string, field: keyof Slide, value: string) => void;
+  contentSlide?: SlideContentType;
+  onUpdate: (id: string, field: keyof Slide, value: SlideContentType[]) => void;
 }
 
-const TailwindAdvancedEditor = ({ slide, onUpdate }: TailwindAdvancedEditorProps) => {
+const TailwindAdvancedEditor = ({ slide, onUpdate, contentSlide }: TailwindAdvancedEditorProps) => {
   const [editor, setEditor] = useState<EditorInstance | null>(null);
 
   const [openNode, setOpenNode] = useState(false);
   const [openColor, setOpenColor] = useState(false);
   const [openAI, setOpenAI] = useState(false);
 
-  const [content, setContent] = useState(slide.content ?? "");
+  const [content, setContent] = useState("");
   const [canUpdate, setCanUpdate] = useState(false);
 
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const lastSyncedRef = useRef<string>(slide.content);
+  const lastSyncedRef = useRef<string>('');
 
   const [colorText, setColorText] = useState("#fff");
 
@@ -87,7 +88,14 @@ const TailwindAdvancedEditor = ({ slide, onUpdate }: TailwindAdvancedEditorProps
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
 
     timeoutRef.current = setTimeout(() => {
-      onUpdate(slide.id, "content", content);
+      const _s = slide.content.filter(a => a.id !== contentSlide?.id);
+      onUpdate(slide.id, "content", [
+        ..._s,
+        {
+          ...(contentSlide as SlideContentType || []),
+          text: content
+        }
+      ]);
     }, 1500);
 
     return () => {
@@ -98,11 +106,11 @@ const TailwindAdvancedEditor = ({ slide, onUpdate }: TailwindAdvancedEditorProps
   }, [content, canUpdate]);
 
   useEffect(() => {
-    if (slide.content !== lastSyncedRef.current) {
-      setContent(slide.content);
-      lastSyncedRef.current = slide.content;
+    if (contentSlide?.text !== lastSyncedRef.current) {
+      setContent(contentSlide?.text || 'Texto');
+      lastSyncedRef.current = contentSlide?.text || 'Texto';
     }
-  }, [slide.content]);
+  }, [contentSlide?.text]);
 
 
   return (
@@ -110,7 +118,7 @@ const TailwindAdvancedEditor = ({ slide, onUpdate }: TailwindAdvancedEditorProps
       <EditorContent
         onCreate={({ editor }) => {
           setEditor(editor);
-          editor.commands.setContent(content || "Questão");
+          editor.commands.setContent(content || "Novo texto");
         }}
         extensions={extensions}
         className={cn(colorText, "relative w-full max-w-screen-lg bg-background sm:rounded-lg")}

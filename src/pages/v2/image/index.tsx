@@ -1,5 +1,5 @@
 import { cn } from '@/lib/utils';
-import type { Slide } from '@/stores/slideStore';
+import type { Slide, SlideContentType } from '@/stores/slideStore';
 import {
   Crop,
   ImageIcon,
@@ -20,6 +20,7 @@ interface SlideCardProps {
   onUpdate: (d: string, field: keyof Slide, value: any) => void;
   onDelete: () => void;
   readOnly?: boolean;
+  slideContent: SlideContentType
 }
 
 interface ImageToolbarProps {
@@ -338,6 +339,7 @@ export const ImageCard: React.FC<SlideCardProps> = ({
   onUpdate,
   onDelete,
   readOnly,
+  slideContent
 }) => {
   const [activeModal, setActiveModal] = useState<
     'generate' | 'replace' | 'adjust' | 'delete' | null
@@ -443,10 +445,10 @@ export const ImageCard: React.FC<SlideCardProps> = ({
     return (
       <div
         className={cn(
-          'relative mt-2 flex-1 cursor-pointer sm:mt-0 w-full',
+          'relative mt-2 flex-1 cursor-pointer sm:mt-0 w-full min-h-96',
           ht,
           slide.layout === 'full' ? 'absolute opacity-35' : '',
-          isToolbarVisible ? 'border-4 border-blue-400' : ''
+          isToolbarVisible ? 'border-4 border-blue-400' : '',
         )}
         onClick={() => setIsToolbarVisible((prev) => !prev)}
       >
@@ -458,9 +460,9 @@ export const ImageCard: React.FC<SlideCardProps> = ({
             onAdjust={handleAdjust}
           />
         )}
-        {slide.imageUrl ? (
+        {slideContent.image?.url ? (
           <img
-            src={slide.imageUrl}
+            src={slideContent.image?.url}
             alt="Preview"
             className={cn(
               'h-full w-full bg-gray-100',

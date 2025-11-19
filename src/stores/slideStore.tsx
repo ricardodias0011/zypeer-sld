@@ -1,4 +1,5 @@
 import type { LayoutType } from '@/types/slide-v2';
+import { v4 } from 'uuid';
 import { create } from 'zustand';
 
 export type SlideType = 'title' | 'content' | 'imageWithText' | 'Quote' | 'Columns';
@@ -9,11 +10,24 @@ export interface Slide {
   layout: LayoutType;
   type: SlideType;
   title: string;
-  content: string;
+  content: SlideContentType[];
   imageUrl?: string;
   imageFit?: 'cover' | 'contain' | 'fill';
   bgcolor?: string;
   backgroundImage?: string;
+}
+
+export type SlideContentType = {
+  id: string;
+  type: 'text' | 'column' | 'image',
+  text?: string,
+  columns?: { direction: 'left' | 'right', text?: string, image?: string, type: 'text' | 'image' }[],
+  image?: {
+    url: string;
+    imageFit?: 'cover' | 'contain' | 'fill';
+  },
+  border?: string;
+  bgcolor?: string;
 }
 
 interface SlideState {
@@ -48,7 +62,11 @@ const createDefaultSlide = (order: number, type: SlideType): Slide => ({
   type,
   layout: 'half-right',
   title: 'Novo Título',
-  content: '# Clique para editar o conteúdo...',
+  content: [{
+    type: 'text',
+    text: '# Clique para editar o conteúdo...',
+    id: v4().slice(0, 10)
+  }],
   imageUrl: '',
   bgcolor: '#ffffff',
 });
