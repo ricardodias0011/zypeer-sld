@@ -5,12 +5,13 @@ interface SlideEditor extends Slide {
   readOnly?: boolean;
   onUpdate?: (d: string, field: keyof Slide, value: SlideContentType[]) => void;
   contentSlide?: SlideContentType;
+  onDelete: (id: string) => void;
 }
 
 const Textarea: React.FC<SlideEditor> = React.memo((props) => {
   return (
     <div className='flex my-4'>
-      <TailwindAdvancedEditor contentSlide={props.contentSlide} onUpdate={props?.onUpdate || (() => { })} slide={props} />
+      <TailwindAdvancedEditor onDelete={props.onDelete} contentSlide={props.contentSlide} onUpdate={props?.onUpdate || (() => { })} slide={props} />
     </div>
   );
 }, (prevProps, nextProps) => {

@@ -21,7 +21,7 @@ export type SlideContentType = {
   id: string;
   type: 'text' | 'column' | 'image' | 'quote',
   text?: string,
-  columns?: { direction: 'left' | 'right', text?: string, image?: string, type: 'text' | 'image' }[],
+  columns?: { direction: 'left' | 'right', text?: string, image?: string, type: 'text' | 'image', id: string }[],
   image?: {
     url: string;
     imageFit?: 'cover' | 'contain' | 'fill';

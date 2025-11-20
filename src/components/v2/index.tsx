@@ -40,9 +40,10 @@ interface TailwindAdvancedEditorProps {
   slide: SlideProps;
   contentSlide?: SlideContentType;
   onUpdate: (id: string, field: keyof Slide, value: SlideContentType[]) => void;
+  onDelete: (id: string) => void;
 }
 
-const TailwindAdvancedEditor = ({ slide, onUpdate, contentSlide }: TailwindAdvancedEditorProps) => {
+const TailwindAdvancedEditor = ({ slide, onUpdate, contentSlide, onDelete }: TailwindAdvancedEditorProps) => {
   const [editor, setEditor] = useState<EditorInstance | null>(null);
 
   const [openNode, setOpenNode] = useState(false);
@@ -86,14 +87,18 @@ const TailwindAdvancedEditor = ({ slide, onUpdate, contentSlide }: TailwindAdvan
   }, [slide.bgcolor]);
 
   useEffect(() => {
-    if (!content || !canUpdate) return;
+    if (!canUpdate) return;
 
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
 
     timeoutRef.current = setTimeout(() => {
-      if (content !== contentSlide?.text) {
+      if (content !== contentSlide?.text && contentSlide?.id) {
         isInternalUpdateRef.current = true;
         const _s = slide.content.filter(a => a.id !== contentSlide?.id);
+        if (content?.trim().length === 0) {
+          onDelete(contentSlide?.id || '');
+          return;
+        }
         onUpdate(slide.id, "content", [
           ..._s,
           {
@@ -102,7 +107,7 @@ const TailwindAdvancedEditor = ({ slide, onUpdate, contentSlide }: TailwindAdvan
           }
         ]);
       }
-    }, 1500);
+    }, 500);
 
     return () => {
       if (timeoutRef.current) {
@@ -110,7 +115,7 @@ const TailwindAdvancedEditor = ({ slide, onUpdate, contentSlide }: TailwindAdvan
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [content, canUpdate]);
+  }, [content, canUpdate, slide.content, contentSlide?.text]);
 
   useEffect(() => {
     if (!editor) return;

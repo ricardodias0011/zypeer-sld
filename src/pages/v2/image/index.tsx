@@ -18,7 +18,7 @@ type SlideLayout = 'left' | 'right' | 'top' | 'bottom' | 'full';
 interface SlideCardProps {
   slide: Slide;
   onUpdate: (d: string, field: keyof Slide, value: any) => void;
-  onDelete: () => void;
+  onDelete: (id: string) => void;
   readOnly?: boolean;
   slideContent: SlideContentType
 }
@@ -386,7 +386,7 @@ export const ImageCard: React.FC<SlideCardProps> = ({
   };
 
   const handleDeleteImageAction = () => {
-    onUpdate(slide.id, 'imageFit', undefined);
+    onDelete(slide.id);
   };
 
   const ImageToolbar = ({

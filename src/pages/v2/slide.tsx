@@ -261,6 +261,7 @@ const ColumnsSlide: React.FC<ColumnsSlideProps> = memo(({ slide, readOnly, onUpd
                   type: 'text',
                   text: item.text || ''
                 } as SlideContentType}
+                onDelete={() => deleteItem(columnIndex, item.id)}
                 readOnly={readOnly}
                 onUpdate={(_, field, value) => {
                   handleTextUpdate(columnIndex, item.id, item.id, field, value);
@@ -460,7 +461,26 @@ export const SlideCard = memo(({ slide, onUpdate, onDelete, readOnly, addText, a
     ht,
     readOnly
   }) => {
-    console.log(slide);
+
+    const onDeleteItem = (id: string) => {
+      const filteredContent = slide.content?.find(c => c.id === id);
+      console.log(filteredContent?.type)
+      if (filteredContent?.type === 'column') {
+        const updatedContent = slide.content?.map(c => {
+          if (c.type === 'column') {
+            return {
+              ...c,
+              columns: c.columns?.filter(ci => ci.image !== id)
+            }
+          }
+          return c;
+        })
+        onUpdate(slide.id, 'content', updatedContent || []);
+      } else {
+        onUpdate(slide.id, 'content', slide.content?.filter(c => c.id !== id))
+      }
+    }
+
     return (
       <div
         style={{
@@ -490,11 +510,15 @@ export const SlideCard = memo(({ slide, onUpdate, onDelete, readOnly, addText, a
             slide.content?.map((t) => {
               if (t.type === 'text') {
                 return (
-                  <Textarea key={t.id} {...slide} contentSlide={t as SlideContentType} readOnly={readOnly} onUpdate={onUpdate} />
+                  <Textarea key={t.id} {...slide} contentSlide={t as SlideContentType} readOnly={readOnly} onUpdate={onUpdate}
+                    onDelete={(id) => { onDeleteItem(t.id) }}
+                  />
                 )
               }
               if (t.type === 'image') {
-                return (<ImageCard readOnly={readOnly} slide={slide} slideContent={t} onDelete={() => { }} onUpdate={onUpdate} />)
+                return (<ImageCard readOnly={readOnly} slide={slide} slideContent={t}
+                  onDelete={(id) => { onDeleteItem(t.id) }}
+                  onUpdate={onUpdate} />)
               }
               if (t.type === 'column') {
                 return (
@@ -508,7 +532,9 @@ export const SlideCard = memo(({ slide, onUpdate, onDelete, readOnly, addText, a
               if (t.type === 'quote') {
                 return (
                   <div className="prose prose-sm max-w-none border-l-4 border-blue-500/30 px-4 flex items-center">
-                    <Textarea key={t.id} {...slide} contentSlide={t as SlideContentType} readOnly={readOnly} onUpdate={onUpdate} />
+                    <Textarea
+                      onDelete={(id) => { onDeleteItem(t.id) }}
+                      key={t.id} {...slide} contentSlide={t as SlideContentType} readOnly={readOnly} onUpdate={onUpdate} />
                   </div>
                 )
               }
@@ -720,12 +746,14 @@ const App: React.FC = () => {
               {
                 direction: 'left',
                 type: 'text',
-                text: 'Coluna 1'
+                text: 'Coluna 1',
+                id: v4().slice(0, 10)
               },
               {
                 direction: 'right',
                 type: 'text',
-                text: 'Coluna 2'
+                text: 'Coluna 2',
+                id: v4().slice(0, 10)
               }
             ]
           }
