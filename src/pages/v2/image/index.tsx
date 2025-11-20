@@ -445,10 +445,10 @@ export const ImageCard: React.FC<SlideCardProps> = ({
     return (
       <div
         className={cn(
-          'relative mt-2 flex-1 cursor-pointer sm:mt-0 w-full min-h-96',
+          'relative mt-2 flex-1 cursor-pointer sm:mt-0 w-full',
           ht,
           slide.layout === 'full' ? 'absolute opacity-35' : '',
-          isToolbarVisible ? 'border-4 border-blue-400' : '',
+          (isToolbarVisible && !readOnly) ? 'border-4 border-blue-400' : '',
         )}
         onClick={() => setIsToolbarVisible((prev) => !prev)}
       >
@@ -465,7 +465,7 @@ export const ImageCard: React.FC<SlideCardProps> = ({
             src={slideContent.image?.url}
             alt="Preview"
             className={cn(
-              'h-full w-full bg-gray-100',
+              'h-full min-h-60 w-full bg-gray-100',
               slide.imageFit === 'contain'
                 ? 'object-contain'
                 : slide.imageFit === 'fill'
@@ -475,7 +475,7 @@ export const ImageCard: React.FC<SlideCardProps> = ({
             onError={(e) => (e.currentTarget.src = '')}
           />
         ) : (
-          <div className="flex h-full w-full items-center justify-center bg-gray-200 text-gray-500">
+          <div className="flex h-full w-full min-h-64 items-center justify-center bg-gray-200 text-gray-500">
             <ImageIcon size={40} />
           </div>
         )}

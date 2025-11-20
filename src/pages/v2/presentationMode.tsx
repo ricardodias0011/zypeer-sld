@@ -27,7 +27,9 @@ export const PresentationMode = () => {
         const scale = viewportWidth / (targetWidth + 32);
         (mainEl.style as any).zoom = scale;
       } else {
-        (mainEl.style as any).zoom = 1;
+        const scale = 1 + ((targetWidth / (viewportWidth + 32)));
+        (mainEl.style as any).zoom = scale;
+        console.log(1 + (targetWidth / viewportWidth))
       }
     };
 
@@ -69,20 +71,20 @@ export const PresentationMode = () => {
 
   return (
     <div className="fixed inset-0 bg-background z-50 flex flex-col">
-      <div className="absolute top-4 right-4 z-10 flex gap-2">
+      <div className="absolute top-4 right-4 z-50 flex gap-2">
         <Button
           variant="ghost"
           size="icon"
           onClick={togglePresentationMode}
-          className="bg-card/80 backdrop-blur hover:bg-card"
+          className="bg-card/80 backdrop-blur hover:bg-card hover:text-gray-700"
         >
           <X className="h-4 w-4" />
         </Button>
       </div>
 
-      <div className="flex-1 flex items-center justify-center overflow-y-auto">
+      <div className="flex-1 flex items-center justify-center overflow-y-auto h-screen">
         <div
-          className="w-full rounded-lg min-h-[600px]"
+          className="w-full overflow-y-auto h-screen"
           style={{
             backgroundColor: currentSlide.bgcolor || 'transparent',
             backgroundImage: currentSlide.backgroundImage
@@ -92,19 +94,18 @@ export const PresentationMode = () => {
             backgroundPosition: 'center',
           }}
         >
-
-          <div className="space-y-6">
-            <div className="aspect-video bg-gray-100 rounded overflow-hidden" ref={slideRef} >
-              <SlideCard
-                addText={() => { }}
-                addImage={() => { }}
-                readOnly
-                key={currentSlide.id}
-                slide={currentSlide}
-                onUpdate={() => { }}
-                onDelete={() => { }}
-              />
-            </div>
+          <div className="aspect-video overflow-y-auto" ref={slideRef} >
+            <SlideCard
+              addText={() => { }}
+              addImage={() => { }}
+              readOnly
+              key={currentSlide.id}
+              slide={currentSlide}
+              onUpdate={() => { }}
+              addColumns={() => { }}
+              addQuote={() => { }}
+              onDelete={() => { }}
+            />
           </div>
         </div>
       </div>

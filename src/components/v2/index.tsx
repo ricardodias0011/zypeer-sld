@@ -12,7 +12,7 @@ import {
   type EditorInstance,
 } from "novel";
 
-import { memo, useEffect, useRef, useState } from "react";
+import { memo, useEffect, useMemo, useRef, useState } from "react";
 import { useDebouncedCallback } from "use-debounce";
 
 import { defaultExtensions } from "./extensions";
@@ -54,6 +54,7 @@ const TailwindAdvancedEditor = ({ slide, onUpdate, contentSlide }: TailwindAdvan
 
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const lastSyncedRef = useRef<string>('');
+  const isInternalUpdateRef = useRef<boolean>(false);
 
   const [colorText, setColorText] = useState("#fff");
 
@@ -72,6 +73,8 @@ const TailwindAdvancedEditor = ({ slide, onUpdate, contentSlide }: TailwindAdvan
     window.localStorage.setItem("markdown", markdown);
     window.localStorage.setItem("novel-content", JSON.stringify(editor.getJSON()));
     window.localStorage.setItem("html-content", highlightCodeblocks(html));
+
+    isInternalUpdateRef.current = true;
     lastSyncedRef.current = markdown;
     setContent(markdown);
     setCanUpdate(true);
@@ -88,14 +91,17 @@ const TailwindAdvancedEditor = ({ slide, onUpdate, contentSlide }: TailwindAdvan
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
 
     timeoutRef.current = setTimeout(() => {
-      const _s = slide.content.filter(a => a.id !== contentSlide?.id);
-      onUpdate(slide.id, "content", [
-        ..._s,
-        {
-          ...(contentSlide as SlideContentType || []),
-          text: content
-        }
-      ]);
+      if (content !== contentSlide?.text) {
+        isInternalUpdateRef.current = true;
+        const _s = slide.content.filter(a => a.id !== contentSlide?.id);
+        onUpdate(slide.id, "content", [
+          ..._s,
+          {
+            ...(contentSlide as SlideContentType || {}),
+            text: content
+          }
+        ]);
+      }
     }, 1500);
 
     return () => {
@@ -103,36 +109,57 @@ const TailwindAdvancedEditor = ({ slide, onUpdate, contentSlide }: TailwindAdvan
         clearTimeout(timeoutRef.current);
       }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [content, canUpdate]);
 
   useEffect(() => {
-    if (contentSlide?.text !== lastSyncedRef.current) {
-      setContent(contentSlide?.text || 'Texto');
-      lastSyncedRef.current = contentSlide?.text || 'Texto';
-    }
-  }, [contentSlide?.text]);
+    if (!editor) return;
 
+    if (isInternalUpdateRef.current) {
+      if (contentSlide?.text === lastSyncedRef.current) {
+        isInternalUpdateRef.current = false;
+      }
+      return;
+    }
+
+    if (contentSlide?.text !== lastSyncedRef.current && contentSlide?.text !== undefined) {
+      const currentContent = editor.storage.markdown.getMarkdown();
+      if (currentContent !== contentSlide?.text) {
+        requestAnimationFrame(() => {
+          if (editor && !editor.isDestroyed) {
+            editor.commands.setContent(contentSlide.text || 'Texto');
+            lastSyncedRef.current = contentSlide.text || 'Texto';
+            setContent(contentSlide.text || 'Texto');
+          }
+        });
+      }
+    }
+  }, [contentSlide?.text, editor]);
+
+  const editorProps = useMemo(() => ({
+    handleDOMEvents: {
+      keydown: (_view: any, event: KeyboardEvent) => handleCommandNavigation(event),
+    },
+    handlePaste: (view: any, event: ClipboardEvent) => handleImagePaste(view, event, uploadFn),
+    handleDrop: (view: any, event: DragEvent, _slice: any, moved: boolean) => handleImageDrop(view, event, moved, uploadFn),
+    attributes: {
+      class:
+        "prose prose-lg dark:prose-invert prose-headings:font-title font-default focus:outline-none max-w-full",
+    },
+  }), []);
 
   return (
     <EditorRoot>
       <EditorContent
         onCreate={({ editor }) => {
           setEditor(editor);
-          editor.commands.setContent(content || "Novo texto");
+          const initialContent = contentSlide?.text || content || "Novo texto";
+          editor.commands.setContent(initialContent);
+          lastSyncedRef.current = initialContent;
         }}
         extensions={extensions}
         className={cn(colorText, "relative w-full max-w-screen-lg bg-background sm:rounded-lg")}
-        editorProps={{
-          handleDOMEvents: {
-            keydown: (_view, event) => handleCommandNavigation(event),
-          },
-          handlePaste: (view, event) => handleImagePaste(view, event, uploadFn),
-          handleDrop: (view, event, _slice, moved) => handleImageDrop(view, event, moved, uploadFn),
-          attributes: {
-            class:
-              "prose prose-lg dark:prose-invert prose-headings:font-title font-default focus:outline-none max-w-full",
-          },
-        }}
+        editorProps={editorProps}
         onUpdate={({ editor }) => {
           if (!slide.readOnly) debouncedUpdates(editor);
         }}
@@ -164,7 +191,6 @@ const TailwindAdvancedEditor = ({ slide, onUpdate, contentSlide }: TailwindAdvan
           </EditorCommandList>
         </EditorCommand>
 
-        {/* ---------------------- Toolbars ---------------------- */}
         <GenerativeMenuSwitch open={openAI} onOpenChange={setOpenAI}>
           <Separator orientation="vertical" />
           <NodeSelector open={openNode} onOpenChange={setOpenNode} />
@@ -180,4 +206,13 @@ const TailwindAdvancedEditor = ({ slide, onUpdate, contentSlide }: TailwindAdvan
   );
 };
 
-export default memo(TailwindAdvancedEditor);
+export default memo(TailwindAdvancedEditor, (prevProps, nextProps) => {
+  const propsEqual = (
+    prevProps.slide.id === nextProps.slide.id &&
+    prevProps.contentSlide?.id === nextProps.contentSlide?.id &&
+    prevProps.contentSlide?.text === nextProps.contentSlide?.text &&
+    prevProps.slide.readOnly === nextProps.slide.readOnly &&
+    prevProps.slide.bgcolor === nextProps.slide.bgcolor
+  );
+  return propsEqual;
+});

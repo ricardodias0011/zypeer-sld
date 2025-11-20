@@ -2,7 +2,7 @@ import type { LayoutType } from '@/types/slide-v2';
 import { v4 } from 'uuid';
 import { create } from 'zustand';
 
-export type SlideType = 'title' | 'content' | 'imageWithText' | 'Quote' | 'Columns';
+export type SlideType = 'type-1';
 
 export interface Slide {
   id: string;
@@ -19,7 +19,7 @@ export interface Slide {
 
 export type SlideContentType = {
   id: string;
-  type: 'text' | 'column' | 'image',
+  type: 'text' | 'column' | 'image' | 'quote',
   text?: string,
   columns?: { direction: 'left' | 'right', text?: string, image?: string, type: 'text' | 'image' }[],
   image?: {
@@ -71,7 +71,7 @@ const createDefaultSlide = (order: number, type: SlideType): Slide => ({
   bgcolor: '#ffffff',
 });
 
-const initialSlides = [createDefaultSlide(0, 'title')];
+const initialSlides = [createDefaultSlide(0, 'type-1')];
 
 export const useSlideStore = create<SlideState>((set, get) => ({
   slides: initialSlides,

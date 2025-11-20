@@ -9,9 +9,20 @@ interface SlideEditor extends Slide {
 
 const Textarea: React.FC<SlideEditor> = React.memo((props) => {
   return (
-    <div className='flex my-8'>
+    <div className='flex my-4'>
       <TailwindAdvancedEditor contentSlide={props.contentSlide} onUpdate={props?.onUpdate || (() => { })} slide={props} />
     </div>
+  );
+}, (prevProps, nextProps) => {
+  // Retorna true se as props são iguais (não precisa re-renderizar)
+  return (
+    prevProps.id === nextProps.id &&
+    prevProps.contentSlide?.id === nextProps.contentSlide?.id &&
+    prevProps.contentSlide?.text === nextProps.contentSlide?.text &&
+    prevProps.readOnly === nextProps.readOnly &&
+    prevProps.bgcolor === nextProps.bgcolor &&
+    prevProps.layout === nextProps.layout &&
+    prevProps.type === nextProps.type
   );
 });
 

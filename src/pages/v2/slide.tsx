@@ -4,7 +4,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/v2/ui/popo
 import { cn, isMobile } from '@/lib/utils';
 import { useSlideStore, type Slide, type SlideContentType } from '@/stores/slideStore';
 import { Image, Palette, Plus, Text, Trash2 } from 'lucide-react';
-import React, { memo, useState } from 'react';
+import React, { memo, useCallback, useState } from 'react';
 import { v4 } from 'uuid';
 import { ImageCard } from './image';
 import StylePopover from './settingsPanel';
@@ -23,6 +23,8 @@ interface SlideCardProps {
   readOnly?: boolean;
   addText: (slide: SlideEditor) => void;
   addImage: (slide: SlideEditor) => void;
+  addColumns: (slide: SlideEditor) => void;
+  addQuote: (slide: SlideEditor) => void;
 }
 
 
@@ -34,9 +36,417 @@ interface ImageWithTextSlideProps {
   readOnly?: boolean;
 }
 
-export const SlideCard = memo(({ slide, onUpdate, onDelete, readOnly, addText, addImage }: SlideCardProps) => {
-  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+interface ColumnsSlideProps {
+  slide: Slide;
+  readOnly?: boolean;
+  onUpdate: (d: string, field: keyof Slide, value: SlideContentType[] | string) => void;
+}
 
+type ColumnItem = {
+  id: string;
+  type: 'text' | 'image';
+  text?: string;
+  image?: { url: string; imageFit?: 'cover' | 'contain' | 'fill' };
+};
+
+type ColumnStyle = {
+  bgcolor?: string;
+  border?: string;
+  hasBorder?: boolean;
+};
+
+const ColumnsSlide: React.FC<ColumnsSlideProps> = memo(({ slide, readOnly, onUpdate }) => {
+  const columnContent = slide.content?.find(c => c.type === 'column');
+  const columns = columnContent?.columns || [];
+
+  const getColumnItems = useCallback((columnIndex: number): ColumnItem[] => {
+    const column = columns[columnIndex];
+    if (!column) return [];
+
+    if ((column as any).items) {
+      return (column as any).items;
+    }
+
+    const items: ColumnItem[] = [];
+    if (column.text) {
+      items.push({
+        id: `${columnContent?.id || 'col'}-${columnIndex}-item-0`,
+        type: 'text',
+        text: column.text
+      });
+    }
+    if (column.image) {
+      items.push({
+        id: `${columnContent?.id || 'col'}-${columnIndex}-item-${items.length}`,
+        type: 'image',
+        image: typeof column.image === 'string' ? { url: column.image } : column.image
+      });
+    }
+    return items;
+  }, [columns, columnContent?.id]);
+
+  const addItemToColumn = useCallback((columnIndex: number, itemType: 'text' | 'image') => {
+    if (!columnContent) return;
+
+    const updatedColumns = [...(columns || [])];
+    if (!updatedColumns[columnIndex]) {
+      updatedColumns[columnIndex] = {
+        direction: columnIndex === 0 ? 'left' : 'right',
+        type: itemType,
+        items: []
+      } as any;
+    }
+
+    const column = updatedColumns[columnIndex];
+    const items = getColumnItems(columnIndex);
+    const newItem: ColumnItem = {
+      id: `${columnContent.id}-${columnIndex}-item-${Date.now()}`,
+      type: itemType,
+      text: itemType === 'text' ? 'Novo texto' : undefined,
+      image: itemType === 'image' ? { url: '' } : undefined
+    };
+
+    (column as any).items = [...items, newItem];
+
+    const otherContent = slide.content.filter(c => c.id !== columnContent.id);
+    const updatedContent = [
+      ...otherContent,
+      {
+        ...columnContent,
+        columns: updatedColumns
+      }
+    ];
+
+    onUpdate(slide.id, 'content', updatedContent);
+  }, [columnContent, columns, slide.content, slide.id, onUpdate, getColumnItems]);
+
+  const updateItem = useCallback((columnIndex: number, itemId: string, updates: Partial<ColumnItem>) => {
+    if (!columnContent) return;
+
+    const updatedColumns = [...(columns || [])];
+    const column = updatedColumns[columnIndex];
+    if (!column) return;
+
+    const items = getColumnItems(columnIndex);
+    const updatedItems = items.map(item =>
+      item.id === itemId ? { ...item, ...updates } : item
+    );
+
+    (column as any).items = updatedItems;
+
+    const otherContent = slide.content.filter(c => c.id !== columnContent.id);
+    const updatedContent = [
+      ...otherContent,
+      {
+        ...columnContent,
+        columns: updatedColumns
+      }
+    ];
+
+    onUpdate(slide.id, 'content', updatedContent);
+  }, [columnContent, columns, slide.content, slide.id, onUpdate, getColumnItems]);
+
+  const deleteItem = useCallback((columnIndex: number, itemId: string) => {
+    if (!columnContent) return;
+
+    const updatedColumns = [...(columns || [])];
+    const column = updatedColumns[columnIndex];
+    if (!column) return;
+
+    const items = getColumnItems(columnIndex);
+    const updatedItems = items.filter(item => item.id !== itemId);
+
+    (column as any).items = updatedItems;
+
+    const otherContent = slide.content.filter(c => c.id !== columnContent.id);
+    const updatedContent = [
+      ...otherContent,
+      {
+        ...columnContent,
+        columns: updatedColumns
+      }
+    ];
+
+    onUpdate(slide.id, 'content', updatedContent);
+  }, [columnContent, columns, slide.content, slide.id, onUpdate, getColumnItems]);
+
+  const getColumnStyle = useCallback((columnIndex: number): ColumnStyle => {
+    const column = columns[columnIndex];
+    if (!column) return {};
+    return {
+      bgcolor: (column as any).bgcolor,
+      border: (column as any).border,
+      hasBorder: (column as any).hasBorder !== false
+    };
+  }, [columns]);
+
+  const updateColumnStyle = useCallback((columnIndex: number, style: Partial<ColumnStyle>) => {
+    if (!columnContent) return;
+
+    const updatedColumns = [...(columns || [])];
+    const column = updatedColumns[columnIndex];
+    if (!column) {
+      updatedColumns[columnIndex] = {
+        direction: columnIndex === 0 ? 'left' : 'right',
+        type: 'text',
+        items: []
+      } as any;
+    }
+
+    const currentStyle = getColumnStyle(columnIndex);
+    (updatedColumns[columnIndex] as any).bgcolor = style.bgcolor !== undefined ? style.bgcolor : currentStyle.bgcolor;
+    (updatedColumns[columnIndex] as any).border = style.border !== undefined ? style.border : currentStyle.border;
+    (updatedColumns[columnIndex] as any).hasBorder = style.hasBorder !== undefined ? style.hasBorder : currentStyle.hasBorder;
+
+    const otherContent = slide.content.filter(c => c.id !== columnContent.id);
+    const updatedContent = [
+      ...otherContent,
+      {
+        ...columnContent,
+        columns: updatedColumns
+      }
+    ];
+
+    onUpdate(slide.id, 'content', updatedContent);
+  }, [columnContent, columns, slide.content, slide.id, onUpdate, getColumnStyle]);
+
+  const handleTextUpdate = useCallback((columnIndex: number, itemId: string, id: string, field: keyof Slide, value: SlideContentType[]) => {
+    if (field === 'content' && Array.isArray(value)) {
+      const updatedTextContent = value.find(v => v.id === id);
+      if (updatedTextContent?.text !== undefined) {
+        updateItem(columnIndex, itemId, { text: updatedTextContent.text });
+      }
+    }
+  }, [updateItem]);
+
+  const ColumnItem: React.FC<{
+    columnIndex: number;
+    items: ColumnItem[];
+    columnStyle: ColumnStyle;
+    readOnly?: boolean;
+  }> = ({ columnIndex, items, columnStyle, readOnly }) => {
+    const [isSelected, setIsSelected] = useState(false);
+    const columnId = `${columnContent?.id || 'col'}-${columnIndex}`;
+
+    return (
+      <div
+        key={columnId}
+        className={cn(
+          "rounded-lg transition-all duration-200",
+          "flex flex-col gap-3 relative",
+          columnStyle.hasBorder && "border-2",
+          !readOnly && "hover:border-red-500/50"
+        )}
+        style={{
+          borderColor: columnStyle.hasBorder ? (columnStyle.border || 'transparent') : 'transparent',
+          backgroundColor: columnStyle.bgcolor || 'transparent'
+        }}
+        onMouseEnter={() => !readOnly && setIsSelected(true)}
+        onMouseLeave={() => !readOnly && setIsSelected(false)}
+        onClick={() => !readOnly && setIsSelected(true)}
+      >
+        {items.length === 0 && !readOnly && (
+          <div className="flex items-center justify-center min-h-[10rem] text-gray-400">
+            <p>Coluna vazia</p>
+          </div>
+        )}
+
+        {items.map((item) => (
+          <div key={item.id} className="rounded-lg">
+            {item.type === 'text' ? (
+              <Textarea
+                {...slide}
+                contentSlide={{
+                  id: item.id,
+                  type: 'text',
+                  text: item.text || ''
+                } as SlideContentType}
+                readOnly={readOnly}
+                onUpdate={(_, field, value) => {
+                  handleTextUpdate(columnIndex, item.id, item.id, field, value);
+                }}
+              />
+            ) : (
+              <ImageCard
+                slide={{
+                  ...slide,
+                  imageFit: item.image?.imageFit || 'cover'
+                }}
+                slideContent={{
+                  id: item.id,
+                  type: 'image',
+                  image: item.image
+                } as SlideContentType}
+                onUpdate={(_id, field, value) => {
+                  if (field === 'imageUrl' && typeof value === 'string') {
+                    updateItem(columnIndex, item.id, {
+                      image: {
+                        url: value,
+                        imageFit: item.image?.imageFit || 'cover'
+                      }
+                    });
+                  } else if (field === 'imageFit') {
+                    updateItem(columnIndex, item.id, {
+                      image: {
+                        url: item.image?.url || '',
+                        imageFit: value as 'cover' | 'contain' | 'fill'
+                      }
+                    });
+                  }
+                }}
+                onDelete={() => deleteItem(columnIndex, item.id)}
+                readOnly={readOnly}
+              />
+            )}
+
+            {/* {!readOnly && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  deleteItem(columnIndex, item.id);
+                }}
+                className="mt-2 h-7 px-2 text-red-500 hover:text-red-700"
+              >
+                <Trash2 size={14} />
+              </Button>
+            )} */}
+          </div>
+        ))}
+
+        {!readOnly && (
+          <>
+            {isSelected && (
+              <div className="absolute top-2 left-2 z-10">
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="default"
+                      size="sm"
+                      className="h-8 w-8 rounded-full p-0 shadow-lg"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <Plus size={16} />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-48 p-2" onClick={(e) => e.stopPropagation()}>
+                    <div className="flex flex-col gap-2">
+                      <Button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          addItemToColumn(columnIndex, 'text');
+                        }}
+                        variant="secondary"
+                        className="flex items-center justify-start gap-3 px-4 py-2"
+                      >
+                        <Text className="w-4 h-4 text-purple-600" />
+                        <span className="text-sm font-medium">Texto</span>
+                      </Button>
+                      <Button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          addItemToColumn(columnIndex, 'image');
+                        }}
+                        variant="secondary"
+                        className="flex items-center justify-start gap-3 px-4 py-2"
+                      >
+                        <Image className="w-4 h-4 text-blue-600" />
+                        <span className="text-sm font-medium">Imagem</span>
+                      </Button>
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              </div>
+            )}
+
+            {isSelected && (
+              <div className="absolute top-2 left-12 z-10">
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="default"
+                      size="sm"
+                      className="h-8 w-8 rounded-full p-0 shadow-lg"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <Palette size={16} />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-64 p-3" onClick={(e) => e.stopPropagation()}>
+                    <div className="space-y-3">
+                      <div>
+                        <label className="text-xs font-medium text-gray-600 mb-1 block">Cor de Fundo</label>
+                        <input
+                          type="color"
+                          value={columnStyle.bgcolor || '#ffffff'}
+                          onChange={(e) => updateColumnStyle(columnIndex, { bgcolor: e.target.value })}
+                          className="w-full h-10 rounded border"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs font-medium text-gray-600 mb-1 block">Cor da Borda</label>
+                        <input
+                          type="color"
+                          value={columnStyle.border || '#ef4444'}
+                          onChange={(e) => updateColumnStyle(columnIndex, { border: e.target.value })}
+                          className="w-full h-10 rounded border"
+                        />
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          id={`border-${columnIndex}`}
+                          checked={columnStyle.hasBorder !== false}
+                          onChange={(e) => updateColumnStyle(columnIndex, { hasBorder: e.target.checked })}
+                          className="rounded"
+                        />
+                        <label htmlFor={`border-${columnIndex}`} className="text-xs font-medium text-gray-600 cursor-pointer">
+                          Mostrar borda
+                        </label>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => updateColumnStyle(columnIndex, { border: undefined, bgcolor: undefined, hasBorder: true })}
+                        className="w-full"
+                      >
+                        Remover Estilos
+                      </Button>
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              </div>
+            )}
+          </>
+        )}
+      </div>
+    );
+  };
+
+  return (
+    <div className="">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 h-fit">
+        {[0, 1].map((columnIndex) => {
+          const items = getColumnItems(columnIndex);
+          const columnStyle = getColumnStyle(columnIndex);
+
+          return (
+            <ColumnItem
+              key={columnIndex}
+              columnIndex={columnIndex}
+              items={items}
+              columnStyle={columnStyle}
+              readOnly={readOnly}
+            />
+          );
+        })}
+      </div>
+    </div>
+  );
+});
+
+export const SlideCard = memo(({ slide, onUpdate, onDelete, readOnly, addText, addImage, addColumns, addQuote }: SlideCardProps) => {
   const mobile = isMobile();
 
   const ht = ['top', 'bottom'].includes(slide?.layout) ? 'h-1/2' : 'h-full';
@@ -57,7 +467,7 @@ export const SlideCard = memo(({ slide, onUpdate, onDelete, readOnly, addText, a
           gridTemplate: '"body accent" minmax(24em, auto) / 62.5% 37.5%',
         }}
         className={cn(
-          !isVertical ? 'grid' : 'flex',
+          'flex',
           'gap-4 relative min-h-[25rem]',
           mobile
             ? 'flex-col sm:flex-row'
@@ -73,61 +483,55 @@ export const SlideCard = memo(({ slide, onUpdate, onDelete, readOnly, addText, a
           className={cn(
             'flex-1 p-6 z-30 w-full',
             ht,
-            slide.type === 'Quote' ? 'border-l-4 border-primary' : 'border-l-4 border-primary'
+            // slide.type === '' ? 'border-l-4 border-primary' : 'border-l-4 border-primary'
           )}
         >
           {
-            slide.content?.filter(a => a.type === 'text').map((t) => (
-              <Textarea {...slide} contentSlide={t as SlideContentType} readOnly={readOnly} onUpdate={onUpdate} />
-            ))
+            slide.content?.map((t) => {
+              if (t.type === 'text') {
+                return (
+                  <Textarea key={t.id} {...slide} contentSlide={t as SlideContentType} readOnly={readOnly} onUpdate={onUpdate} />
+                )
+              }
+              if (t.type === 'image') {
+                return (<ImageCard readOnly={readOnly} slide={slide} slideContent={t} onDelete={() => { }} onUpdate={onUpdate} />)
+              }
+              if (t.type === 'column') {
+                return (
+                  <ColumnsSlide
+                    slide={slide}
+                    readOnly={readOnly}
+                    onUpdate={onUpdate}
+                  />
+                )
+              }
+              if (t.type === 'quote') {
+                return (
+                  <div className="prose prose-sm max-w-none border-l-4 border-blue-500/30 px-4 flex items-center">
+                    <Textarea key={t.id} {...slide} contentSlide={t as SlideContentType} readOnly={readOnly} onUpdate={onUpdate} />
+                  </div>
+                )
+              }
+              return null;
+            })
           }
+
         </div>
-        {
-          slide.content?.filter(a => a.type === 'image').map((t) => (
-            <ImageCard slide={slide} slideContent={t} onDelete={() => { }} onUpdate={onUpdate} />
-          ))
-        }
+
         {/* {slide.layout !== 'empty' ? <ImageCard slide={slide} onDelete={() => { }} onUpdate={onUpdate} /> : null} */}
       </div>
     )
   };
   const RenderInputs = memo(() => {
-    switch (slide.type) {
-      case 'title':
-      case 'content':
-        return (
-          <div className="p-6">
-            {
-              slide.content?.filter(a => a.type === 'text').map((t) => (
-                <Textarea {...slide} contentSlide={t as SlideContentType} readOnly={readOnly} onUpdate={onUpdate} />
-              ))
-            }
-          </div>
-        );
-      case 'Quote':
-        return (
-          <ImageWithTextSlide
-            slide={slide}
-            isVertical={isVertical}
-            mobile={mobile}
-            ht={ht}
-            readOnly={readOnly}
-          />
-        );
-      case 'imageWithText':
-        return (
-          <ImageWithTextSlide
-            slide={slide}
-            isVertical={isVertical}
-            mobile={mobile}
-            ht={ht}
-            readOnly={readOnly}
-          />
-        );
-
-      default:
-        return null;
-    }
+    return (
+      <ImageWithTextSlide
+        slide={slide}
+        isVertical={isVertical}
+        mobile={mobile}
+        ht={ht}
+        readOnly={readOnly}
+      />
+    )
   });
 
   return (
@@ -135,16 +539,15 @@ export const SlideCard = memo(({ slide, onUpdate, onDelete, readOnly, addText, a
       style={{
         backgroundColor: slide.bgcolor
       }}
-      className={cn(readOnly ? 'h-full' : '', "overflow-hidden rounded-xl mb-6 transition-all duration-300 hover:shadow-xl focus-within:shadow-xl focus-within:ring-2 focus-within:ring-blue-500")}>
+      className={cn(readOnly ? 'h-full' : 'rounded-xl hover:shadow-xl focus-within:shadow-xl focus-within:ring-2 focus-within:ring-blue-500', "overflow-hidden mb-6 transition-all duration-300")}>
       <div className={readOnly ? 'h-full' : ''}>
         <RenderInputs />
       </div>
       {readOnly ? null : <div className="border-t border-gray-100 px-6 py-3 flex justify-between items-center bg-gray-50 rounded-b-xl relative">
         <div className="flex items-center gap-2">
           <Popover>
-            <PopoverTrigger>
+            <PopoverTrigger asChild>
               <button
-                onClick={() => setIsPopoverOpen(!isPopoverOpen)}
                 className="flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-blue-600 transition-colors p-1 -ml-1 rounded"
               >
                 <Palette size={22} />
@@ -170,9 +573,8 @@ export const SlideCard = memo(({ slide, onUpdate, onDelete, readOnly, addText, a
             </PopoverContent>
           </Popover>
           <Popover>
-            <PopoverTrigger>
+            <PopoverTrigger asChild>
               <button
-                onClick={() => setIsPopoverOpen(!isPopoverOpen)}
                 className="flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-blue-600 transition-colors p-1 -ml-1 rounded"
               >
                 <Plus size={22} />
@@ -199,12 +601,14 @@ export const SlideCard = memo(({ slide, onUpdate, onDelete, readOnly, addText, a
                 <Button
                   variant="secondary"
                   className="flex items-center justify-start gap-3 px-4 py-0"
+                  onClick={() => addQuote(slide)}
                 >
                   <span className="text-emerald-600 text-xl leading-none">“</span>
                   <span className="text-gray-700 font-medium">Citação</span>
                 </Button>
 
                 <Button
+                  onClick={() => addColumns(slide)}
                   variant="secondary"
                   className="flex items-center justify-start gap-3 px-4 py-0"
                 >
@@ -240,8 +644,8 @@ export const SlideCard = memo(({ slide, onUpdate, onDelete, readOnly, addText, a
 
 
 const App: React.FC = () => {
-  const { slides, updateSlide, deleteSlide, addSlide } = useSlideStore();
-
+  const { slides, updateSlide, deleteSlide } = useSlideStore();
+  const sortedSlides = [...slides].sort((a, b) => a.order - b.order);
 
   const handleDeleteSlide = (id: string) => {
     deleteSlide(id);
@@ -272,10 +676,25 @@ const App: React.FC = () => {
     [updateSlide]
   );
 
+  const addQuote = React.useCallback(
+    (slide: SlideEditor) => {
+      updateSlide(slide.id, {
+        content: [
+          ...slide.content,
+          {
+            type: 'quote',
+            text: '*Nova citação*',
+            id: v4().slice(0, 10),
+          }
+        ],
+      });
+    },
+    [updateSlide]
+  );
   const addImage = React.useCallback(
     (slide: SlideEditor) => {
       updateSlide(slide.id, {
-        type: 'imageWithText',
+        type: 'type-1',
         content: [
           ...slide.content,
           {
@@ -289,9 +708,36 @@ const App: React.FC = () => {
     [updateSlide]
   );
 
+  const addColumns = React.useCallback(
+    (slide: SlideEditor) => {
+      updateSlide(slide.id, {
+        content: [
+          ...(slide.content || []),
+          {
+            type: 'column',
+            id: v4().slice(0, 10),
+            columns: [
+              {
+                direction: 'left',
+                type: 'text',
+                text: 'Coluna 1'
+              },
+              {
+                direction: 'right',
+                type: 'text',
+                text: 'Coluna 2'
+              }
+            ]
+          }
+        ],
+      });
+    },
+    [updateSlide]
+  );
+
   return (
     <div className='w-6xl'>
-      {slides?.map((slide, _index) => (
+      {sortedSlides?.map((slide, _index) => (
         <SlideCard
           key={slide.id}
           slide={slide}
@@ -299,6 +745,8 @@ const App: React.FC = () => {
           onDelete={handleDeleteSlide}
           addText={addText}
           addImage={addImage}
+          addColumns={addColumns}
+          addQuote={addQuote}
         />
       ))}
       {/* <AddSlideToolbar onAddSlide={handleAddSlide} /> */}

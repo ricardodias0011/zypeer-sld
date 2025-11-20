@@ -66,16 +66,20 @@ const SlideThumbnail = ({ slide }: { slide: Slide }) => {
             readOnly
             key={slide.id}
             slide={slide}
+            addColumns={() => { }}
+            addImage={() => { }}
+            addText={() => { }}
+            addQuote={() => { }}
             onUpdate={() => { }}
             onDelete={() => { }}
           /> : <></>
         }
       </div>
-      <div className="text-sm font-medium absolute bottom-2 text-foreground truncate p-2 bg-gray-200 w-8 h-8 rounded-md text-center">
+      <div className="text-sm font-medium z-50 absolute bottom-2 left-2 text-foreground truncate p-2 bg-gray-200 w-8 h-8 rounded-md text-center">
         {slide.order + 1}
       </div>
 
-      <div className="flex gap-1 absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+      <div className="flex gap-1 absolute z-50 bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
         <Button
           variant="default"
           size="icon"
@@ -123,7 +127,7 @@ export const SlidesPanel = () => {
       <div className="p-4 w-full">
         <div className='px-2 w-full'>
           <Button onClick={() => {
-            addSlide('imageWithText');
+            addSlide('type-1');
           }} className='mb-4 w-full px-1 py-1 pr-0' variant={'secondary'}>Novo</Button>
         </div>
         <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
