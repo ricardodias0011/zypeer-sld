@@ -538,10 +538,12 @@ export const SlideCard = memo(({ slide, onUpdate, onDelete, readOnly, addText, a
               }
               if (t.type === 'quote') {
                 return (
-                  <div className="prose p-6 prose-sm max-w-none border-l-4 border-blue-500/30 px-4 flex items-center">
-                    <Textarea
-                      onDelete={(id) => { onDeleteItem(t.id) }}
-                      key={t.id} {...slide} contentSlide={t as SlideContentType} readOnly={readOnly} onUpdate={onUpdate} />
+                  <div className='p-6 '>
+                    <div className="prose prose-sm max-w-none border-l-4 border-blue-500/30 px-4 flex items-center">
+                      <Textarea
+                        onDelete={(id) => { onDeleteItem(t.id) }}
+                        key={t.id} {...slide} contentSlide={t as SlideContentType} readOnly={readOnly} onUpdate={onUpdate} />
+                    </div>
                   </div>
                 )
               }

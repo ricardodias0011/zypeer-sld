@@ -490,7 +490,7 @@ export const ImageCard: React.FC<SlideCardProps> = ({
       <div
         className={cn(
           'relative flex-1 cursor-pointer sm:mt-0 w-full flex items-center justify-center',
-          slideContent.image?.imageFit === 'contain' ? 'p-[1.5em] background-blur-contain' :
+          slideContent.image?.imageFit === 'contain' ? 'p-[1.5em] background-blur-contain max-h-96' :
             slideContent.image?.imageFit === 'cover' ? 'p-6' : '',
           ht,
           slide.layout === 'full' ? 'absolute opacity-35' : '',
