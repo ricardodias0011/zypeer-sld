@@ -82,6 +82,7 @@ const TailwindAdvancedEditor = ({ slide, onUpdate, contentSlide, onDelete }: Tai
   }, 500);
 
   useEffect(() => {
+
     const type = textColorFromHex(slide.bgcolor ?? "#fff");
     setColorText(type === "dark" ? "text-zinc-800" : "text-zinc-100");
   }, [slide.bgcolor]);

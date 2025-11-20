@@ -449,6 +449,7 @@ const ColumnsSlide: React.FC<ColumnsSlideProps> = memo(({ slide, readOnly, onUpd
 
 export const SlideCard = memo(({ slide, onUpdate, onDelete, readOnly, addText, addImage, addColumns, addQuote }: SlideCardProps) => {
   const mobile = isMobile();
+  const sortedContentSlides = [...slide.content].sort((a, b) => a.order - b.order);
 
   const ht = ['top', 'bottom'].includes(slide?.layout) ? 'h-1/2' : 'h-full';
 
@@ -501,37 +502,43 @@ export const SlideCard = memo(({ slide, onUpdate, onDelete, readOnly, addText, a
       >
         <div
           className={cn(
-            'flex-1 p-6 z-30 w-full',
+            'flex-1 z-30 w-full',
             ht,
             // slide.type === '' ? 'border-l-4 border-primary' : 'border-l-4 border-primary'
           )}
         >
           {
-            slide.content?.map((t) => {
+            sortedContentSlides?.map((t) => {
               if (t.type === 'text') {
                 return (
-                  <Textarea key={t.id} {...slide} contentSlide={t as SlideContentType} readOnly={readOnly} onUpdate={onUpdate}
-                    onDelete={(id) => { onDeleteItem(t.id) }}
-                  />
+                  <div className='p-6'>
+                    <Textarea key={t.id} {...slide} contentSlide={t as SlideContentType} readOnly={readOnly} onUpdate={onUpdate}
+                      onDelete={(id) => { onDeleteItem(t.id) }}
+                    />
+                  </div>
                 )
               }
               if (t.type === 'image') {
-                return (<ImageCard readOnly={readOnly} slide={slide} slideContent={t}
-                  onDelete={(id) => { onDeleteItem(t.id) }}
-                  onUpdate={onUpdate} />)
+                return (
+                  <ImageCard readOnly={readOnly} slide={slide} slideContent={t}
+                    onDelete={(id) => { onDeleteItem(t.id) }}
+                    onUpdate={onUpdate} />
+                )
               }
               if (t.type === 'column') {
                 return (
-                  <ColumnsSlide
-                    slide={slide}
-                    readOnly={readOnly}
-                    onUpdate={onUpdate}
-                  />
+                  <div className='p-6'>
+                    <ColumnsSlide
+                      slide={slide}
+                      readOnly={readOnly}
+                      onUpdate={onUpdate}
+                    />
+                  </div>
                 )
               }
               if (t.type === 'quote') {
                 return (
-                  <div className="prose prose-sm max-w-none border-l-4 border-blue-500/30 px-4 flex items-center">
+                  <div className="prose p-6 prose-sm max-w-none border-l-4 border-blue-500/30 px-4 flex items-center">
                     <Textarea
                       onDelete={(id) => { onDeleteItem(t.id) }}
                       key={t.id} {...slide} contentSlide={t as SlideContentType} readOnly={readOnly} onUpdate={onUpdate} />
@@ -695,6 +702,7 @@ const App: React.FC = () => {
             type: 'text',
             text: 'Novo texto',
             id: v4().slice(0, 10),
+            order: slide.content.length + 1
           },
         ],
       });
@@ -711,6 +719,7 @@ const App: React.FC = () => {
             type: 'quote',
             text: '*Nova citação*',
             id: v4().slice(0, 10),
+            order: slide.content.length + 1
           }
         ],
       });
@@ -727,6 +736,7 @@ const App: React.FC = () => {
             type: 'image',
             text: '',
             id: v4().slice(0, 10),
+            order: slide.content.length + 1
           },
         ],
       });
@@ -742,6 +752,7 @@ const App: React.FC = () => {
           {
             type: 'column',
             id: v4().slice(0, 10),
+            order: slide.content.length + 1,
             columns: [
               {
                 direction: 'left',

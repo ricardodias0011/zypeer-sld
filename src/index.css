@@ -199,7 +199,6 @@ ul[data-type="taskList"] li[data-checked="true"]>div>p {
   text-decoration-thickness: 2px;
 }
 
-/* Overwrite tippy-box original max-width */
 
 .tippy-box {
   max-width: 400px !important;
@@ -210,4 +209,25 @@ ul[data-type="taskList"] li[data-checked="true"]>div>p {
   background-color: var(--novel-highlight-blue);
   transition: background-color 0.2s;
   box-shadow: none;
+}
+
+.background-blur-contain {
+  position: relative;
+  overflow: hidden;
+}
+
+.background-blur-contain::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: -1;
+
+  background-image: var(--image-url);
+  background-size: cover;
+  background-repeat: no-repeat;
+
+  filter: blur(10px);
 }

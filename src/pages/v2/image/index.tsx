@@ -1,4 +1,5 @@
 import { cn } from '@/lib/utils';
+import { AssetsService } from '@/services/assets';
 import type { Slide, SlideContentType } from '@/stores/slideStore';
 import {
   Crop,
@@ -6,14 +7,13 @@ import {
   Maximize,
   Replace,
   Scale,
+  Shrink,
   Sparkles,
   Trash2,
   Upload,
   X
 } from 'lucide-react';
 import React, { useEffect, useRef, useState } from 'react';
-
-type SlideLayout = 'left' | 'right' | 'top' | 'bottom' | 'full';
 
 interface SlideCardProps {
   slide: Slide;
@@ -149,7 +149,9 @@ const GenerateAIModal: React.FC<{
 const ReplaceModal: React.FC<{
   onClose: () => void;
   onReplace: (file: File) => void;
-}> = ({ onClose, onReplace }) => {
+  isLoading: boolean;
+}> = ({ onClose, onReplace, isLoading }) => {
+
   const [file, setFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -184,7 +186,6 @@ const ReplaceModal: React.FC<{
   const handleUpload = () => {
     if (file) {
       onReplace(file);
-      onClose();
     }
   };
 
@@ -225,12 +226,17 @@ const ReplaceModal: React.FC<{
         >
           Cancelar
         </button>
+
         <button
           onClick={handleUpload}
-          disabled={!file}
+          disabled={!file || isLoading}
           className="rounded-lg bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700 disabled:bg-blue-300"
         >
-          Substituir
+          {isLoading ? (
+            <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+          ) : (
+            'Substituir'
+          )}
         </button>
       </div>
     </div>
@@ -341,6 +347,8 @@ export const ImageCard: React.FC<SlideCardProps> = ({
   readOnly,
   slideContent
 }) => {
+  const [isLoading, setIsLoading] = useState(false);
+
   const [activeModal, setActiveModal] = useState<
     'generate' | 'replace' | 'adjust' | 'delete' | null
   >(null);
@@ -366,22 +374,57 @@ export const ImageCard: React.FC<SlideCardProps> = ({
 
 
   const handleGenerateImageAction = (prompt: string) => {
-    console.log('Gerando imagem com prompt:', prompt);
-    onUpdate(slide.id, 'imageUrl', `https://placehold.co/600x400/random/white?text=IA:${prompt.substring(
-      0,
-      10
-    )}`);
+    console.log(slide.content)
+    onUpdate(slide.id, 'content', [
+      ...slide.content.filter(a => a.id !== slideContent.id),
+      {
+        ...slideContent,
+        image: {
+          url: `https://placehold.co/600x400/random/white?text=IA:${prompt.substring(
+            0,
+            10
+          )}`
+        }
+      }
+    ]);
   };
 
-  const handleReplaceImageAction = (file: File) => {
-    console.log('Substituindo imagem por:', file.name);
-    // Criar uma URL local para preview
-    const newUrl = URL.createObjectURL(file);
-    onUpdate(slide.id, 'imageUrl', newUrl);
+  const handleReplaceImageAction = async (file: File) => {
+    setIsLoading(true);
+    try {
+      if (!file) return;
+      const { data } = await AssetsService.upload(file, "assets")
+      let link = data?.link || URL.createObjectURL(file);
+      onUpdate(slide.id, 'content', [
+        ...slide.content.filter(a => a.id !== slideContent.id),
+        {
+          ...slideContent,
+          image: {
+            imageFit: slideContent.image?.imageFit || 'contain',
+            url: link
+          }
+        }
+      ]);
+    } catch (err) {
+      console.log(err)
+    }
+    finally {
+      setIsLoading(false);
+    }
   };
 
   const handleAdjustImageAction = (fit: Slide['imageFit']) => {
     console.log('Ajustando fit para:', fit);
+    onUpdate(slide.id, 'content', [
+      ...slide.content.filter(a => a.id !== slideContent.id),
+      {
+        ...slideContent,
+        image: {
+          imageFit: fit || 'contain',
+          url: slideContent.image?.url || ''
+        }
+      }
+    ]);
     onUpdate(slide.id, 'imageFit', fit);
   };
 
@@ -420,7 +463,7 @@ export const ImageCard: React.FC<SlideCardProps> = ({
             onClick={onAdjust}
             className="rounded p-1.5 text-gray-700 hover:bg-gray-100"
           >
-            <Scale size={20} />
+            <Shrink size={20} />
           </button>
         </Tooltip>
         <Tooltip content="Excluir imagem">
@@ -440,16 +483,24 @@ export const ImageCard: React.FC<SlideCardProps> = ({
       if (activeModal) {
         setIsToolbarVisible(false);
       }
+      console.log('slideContent.image?.imageFit: ', slideContent.image?.imageFit)
     }, [activeModal]);
 
     return (
       <div
         className={cn(
-          'relative mt-2 flex-1 cursor-pointer sm:mt-0 w-full',
+          'relative flex-1 cursor-pointer sm:mt-0 w-full flex items-center justify-center',
+          slideContent.image?.imageFit === 'contain' ? 'p-[1.5em] background-blur-contain' :
+            slideContent.image?.imageFit === 'cover' ? 'p-6' : '',
           ht,
           slide.layout === 'full' ? 'absolute opacity-35' : '',
           (isToolbarVisible && !readOnly) ? 'border-4 border-blue-400' : '',
         )}
+        style={{
+          '--image-url': slideContent.image?.imageFit === 'contain'
+            ? `url(${slideContent.image?.url})`
+            : 'none',
+        }}
         onClick={() => setIsToolbarVisible((prev) => !prev)}
       >
         {!readOnly && isToolbarVisible && (
@@ -465,17 +516,26 @@ export const ImageCard: React.FC<SlideCardProps> = ({
             src={slideContent.image?.url}
             alt="Preview"
             className={cn(
-              'h-full min-h-60 w-full bg-gray-100',
-              slide.imageFit === 'contain'
-                ? 'object-contain'
-                : slide.imageFit === 'fill'
+              'h-full min-h-60 w-full bg-gray-100 text-gray-600 flex items-center justify-center',
+              slideContent.image?.imageFit === 'contain'
+                ? 'object-contain max-w-80 rounded-lg'
+                : slideContent.image?.imageFit === 'fill'
                   ? 'object-fill'
-                  : 'object-cover' // 'cover' é o padrão
+                  : 'object-cover'
             )}
             onError={(e) => (e.currentTarget.src = '')}
           />
         ) : (
-          <div className="flex h-full w-full min-h-64 items-center justify-center bg-gray-200 text-gray-500">
+          <div
+            className={cn(
+              'h-full min-h-60 w-full bg-gray-100 text-gray-600 flex items-center justify-center',
+              slideContent.image?.imageFit === 'contain'
+                ? 'object-contain max-w-80'
+                : slideContent.image?.imageFit === 'fill'
+                  ? 'object-fill'
+                  : 'object-cover'
+            )}
+          >
             <ImageIcon size={40} />
           </div>
         )}
@@ -502,6 +562,7 @@ export const ImageCard: React.FC<SlideCardProps> = ({
           <ReplaceModal
             onClose={() => setActiveModal(null)}
             onReplace={handleReplaceImageAction}
+            isLoading={isLoading}
           />
         </Modal>
       )}

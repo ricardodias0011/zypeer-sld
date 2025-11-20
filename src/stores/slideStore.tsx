@@ -28,6 +28,7 @@ export type SlideContentType = {
   },
   border?: string;
   bgcolor?: string;
+  order: number;
 }
 
 interface SlideState {
@@ -65,7 +66,8 @@ const createDefaultSlide = (order: number, type: SlideType): Slide => ({
   content: [{
     type: 'text',
     text: '# Clique para editar o conteúdo...',
-    id: v4().slice(0, 10)
+    id: v4().slice(0, 10),
+    order: 1
   }],
   imageUrl: '',
   bgcolor: '#ffffff',
