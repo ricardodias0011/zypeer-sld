@@ -39,14 +39,17 @@ export const PresentationMode = () => {
 
   }, []);
 
-  const currentSlide = slides.find(s => s.id === currentSlideId) || slides[0];
-  const currentIndex = slides.findIndex(s => s.id === currentSlide?.id);
+
+  const sortedCards = slides.sort((a, b) => a.order - b.order);
+
+  const currentSlide = sortedCards.find(s => s.id === currentSlideId) || sortedCards[0];
+  const currentIndex = sortedCards.findIndex(s => s.id === currentSlide?.id);
 
   useEffect(() => {
-    if (!currentSlideId && slides.length > 0) {
-      setCurrentSlide(slides[0].id);
+    if (!currentSlideId && sortedCards.length > 0) {
+      setCurrentSlide(sortedCards[0].id);
     }
-  }, [currentSlideId, slides, setCurrentSlide]);
+  }, [currentSlideId, sortedCards, setCurrentSlide]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -67,7 +70,6 @@ export const PresentationMode = () => {
 
   if (!currentSlide) return null;
 
-  const sortedCards = slides.sort((a, b) => a.order - b.order);
 
   return (
     <div className="fixed inset-0 bg-background z-50 flex flex-col">
@@ -94,7 +96,7 @@ export const PresentationMode = () => {
             backgroundPosition: 'center',
           }}
         >
-          <div className="aspect-video overflow-y-auto h-screen" ref={slideRef} >
+          <div className="aspect-video overflow-y-auto" ref={slideRef} >
             <SlideCard
               addText={() => { }}
               addImage={() => { }}

@@ -13,7 +13,7 @@ import {
   Upload,
   X
 } from 'lucide-react';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 interface SlideCardProps {
   slide: Slide;
@@ -33,6 +33,13 @@ interface ImageToolbarProps {
 interface ImagePreviewProps {
   slide: Slide;
   ht: string;
+  slideContent: SlideContentType;
+  readOnly?: boolean;
+  activeModal: 'generate' | 'replace' | 'adjust' | 'delete' | null;
+  onGenerateAI: (e: React.MouseEvent) => void;
+  onDelete: (e: React.MouseEvent) => void;
+  onReplace: (e: React.MouseEvent) => void;
+  onAdjust: (e: React.MouseEvent) => void;
 }
 
 const Tooltip: React.FC<{ content: string; children: React.ReactNode }> = ({
@@ -340,7 +347,7 @@ const DeleteModal: React.FC<{
 };
 
 
-export const ImageCard: React.FC<SlideCardProps> = ({
+export const ImageCard: React.FC<SlideCardProps> = memo(({
   slide,
   onUpdate,
   onDelete,
@@ -353,28 +360,29 @@ export const ImageCard: React.FC<SlideCardProps> = ({
     'generate' | 'replace' | 'adjust' | 'delete' | null
   >(null);
 
-  const ht = ['top', 'bottom'].includes(slide?.layout) ? 'h-1/2' : 'h-full';
+  const ht = useMemo(() => ['top', 'bottom'].includes(slide?.layout) ? 'h-1/2' : 'h-full', [slide?.layout]);
 
-  const handleGenerateAI = (e: React.MouseEvent) => {
+  const handleGenerateAI = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
     setActiveModal('generate');
-  };
-  const handleDeleteImage = (e: React.MouseEvent) => {
+  }, []);
+
+  const handleDeleteImage = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
     setActiveModal('delete');
-  };
-  const handleReplace = (e: React.MouseEvent) => {
+  }, []);
+
+  const handleReplace = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
     setActiveModal('replace');
-  };
-  const handleAdjust = (e: React.MouseEvent) => {
+  }, []);
+
+  const handleAdjust = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
     setActiveModal('adjust');
-  };
+  }, []);
 
-
-  const handleGenerateImageAction = (prompt: string) => {
-    console.log(slide.content)
+  const handleGenerateImageAction = useCallback((prompt: string) => {
     onUpdate(slide.id, 'content', [
       ...slide.content.filter(a => a.id !== slideContent.id),
       {
@@ -387,9 +395,9 @@ export const ImageCard: React.FC<SlideCardProps> = ({
         }
       }
     ]);
-  };
+  }, [slide.id, slide.content, slideContent, onUpdate]);
 
-  const handleReplaceImageAction = async (file: File) => {
+  const handleReplaceImageAction = useCallback(async (file: File) => {
     setIsLoading(true);
     try {
       if (!file) return;
@@ -406,15 +414,14 @@ export const ImageCard: React.FC<SlideCardProps> = ({
         }
       ]);
     } catch (err) {
-      console.log(err)
+      console.error(err)
     }
     finally {
       setIsLoading(false);
     }
-  };
+  }, [slide.id, slide.content, slideContent, onUpdate]);
 
-  const handleAdjustImageAction = (fit: Slide['imageFit']) => {
-    console.log('Ajustando fit para:', fit);
+  const handleAdjustImageAction = useCallback((fit: Slide['imageFit']) => {
     onUpdate(slide.id, 'content', [
       ...slide.content.filter(a => a.id !== slideContent.id),
       {
@@ -425,14 +432,15 @@ export const ImageCard: React.FC<SlideCardProps> = ({
         }
       }
     ]);
-    onUpdate(slide.id, 'imageFit', fit);
-  };
+  }, [slide.id, slide.content, slideContent, onUpdate]);
 
-  const handleDeleteImageAction = () => {
+  const handleDeleteImageAction = useCallback(() => {
     onDelete(slide.id);
-  };
+  }, [onDelete, slide.id]);
 
-  const ImageToolbar = ({
+  console.log('refresh')
+
+  const ImageToolbar = memo(({
     onGenerateAI,
     onDelete,
     onReplace,
@@ -475,15 +483,25 @@ export const ImageCard: React.FC<SlideCardProps> = ({
           </button>
         </Tooltip>
       </div>
-    );
+    ));
 
-  const ImagePreview: React.FC<ImagePreviewProps> = ({ slide, ht }) => {
+  const ImagePreview: React.FC<ImagePreviewProps> = memo(({
+    slide,
+    ht,
+    slideContent,
+    readOnly,
+    activeModal,
+    onGenerateAI,
+    onDelete,
+    onReplace,
+    onAdjust
+  }) => {
     const [isToolbarVisible, setIsToolbarVisible] = useState(false);
+
     useEffect(() => {
       if (activeModal) {
         setIsToolbarVisible(false);
       }
-      console.log('slideContent.image?.imageFit: ', slideContent.image?.imageFit)
     }, [activeModal]);
 
     return (
@@ -500,15 +518,15 @@ export const ImageCard: React.FC<SlideCardProps> = ({
           '--image-url': slideContent.image?.imageFit === 'contain'
             ? `url(${slideContent.image?.url})`
             : 'none',
-        }}
+        } as React.CSSProperties}
         onClick={() => setIsToolbarVisible((prev) => !prev)}
       >
         {!readOnly && isToolbarVisible && (
           <ImageToolbar
-            onGenerateAI={handleGenerateAI}
-            onDelete={handleDeleteImage}
-            onReplace={handleReplace}
-            onAdjust={handleAdjust}
+            onGenerateAI={onGenerateAI}
+            onDelete={onDelete}
+            onReplace={onReplace}
+            onAdjust={onAdjust}
           />
         )}
         {slideContent.image?.url ? (
@@ -541,11 +559,34 @@ export const ImageCard: React.FC<SlideCardProps> = ({
         )}
       </div>
     );
-  };
+  }, (prevProps, nextProps) => {
+    return (
+      prevProps.slide.id === nextProps.slide.id &&
+      prevProps.slide.layout === nextProps.slide.layout &&
+      prevProps.ht === nextProps.ht &&
+      prevProps.slideContent.id === nextProps.slideContent.id &&
+      prevProps.slideContent.image?.url === nextProps.slideContent.image?.url &&
+      prevProps.slideContent.image?.imageFit === nextProps.slideContent.image?.imageFit &&
+      prevProps.readOnly === nextProps.readOnly &&
+      prevProps.activeModal === nextProps.activeModal
+    );
+  });
+
+  const imageFit = slideContent.image?.imageFit;
 
   return (
     <>
-      <ImagePreview slide={slide} ht={ht} />
+      <ImagePreview
+        slide={slide}
+        ht={ht}
+        slideContent={slideContent}
+        readOnly={readOnly}
+        activeModal={activeModal}
+        onGenerateAI={handleGenerateAI}
+        onDelete={handleDeleteImage}
+        onReplace={handleReplace}
+        onAdjust={handleAdjust}
+      />
       {activeModal === 'generate' && (
         <Modal
           title="Gerar Imagem com IA"
@@ -570,7 +611,7 @@ export const ImageCard: React.FC<SlideCardProps> = ({
         <Modal title="Ajustar Imagem" onClose={() => setActiveModal(null)}>
           <AdjustModal
             onClose={() => setActiveModal(null)}
-            currentFit={slide.imageFit}
+            currentFit={imageFit || slide.imageFit}
             onAdjust={handleAdjustImageAction}
           />
         </Modal>
@@ -585,4 +626,15 @@ export const ImageCard: React.FC<SlideCardProps> = ({
       )}
     </>
   );
-};
+}, (prevProps, nextProps) => {
+  // Comparação personalizada para evitar re-renderizações desnecessárias
+  return (
+    prevProps.slide.id === nextProps.slide.id &&
+    prevProps.slide.layout === nextProps.slide.layout &&
+    prevProps.slide.imageFit === nextProps.slide.imageFit &&
+    prevProps.slideContent.id === nextProps.slideContent.id &&
+    prevProps.slideContent.image?.url === nextProps.slideContent.image?.url &&
+    prevProps.slideContent.image?.imageFit === nextProps.slideContent.image?.imageFit &&
+    prevProps.readOnly === nextProps.readOnly
+  );
+});
