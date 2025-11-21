@@ -20,7 +20,13 @@ interface SlideCardProps {
   onUpdate: (d: string, field: keyof Slide, value: any) => void;
   onDelete: (id: string) => void;
   readOnly?: boolean;
-  slideContent: SlideContentType
+  slideContent: SlideContentType,
+  isColumn?: boolean;
+  contentId?: string;
+  columnId?: string;
+  content: SlideContentType[];
+  direction?: 'right' | 'left';
+  imageIFit?: 'cover' | 'contain' | 'fill';
 }
 
 interface ImageToolbarProps {
@@ -352,7 +358,12 @@ export const ImageCard: React.FC<SlideCardProps> = memo(({
   onUpdate,
   onDelete,
   readOnly,
-  slideContent
+  slideContent,
+  isColumn,
+  contentId,
+  columnId,
+  direction,
+  imageIFit
 }) => {
   const [isLoading, setIsLoading] = useState(false);
 
@@ -400,17 +411,40 @@ export const ImageCard: React.FC<SlideCardProps> = memo(({
   const handleReplaceImageAction = useCallback(async (file: File) => {
     setIsLoading(true);
     try {
+      const currentSlide = slide.content.find(a => a.id === contentId)
+      const currentColunm = isColumn ? currentSlide?.columns?.find(e => e.id === columnId) : null;
+
       if (!file) return;
-      const { data } = await AssetsService.upload(file, "assets")
+      const { data } = await AssetsService.upload(file, "assets");
+
       let link = data?.link || URL.createObjectURL(file);
       onUpdate(slide.id, 'content', [
-        ...slide.content.filter(a => a.id !== slideContent.id),
+        ...slide.content.filter(a => a.id !== contentId),
         {
-          ...slideContent,
-          image: {
-            imageFit: slideContent.image?.imageFit || 'contain',
-            url: link
-          }
+          ...currentSlide,
+          ...(isColumn ? {
+            columns: [...currentSlide?.columns?.filter(a => a.id !== columnId) || [], {
+              id: columnId,
+              type: 'image',
+              items: [
+                ...(currentColunm?.items ?? []).filter((a: any) => a.id !== slideContent.id),
+                {
+                  id: slideContent.id,
+                  "type": "image",
+                  image: {
+                    url: link,
+                    imageFit: imageIFit || 'contain'
+                  },
+                }
+              ],
+              direction: direction || '',
+            }]
+          } : {
+            image: {
+              imageFit: slideContent.image?.imageFit || 'contain',
+              url: link
+            }
+          }),
         }
       ]);
     } catch (err) {
@@ -422,6 +456,34 @@ export const ImageCard: React.FC<SlideCardProps> = memo(({
   }, [slide.id, slide.content, slideContent, onUpdate]);
 
   const handleAdjustImageAction = useCallback((fit: Slide['imageFit']) => {
+    const currentSlide = slide.content.find(a => a.id === contentId)
+    const currentColunm = isColumn ? currentSlide?.columns?.find(e => e.id === columnId) : null;
+    if (isColumn) {
+      onUpdate(slide.id, 'content', [
+        ...slide.content.filter(a => a.id !== contentId),
+        {
+          ...currentSlide,
+          columns: [...currentSlide?.columns?.filter(a => a.id !== columnId) || [], {
+            id: columnId,
+            type: 'image',
+            items: [
+              ...(currentColunm?.items ?? []).filter((a: any) => a.id !== slideContent.id),
+              {
+                id: slideContent.id,
+                "type": "image",
+                image: {
+                  url: slideContent.image?.url,
+                  imageFit: fit
+                },
+              }
+            ],
+            direction: direction || '',
+          }]
+        }
+      ]);
+
+      return
+    }
     onUpdate(slide.id, 'content', [
       ...slide.content.filter(a => a.id !== slideContent.id),
       {

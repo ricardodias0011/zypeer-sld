@@ -27,7 +27,6 @@ interface SlideCardProps {
   addQuote: (slide: SlideEditor) => void;
 }
 
-
 interface ImageWithTextSlideProps {
   slide: Slide;
   isVertical: boolean;
@@ -38,6 +37,7 @@ interface ImageWithTextSlideProps {
 
 interface ColumnsSlideProps {
   slide: Slide;
+  id: string;
   readOnly?: boolean;
   onUpdate: (d: string, field: keyof Slide, value: SlideContentType[] | string) => void;
 }
@@ -55,8 +55,8 @@ type ColumnStyle = {
   hasBorder?: boolean;
 };
 
-const ColumnsSlide: React.FC<ColumnsSlideProps> = memo(({ slide, readOnly, onUpdate }) => {
-  const columnContent = slide.content?.find(c => c.type === 'column');
+const ColumnsSlide: React.FC<ColumnsSlideProps> = memo(({ slide, readOnly, onUpdate, id }) => {
+  const columnContent = slide.content?.find(c => c.id === id);
   const columns = columnContent?.columns || [];
 
   const getColumnItems = useCallback((columnIndex: number): ColumnItem[] => {
@@ -224,9 +224,11 @@ const ColumnsSlide: React.FC<ColumnsSlideProps> = memo(({ slide, readOnly, onUpd
     items: ColumnItem[];
     columnStyle: ColumnStyle;
     readOnly?: boolean;
-  }> = ({ columnIndex, items, columnStyle, readOnly }) => {
+    columnId: string;
+    contentId: string;
+    direction: 'right' | 'left';
+  }> = ({ columnIndex, items, columnStyle, readOnly, columnId, direction }) => {
     const [isSelected, setIsSelected] = useState(false);
-    const columnId = `${columnContent?.id || 'col'}-${columnIndex}`;
 
     return (
       <div
@@ -273,11 +275,18 @@ const ColumnsSlide: React.FC<ColumnsSlideProps> = memo(({ slide, readOnly, onUpd
                   ...slide,
                   imageFit: item.image?.imageFit || 'cover'
                 }}
+                contentId={id}
+                isColumn
+                columnId={columnId}
+                imageIFit={item.image?.imageFit}
+                content={slide.content}
+                direction={direction}
                 slideContent={{
-                  id: item.id,
-                  type: 'image',
-                  image: item.image
-                } as SlideContentType}
+                  image: item.image,
+                  order: slide.order,
+                  items: items,
+                  ...item
+                }}
                 onUpdate={(_id, field, value) => {
                   if (field === 'imageUrl' && typeof value === 'string') {
                     updateItem(columnIndex, item.id, {
@@ -293,6 +302,10 @@ const ColumnsSlide: React.FC<ColumnsSlideProps> = memo(({ slide, readOnly, onUpd
                         imageFit: value as 'cover' | 'contain' | 'fill'
                       }
                     });
+                  }
+                  else {
+                    console.log(_id, field, value)
+                    onUpdate(_id, field, value)
                   }
                 }}
                 onDelete={() => deleteItem(columnIndex, item.id)}
@@ -424,21 +437,35 @@ const ColumnsSlide: React.FC<ColumnsSlideProps> = memo(({ slide, readOnly, onUpd
       </div>
     );
   };
+  const sortedColumnIndexes = columns
+    .map((_, index) => index)
+    .sort((a, b) => {
+      const dirA = columns[a]?.direction === 'left' ? 0 : 1;
+      const dirB = columns[b]?.direction === 'left' ? 0 : 1;
+      if (dirA !== dirB) {
+        return dirA - dirB;
+      }
+      return a - b;
+    });
 
   return (
     <div className="">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 h-fit">
-        {[0, 1].map((columnIndex) => {
+        {sortedColumnIndexes.map((columnIndex) => {
           const items = getColumnItems(columnIndex);
           const columnStyle = getColumnStyle(columnIndex);
+          const column = columns[columnIndex];
 
           return (
             <ColumnItem
               key={columnIndex}
               columnIndex={columnIndex}
+              contentId={id}
+              direction={column?.direction === 'left' ? 'left' : 'right'}
               items={items}
               columnStyle={columnStyle}
               readOnly={readOnly}
+              columnId={column?.id || ''}
             />
           );
         })}
@@ -532,6 +559,7 @@ export const SlideCard = memo(({ slide, onUpdate, onDelete, readOnly, addText, a
                       slide={slide}
                       readOnly={readOnly}
                       onUpdate={onUpdate}
+                      id={t.id}
                     />
                   </div>
                 )

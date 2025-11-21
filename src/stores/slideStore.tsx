@@ -21,7 +21,7 @@ export type SlideContentType = {
   id: string;
   type: 'text' | 'column' | 'image' | 'quote',
   text?: string,
-  columns?: { direction: 'left' | 'right', text?: string, image?: string, type: 'text' | 'image', id: string }[],
+  columns?: { direction: 'left' | 'right', text?: string, image?: string, type: 'text' | 'image', id: string, items?: any }[],
   image?: {
     url: string;
     imageFit?: 'cover' | 'contain' | 'fill';
@@ -29,6 +29,12 @@ export type SlideContentType = {
   border?: string;
   bgcolor?: string;
   order: number;
+  items?: {
+    id: string;
+    type: 'text' | 'image';
+    text?: string;
+    image?: { url: string; imageFit?: 'cover' | 'contain' | 'fill' };
+  }[];
 }
 
 interface SlideState {
