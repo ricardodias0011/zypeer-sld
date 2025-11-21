@@ -96,10 +96,10 @@ const TailwindAdvancedEditor = ({ slide, onUpdate, contentSlide, onDelete }: Tai
       if (content !== contentSlide?.text && contentSlide?.id) {
         isInternalUpdateRef.current = true;
         const _s = slide.content.filter(a => a.id !== contentSlide?.id);
-        if (content?.trim().length === 0) {
-          onDelete(contentSlide?.id || '');
-          return;
-        }
+        // if (content?.trim().length === 0) {
+        //   onDelete(contentSlide?.id || '');
+        //   return;
+        // }
         onUpdate(slide.id, "content", [
           ..._s,
           {
@@ -144,7 +144,19 @@ const TailwindAdvancedEditor = ({ slide, onUpdate, contentSlide, onDelete }: Tai
 
   const editorProps = useMemo(() => ({
     handleDOMEvents: {
-      keydown: (_view: any, event: KeyboardEvent) => handleCommandNavigation(event),
+      keydown: (_view: any, event: KeyboardEvent) => {
+        handleCommandNavigation(event);
+
+        // Verifica se é backspace e se o conteúdo está vazio
+        if (event.key === 'Backspace' && editor && !slide.readOnly && contentSlide?.id) {
+          const currentContent = editor.storage.markdown.getMarkdown();
+          const isEmpty = !currentContent || currentContent.trim().length === 0;
+
+          if (isEmpty) {
+            onDelete(contentSlide.id);
+          }
+        }
+      },
     },
     handlePaste: (view: any, event: ClipboardEvent) => handleImagePaste(view, event, uploadFn),
     handleDrop: (view: any, event: DragEvent, _slice: any, moved: boolean) => handleImageDrop(view, event, moved, uploadFn),
@@ -152,7 +164,7 @@ const TailwindAdvancedEditor = ({ slide, onUpdate, contentSlide, onDelete }: Tai
       class:
         "prose prose-lg dark:prose-invert prose-headings:font-title font-default focus:outline-none max-w-full",
     },
-  }), []);
+  }), [editor, slide.readOnly, contentSlide?.id, onDelete]);
 
   return (
     <EditorRoot>
@@ -175,7 +187,6 @@ const TailwindAdvancedEditor = ({ slide, onUpdate, contentSlide, onDelete }: Tai
           <EditorCommandEmpty className="px-2 text-muted-foreground">
             Sem resultados
           </EditorCommandEmpty>
-
           <EditorCommandList>
             {suggestionItems.map((item) => (
               <EditorCommandItem
@@ -196,7 +207,6 @@ const TailwindAdvancedEditor = ({ slide, onUpdate, contentSlide, onDelete }: Tai
             ))}
           </EditorCommandList>
         </EditorCommand>
-
         <GenerativeMenuSwitch open={openAI} onOpenChange={setOpenAI}>
           <Separator orientation="vertical" />
           <NodeSelector open={openNode} onOpenChange={setOpenNode} />
