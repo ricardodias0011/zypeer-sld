@@ -1,9 +1,10 @@
 import Textarea from '@/components/v2/textArea';
 import { Button } from '@/components/v2/ui/button';
+import { Dialog, DialogClose, DialogContent, DialogFooter, DialogTitle, DialogTrigger } from '@/components/v2/ui/dialog';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/v2/ui/popover';
 import { cn, isMobile } from '@/lib/utils';
 import { useSlideStore, type Slide, type SlideContentType } from '@/stores/slideStore';
-import { Image, Palette, Plus, Text, Trash2, X } from 'lucide-react';
+import { Image, Palette, Plus, Text, Trash2 } from 'lucide-react';
 import React, { memo, useCallback, useState } from 'react';
 import { v4 } from 'uuid';
 import { ImageCard } from './image';
@@ -304,7 +305,6 @@ const ColumnsSlide: React.FC<ColumnsSlideProps> = memo(({ slide, readOnly, onUpd
                     });
                   }
                   else {
-                    console.log(_id, field, value)
                     onUpdate(_id, field, value)
                   }
                 }}
@@ -328,62 +328,63 @@ const ColumnsSlide: React.FC<ColumnsSlideProps> = memo(({ slide, readOnly, onUpd
             )} */}
           </div>
         ))}
-
-        {!readOnly && (
-          <>
-            {isSelected && (
-              <div className="absolute top-2 left-2 z-10">
-                <Button
-                  variant="default"
-                  size="sm"
-                  className="h-8 w-8 rounded-full p-0 shadow-lg"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <Trash2 size={16} />
-                </Button>
-                <Popover>
-                  <PopoverTrigger asChild>
+        <div className="absolute -top-2 left-0 z-10 flex gap-2">
+          {!readOnly && (
+            <>
+              {isSelected && (
+                <Dialog>
+                  <DialogTrigger asChild>
                     <Button
                       variant="default"
                       size="sm"
                       className="h-8 w-8 rounded-full p-0 shadow-lg"
                       onClick={(e) => e.stopPropagation()}
                     >
-                      <Plus size={16} />
+                      <Trash2 size={16} />
                     </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-48 p-2" onClick={(e) => e.stopPropagation()}>
-                    <div className="flex flex-col gap-2">
-                      <Button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          addItemToColumn(columnIndex, 'text');
-                        }}
-                        variant="secondary"
-                        className="flex items-center justify-start gap-3 px-4 py-2"
-                      >
-                        <Text className="w-4 h-4 text-purple-600" />
-                        <span className="text-sm font-medium">Texto</span>
-                      </Button>
-                      <Button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          addItemToColumn(columnIndex, 'image');
-                        }}
-                        variant="secondary"
-                        className="flex items-center justify-start gap-3 px-4 py-2"
-                      >
-                        <Image className="w-4 h-4 text-blue-600" />
-                        <span className="text-sm font-medium">Imagem</span>
-                      </Button>
+                  </DialogTrigger>
+                  <DialogContent className="p-4" onClick={(e) => e.stopPropagation()}>
+                    <DialogTitle>
+                      Realmente deseja deletar coluna?
+                    </DialogTitle>
+                    <div className='text-gray-800'>
+                      Esta ação não pode ser desfeita.
                     </div>
-                  </PopoverContent>
-                </Popover>
-              </div>
-            )}
-
-            {isSelected && (
-              <div className="absolute top-2 left-12 z-10">
+                    <DialogFooter className='gap-4 mt-4'>
+                      <DialogClose>
+                        <Button variant={'secondary'} className='py-1 px-2 text-gray-700'>
+                          Fechar
+                        </Button>
+                      </DialogClose>
+                      <DialogClose>
+                        <Button variant={'destructive'} className='py-1 px-2' onClick={() => {
+                          const CurrentContent = slide.content.find(a => a.id === id) as SlideContentType;
+                          if (!CurrentContent) return
+                          const othersColumns = (CurrentContent?.columns || []).filter(a => a.id !== columnId);
+                          if (othersColumns.length === 0) {
+                            onUpdate(slide.id, 'content', [
+                              ...slide.content.filter(a => a.id !== id)
+                            ]);
+                            return;
+                          }
+                          onUpdate(slide.id, 'content', [
+                            ...slide.content.filter(a => a.id !== id),
+                            {
+                              ...CurrentContent,
+                              columns: [
+                                ...othersColumns
+                              ]
+                            }
+                          ])
+                        }}>
+                          Deletar coluna
+                        </Button>
+                      </DialogClose>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              )}
+              {isSelected && (
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button
@@ -438,10 +439,50 @@ const ColumnsSlide: React.FC<ColumnsSlideProps> = memo(({ slide, readOnly, onUpd
                     </div>
                   </PopoverContent>
                 </Popover>
-              </div>
-            )}
-          </>
-        )}
+              )}
+              {isSelected && (
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="default"
+                      size="sm"
+                      className="h-8 w-8 rounded-full p-0 shadow-lg"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <Plus size={16} />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-48 p-3" onClick={(e) => e.stopPropagation()}>
+                    <div className="flex flex-col gap-2">
+                      <Button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          addItemToColumn(columnIndex, 'text');
+                        }}
+                        variant="secondary"
+                        className="flex items-center justify-start gap-3 px-4 py-2"
+                      >
+                        <Text className="w-4 h-4 text-purple-600" />
+                        <span className="text-sm font-medium">Texto</span>
+                      </Button>
+                      <Button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          addItemToColumn(columnIndex, 'image');
+                        }}
+                        variant="secondary"
+                        className="flex items-center justify-start gap-3 px-4 py-2"
+                      >
+                        <Image className="w-4 h-4 text-blue-600" />
+                        <span className="text-sm font-medium">Imagem</span>
+                      </Button>
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              )}
+            </>
+          )}
+        </div>
       </div>
     );
   };
@@ -548,15 +589,23 @@ export const SlideCard = memo(({ slide, onUpdate, onDelete, readOnly, addText, a
                 return (
                   <div className='p-6'>
                     <Textarea key={t.id} {...slide} contentSlide={t as SlideContentType} readOnly={readOnly} onUpdate={onUpdate}
-                      onDelete={(id) => { onDeleteItem(t.id) }}
+                      onDelete={(_id) => { onDeleteItem(t.id) }}
                     />
                   </div>
                 )
               }
               if (t.type === 'image') {
                 return (
-                  <ImageCard readOnly={readOnly} slide={slide} slideContent={t}
-                    onDelete={(id) => { onDeleteItem(t.id) }}
+                  <ImageCard
+                    readOnly={readOnly}
+                    slide={slide}
+                    content={[]}
+                    slideContent={t}
+                    columnId=''
+                    contentId=''
+                    imageIFit='contain'
+                    direction='left'
+                    onDelete={(_id) => { onDeleteItem(t.id) }}
                     onUpdate={onUpdate} />
                 )
               }
@@ -577,7 +626,7 @@ export const SlideCard = memo(({ slide, onUpdate, onDelete, readOnly, addText, a
                   <div className='p-6 '>
                     <div className="prose prose-sm max-w-none border-l-4 border-blue-500/30 px-4 flex items-center">
                       <Textarea
-                        onDelete={(id) => { onDeleteItem(t.id) }}
+                        onDelete={(_id) => { onDeleteItem(t.id) }}
                         key={t.id} {...slide} contentSlide={t as SlideContentType} readOnly={readOnly} onUpdate={onUpdate} />
                     </div>
                   </div>
@@ -694,8 +743,6 @@ export const SlideCard = memo(({ slide, onUpdate, onDelete, readOnly, addText, a
 
               </div>
             </PopoverContent>
-
-
           </Popover>
         </div>
         {/* {isPopoverOpen && (
