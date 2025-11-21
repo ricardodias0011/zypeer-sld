@@ -228,6 +228,7 @@ ul[data-type="taskList"] li[data-checked="true"]>div>p {
   background-image: var(--image-url);
   background-size: cover;
   background-repeat: no-repeat;
+  scale: 1.2;
 
   filter: blur(10px);
 }

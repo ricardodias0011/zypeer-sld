@@ -438,8 +438,6 @@ export const ImageCard: React.FC<SlideCardProps> = memo(({
     onDelete(slide.id);
   }, [onDelete, slide.id]);
 
-  console.log('refresh')
-
   const ImageToolbar = memo(({
     onGenerateAI,
     onDelete,
@@ -538,7 +536,7 @@ export const ImageCard: React.FC<SlideCardProps> = memo(({
               slideContent.image?.imageFit === 'contain'
                 ? 'object-contain max-w-80 rounded-lg'
                 : slideContent.image?.imageFit === 'fill'
-                  ? 'object-fill'
+                  ? 'object-fill max-h-80'
                   : 'object-cover'
             )}
             onError={(e) => (e.currentTarget.src = '')}
