@@ -50,7 +50,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
   }, [cardColor, onChangeBgColor]);
 
   return (
-    <div className="w-full space-y-4">
+    <div className="w-full space-y-6">
       <div className="flex gap-2">
         {layouts.map((_layout) => {
           const isSelected = layout === _layout.id;

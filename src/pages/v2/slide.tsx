@@ -3,7 +3,7 @@ import { Button } from '@/components/v2/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/v2/ui/popover';
 import { cn, isMobile } from '@/lib/utils';
 import { useSlideStore, type Slide, type SlideContentType } from '@/stores/slideStore';
-import { Image, Palette, Plus, Text, Trash2 } from 'lucide-react';
+import { Image, Palette, Plus, Text, Trash2, X } from 'lucide-react';
 import React, { memo, useCallback, useState } from 'react';
 import { v4 } from 'uuid';
 import { ImageCard } from './image';
@@ -333,6 +333,14 @@ const ColumnsSlide: React.FC<ColumnsSlideProps> = memo(({ slide, readOnly, onUpd
           <>
             {isSelected && (
               <div className="absolute top-2 left-2 z-10">
+                <Button
+                  variant="default"
+                  size="sm"
+                  className="h-8 w-8 rounded-full p-0 shadow-lg"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <Trash2 size={16} />
+                </Button>
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button
