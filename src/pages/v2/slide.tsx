@@ -328,7 +328,7 @@ const ColumnsSlide: React.FC<ColumnsSlideProps> = memo(({ slide, readOnly, onUpd
             )} */}
           </div>
         ))}
-        <div className="absolute -top-2 left-0 z-10 flex gap-2">
+        <div className="absolute -top-6 left-0 z-10 flex gap-2">
           {!readOnly && (
             <>
               {isSelected && (
@@ -602,11 +602,13 @@ export const SlideCard = memo(({ slide, onUpdate, onDelete, readOnly, addText, a
                     content={[]}
                     slideContent={t}
                     columnId=''
-                    contentId=''
+                    contentId={t.id}
                     imageIFit='contain'
                     direction='left'
                     onDelete={(_id) => { onDeleteItem(t.id) }}
-                    onUpdate={onUpdate} />
+                    onUpdate={(_, field, value) => {
+                      onUpdate(_, field, value);
+                    }} />
                 )
               }
               if (t.type === 'column') {

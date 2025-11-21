@@ -411,8 +411,8 @@ export const ImageCard: React.FC<SlideCardProps> = memo(({
   const handleReplaceImageAction = useCallback(async (file: File) => {
     setIsLoading(true);
     try {
-      const currentSlide = slide.content.find(a => a.id === contentId)
-      const currentColunm = isColumn ? currentSlide?.columns?.find(e => e.id === columnId) : null;
+      const currentContent = slide.content.find(a => a.id === contentId)
+      const currentColunm = isColumn ? currentContent?.columns?.find(e => e.id === columnId) : null;
 
       if (!file) return;
       const { data } = await AssetsService.upload(file, "assets");
@@ -421,9 +421,9 @@ export const ImageCard: React.FC<SlideCardProps> = memo(({
       onUpdate(slide.id, 'content', [
         ...slide.content.filter(a => a.id !== contentId),
         {
-          ...currentSlide,
+          ...currentContent,
           ...(isColumn ? {
-            columns: [...currentSlide?.columns?.filter(a => a.id !== columnId) || [], {
+            columns: [...currentContent?.columns?.filter(a => a.id !== columnId) || [], {
               id: columnId,
               type: 'image',
               items: [
@@ -440,6 +440,7 @@ export const ImageCard: React.FC<SlideCardProps> = memo(({
               direction: direction || '',
             }]
           } : {
+            ...currentContent,
             image: {
               imageFit: slideContent.image?.imageFit || 'contain',
               url: link

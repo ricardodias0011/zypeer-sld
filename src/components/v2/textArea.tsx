@@ -15,7 +15,6 @@ const Textarea: React.FC<SlideEditor> = React.memo((props) => {
     </div>
   );
 }, (prevProps, nextProps) => {
-  // Retorna true se as props são iguais (não precisa re-renderizar)
   return (
     prevProps.id === nextProps.id &&
     prevProps.contentSlide?.id === nextProps.contentSlide?.id &&

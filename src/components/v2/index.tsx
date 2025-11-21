@@ -108,7 +108,7 @@ const TailwindAdvancedEditor = ({ slide, onUpdate, contentSlide, onDelete }: Tai
           }
         ]);
       }
-    }, 500);
+    }, 1500);
 
     return () => {
       if (timeoutRef.current) {
@@ -146,8 +146,6 @@ const TailwindAdvancedEditor = ({ slide, onUpdate, contentSlide, onDelete }: Tai
     handleDOMEvents: {
       keydown: (_view: any, event: KeyboardEvent) => {
         handleCommandNavigation(event);
-
-        // Verifica se é backspace e se o conteúdo está vazio
         if (event.key === 'Backspace' && editor && !slide.readOnly && contentSlide?.id) {
           const currentContent = editor.storage.markdown.getMarkdown();
           const isEmpty = !currentContent || currentContent.trim().length === 0;
