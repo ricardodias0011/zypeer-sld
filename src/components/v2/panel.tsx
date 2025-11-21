@@ -60,7 +60,7 @@ const SlideThumbnail = ({ slide }: { slide: Slide }) => {
         setCurrentSlide(slide.id)
       }}
     >
-      <div className="aspect-video bg-gray-100 rounded overflow-hidden mb-2" ref={slideRef} >
+      <div className="bg-gray-100 rounded overflow-hidden mb-2" ref={slideRef} >
         {slide ?
           <SlideCard
             readOnly
