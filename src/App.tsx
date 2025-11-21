@@ -13,7 +13,7 @@ function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <Theme hasBackground={false}>
+        <Theme hasBackground={false} style={{ overflow: 'hidden' }}>
           <Routes />
         </Theme>
       </AuthProvider>

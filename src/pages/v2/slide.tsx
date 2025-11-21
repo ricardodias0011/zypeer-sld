@@ -862,7 +862,7 @@ const App: React.FC = () => {
   );
 
   return (
-    <div className='w-6xl'>
+    <div className='w-6xl '>
       {sortedSlides?.map((slide, _index) => (
         <SlideCard
           key={slide.id}

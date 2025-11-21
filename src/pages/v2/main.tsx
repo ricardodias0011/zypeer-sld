@@ -39,13 +39,16 @@ const MainSlide = () => {
 
 
   return (
-    <div className="bg-gray-100 font-sans text-gray-800" style={{ paddingBottom: '120px', overflow: 'hidden' }}>
+    <div className="bg-gray-100 font-sans text-gray-800 min-h-screen" style={{ overflow: 'hidden' }}>
       <Toolbar />
-      <div className="flex-1 flex overflow-hidden w-full">
+      <div className="flex-1 flex h-full overflow-hidden w-full" style={{ height: 'calc(100vh - 75px)' }}>
         <SlidesPanel />
-        <main ref={mainRef} className="max-w-6xl mx-auto mt-12 overflow-auto min-h-screen ">
-          <Slide />
-        </main>
+        <div className="flex-1 flex h-full overflow-auto py-8 w-full">
+          <main ref={mainRef} className="h-full max-w-6xl mx-auto">
+            <Slide />
+            <div style={{ height: '60px' }} />
+          </main>
+        </div>
       </div>
     </div>
   )

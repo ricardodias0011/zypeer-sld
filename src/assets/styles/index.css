@@ -9,7 +9,7 @@
 
 body {
   font-family: 'Poppins', sans-serif;
-  background: linear-gradient(0deg, #ffffffbf, #ffffffbf), linear-gradient(108.69deg, #2e2baf50 16.13%, #92a6bd60 39.07%, #93b6ec70 60.25%, #2e2baf80 86.72%, #8c65be90 94.22%) !important;
+  /* background: linear-gradient(0deg, #ffffffbf, #ffffffbf), linear-gradient(108.69deg, #2e2baf50 16.13%, #92a6bd60 39.07%, #93b6ec70 60.25%, #2e2baf80 86.72%, #8c65be90 94.22%) !important; */
 }
 
 .radix-themes {
