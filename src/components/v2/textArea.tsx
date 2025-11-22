@@ -1,28 +1,24 @@
 import TailwindAdvancedEditor from '@/components/v2';
 import type { Slide, SlideContentType } from '@/stores/slideStore';
 import React from 'react';
-interface SlideEditor extends Slide {
+interface SlideEditor {
   readOnly?: boolean;
   onUpdate?: (d: string, field: keyof Slide, value: SlideContentType[]) => void;
   contentSlide?: SlideContentType;
   onDelete: (id: string) => void;
+  slide: Slide;
 }
 
 const Textarea: React.FC<SlideEditor> = React.memo((props) => {
   return (
     <div className='flex my-2'>
-      <TailwindAdvancedEditor onDelete={props.onDelete} contentSlide={props.contentSlide} onUpdate={props?.onUpdate || (() => { })} slide={props} />
+      <TailwindAdvancedEditor onDelete={props.onDelete} contentSlide={props.contentSlide} onUpdate={props?.onUpdate || (() => { })} slide={props.slide} />
     </div>
   );
 }, (prevProps, nextProps) => {
   return (
-    prevProps.id === nextProps.id &&
-    prevProps.contentSlide?.id === nextProps.contentSlide?.id &&
-    prevProps.contentSlide?.text === nextProps.contentSlide?.text &&
-    prevProps.readOnly === nextProps.readOnly &&
-    prevProps.bgcolor === nextProps.bgcolor &&
-    prevProps.layout === nextProps.layout &&
-    prevProps.type === nextProps.type
+    prevProps?.contentSlide?.id === nextProps?.contentSlide?.id &&
+    nextProps.readOnly === nextProps.readOnly
   );
 });
 

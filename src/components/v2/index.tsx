@@ -9,7 +9,7 @@ import {
   handleImageDrop,
   handleImagePaste,
   ImageResizer,
-  type EditorInstance,
+  type EditorInstance
 } from "novel";
 
 import { memo, useEffect, useMemo, useRef, useState } from "react";
@@ -44,8 +44,6 @@ interface TailwindAdvancedEditorProps {
 }
 
 const TailwindAdvancedEditor = ({ slide, onUpdate, contentSlide, onDelete }: TailwindAdvancedEditorProps) => {
-  const [editor, setEditor] = useState<EditorInstance | null>(null);
-
   const [openNode, setOpenNode] = useState(false);
   const [openColor, setOpenColor] = useState(false);
   const [openAI, setOpenAI] = useState(false);
@@ -56,8 +54,10 @@ const TailwindAdvancedEditor = ({ slide, onUpdate, contentSlide, onDelete }: Tai
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const lastSyncedRef = useRef<string>('');
   const isInternalUpdateRef = useRef<boolean>(false);
+  const editorKeyRef = useRef<string>(contentSlide?.id || 'default');
 
   const [colorText, setColorText] = useState("#fff");
+  const editorRef = useRef<EditorInstance | null>(null);
 
   const highlightCodeblocks = (html: string) => {
     const doc = new DOMParser().parseFromString(html, "text/html");
@@ -119,6 +119,13 @@ const TailwindAdvancedEditor = ({ slide, onUpdate, contentSlide, onDelete }: Tai
   }, [content, canUpdate, slide.content, contentSlide?.text]);
 
   useEffect(() => {
+    if (contentSlide?.id && contentSlide.id !== editorKeyRef.current) {
+      editorKeyRef.current = contentSlide.id;
+    }
+  }, [contentSlide?.id]);
+
+  useEffect(() => {
+    const editor = editorRef.current;
     if (!editor) return;
 
     if (isInternalUpdateRef.current) {
@@ -140,14 +147,14 @@ const TailwindAdvancedEditor = ({ slide, onUpdate, contentSlide, onDelete }: Tai
         });
       }
     }
-  }, [contentSlide?.text, editor]);
+  }, [contentSlide?.text, editorRef]);
 
   const editorProps = useMemo(() => ({
     handleDOMEvents: {
       keydown: (_view: any, event: KeyboardEvent) => {
         handleCommandNavigation(event);
-        if (event.key === 'Backspace' && editor && !slide.readOnly && contentSlide?.id) {
-          const currentContent = editor.storage.markdown.getMarkdown();
+        if (event.key === 'Backspace' && editorRef.current && !slide.readOnly && contentSlide?.id) {
+          const currentContent = editorRef.current.storage.markdown.getMarkdown();
           const isEmpty = !currentContent || currentContent.trim().length === 0;
 
           if (isEmpty) {
@@ -162,20 +169,43 @@ const TailwindAdvancedEditor = ({ slide, onUpdate, contentSlide, onDelete }: Tai
       class:
         "prose prose-lg dark:prose-invert prose-headings:font-title font-default focus:outline-none max-w-full",
     },
-  }), [editor, slide.readOnly, contentSlide?.id, onDelete]);
+  }), [editorRef, slide.readOnly, contentSlide?.id]);
+
+  const memoizedExtensions = useMemo(() => extensions, []);
+
+  const editorClassName = useMemo(() =>
+    cn(colorText, "relative w-full max-w-screen-lg bg-background sm:rounded-lg"),
+    [colorText]
+  );
+
 
   return (
     <EditorRoot>
       <EditorContent
+        key={editorKeyRef.current}
+        initialContent={editorRef.current?.getJSON() || undefined}
         onCreate={({ editor }) => {
-          setEditor(editor);
-          const initialContent = contentSlide?.text || content || "Novo texto";
-          editor.commands.setContent(initialContent);
-          lastSyncedRef.current = initialContent;
+          editorRef.current = editor;
+          const currentMarkdown = editor.storage.markdown.getMarkdown();
+          const initialContent = (contentSlide?.text && contentSlide.text.length > 0)
+            ? contentSlide.text
+            : (currentMarkdown && currentMarkdown.length > 0 ? currentMarkdown : undefined);
+
+          if (initialContent && initialContent !== currentMarkdown) {
+            editor.commands.setContent(initialContent);
+            lastSyncedRef.current = initialContent;
+            setContent(initialContent);
+          } else {
+            lastSyncedRef.current = currentMarkdown || '';
+            setContent(currentMarkdown || '');
+          }
         }}
-        extensions={extensions}
-        className={cn(colorText, "relative w-full max-w-screen-lg bg-background sm:rounded-lg")}
+        extensions={memoizedExtensions}
+        className={editorClassName}
         editorProps={editorProps}
+        onDestroy={(e) => {
+          console.log('editor destroyed', e);
+        }}
         onUpdate={({ editor }) => {
           if (!slide.readOnly) debouncedUpdates(editor);
         }}
@@ -226,7 +256,11 @@ export default memo(TailwindAdvancedEditor, (prevProps, nextProps) => {
     prevProps.contentSlide?.id === nextProps.contentSlide?.id &&
     prevProps.contentSlide?.text === nextProps.contentSlide?.text &&
     prevProps.slide.readOnly === nextProps.slide.readOnly &&
-    prevProps.slide.bgcolor === nextProps.slide.bgcolor
+    prevProps.slide.bgcolor === nextProps.slide.bgcolor &&
+    prevProps.slide.layout === nextProps.slide.layout &&
+    prevProps.slide.type === nextProps.slide.type &&
+    prevProps.onUpdate === nextProps.onUpdate &&
+    prevProps.onDelete === nextProps.onDelete
   );
   return propsEqual;
 });

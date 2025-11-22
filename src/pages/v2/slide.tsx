@@ -21,8 +21,8 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { GripVertical, Image, Palette, Plus, Text, Trash2 } from 'lucide-react';
-import React, { memo, useCallback, useState } from 'react';
+import { GripVertical, Image, Palette, Plus, Text, Trash, Trash2 } from 'lucide-react';
+import React, { memo, useCallback, useMemo, useState } from 'react';
 import { v4 } from 'uuid';
 import { ImageCard } from './image';
 import StylePopover from './settingsPanel';
@@ -211,7 +211,6 @@ const ColumnsSlide: React.FC<ColumnsSlideProps> = memo(({ slide, readOnly, onUpd
       } as any;
     }
 
-    const currentStyle = getColumnStyle(columnIndex);
     (updatedColumns[columnIndex] as any).bgcolor = style.bgcolor;
     (updatedColumns[columnIndex] as any).border = style.border;
     (updatedColumns[columnIndex] as any).hasBorder = style.hasBorder;
@@ -247,7 +246,6 @@ const ColumnsSlide: React.FC<ColumnsSlideProps> = memo(({ slide, readOnly, onUpd
     direction: 'right' | 'left';
   }> = ({ columnIndex, items, columnStyle, readOnly, columnId, direction }) => {
     const [isSelected, setIsSelected] = useState(false);
-
     return (
       <div
         key={columnId}
@@ -275,7 +273,7 @@ const ColumnsSlide: React.FC<ColumnsSlideProps> = memo(({ slide, readOnly, onUpd
           <div key={item.id} className="rounded-lg">
             {item.type === 'text' ? (
               <Textarea
-                {...slide}
+                slide={slide}
                 contentSlide={{
                   id: item.id,
                   type: 'text',
@@ -345,7 +343,7 @@ const ColumnsSlide: React.FC<ColumnsSlideProps> = memo(({ slide, readOnly, onUpd
             )} */}
           </div>
         ))}
-        <div className="absolute -top-6 left-0 z-10 flex gap-2">
+        <div className="absolute -top-6 left-14 z-10 flex gap-2">
           {!readOnly && (
             <>
               {isSelected && (
@@ -540,7 +538,16 @@ const ColumnsSlide: React.FC<ColumnsSlideProps> = memo(({ slide, readOnly, onUpd
   );
 });
 
-const SortableSlideCard = ({ slide, onUpdate, onDelete, readOnly, addText, addImage, addColumns, addQuote }: SlideCardProps) => {
+const SortableSlideCard = ({
+  slide,
+  onUpdate,
+  onDelete,
+  readOnly,
+  addText,
+  addImage,
+  addColumns,
+  addQuote
+}: SlideCardProps) => {
   const {
     attributes,
     listeners,
@@ -555,7 +562,6 @@ const SortableSlideCard = ({ slide, onUpdate, onDelete, readOnly, addText, addIm
     transition,
     opacity: isDragging ? 0.5 : 1,
   };
-
   return (
     <div ref={setNodeRef} style={style}>
       <SlideCard
@@ -601,22 +607,32 @@ const SortableContentItem = ({
     opacity: isDragging ? 0.5 : 1,
   };
 
+
   if (contentItem.type === 'text') {
     return (
       <div className='p-6 relative group' ref={setNodeRef} style={style}>
         {!readOnly && (
-          <button
-            {...attributes}
-            {...listeners}
-            className="absolute top-2 left-2 z-10 cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600 transition-colors p-1 rounded opacity-0 group-hover:opacity-100"
-            title="Arrastar para reordenar"
-          >
-            <GripVertical size={16} />
-          </button>
+          <>
+            <button
+              {...attributes}
+              {...listeners}
+              className="absolute top-2 left-2 z-10 cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600 transition-colors p-1 rounded opacity-0 group-hover:opacity-100"
+              title="Arrastar para reordenar"
+            >
+              <GripVertical size={16} />
+            </button>
+            <button
+              onClick={() => { onDeleteItem(contentItem.id) }}
+              className="absolute top-2 left-10 z-10 cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600 transition-colors p-1 rounded opacity-0 group-hover:opacity-100"
+              title="Arrastar para reordenar"
+            >
+              <Trash size={16} />
+            </button>
+          </>
         )}
         <Textarea
           key={contentItem.id}
-          {...slide}
+          slide={slide}
           contentSlide={contentItem as SlideContentType}
           readOnly={readOnly}
           onUpdate={onUpdate}
@@ -630,14 +646,25 @@ const SortableContentItem = ({
     return (
       <div className='relative group' ref={setNodeRef} style={style}>
         {!readOnly && (
-          <button
-            {...attributes}
-            {...listeners}
-            className="absolute top-2 left-2 z-10 cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600 transition-colors p-1 rounded bg-white/80 opacity-0 group-hover:opacity-100"
-            title="Arrastar para reordenar"
-          >
-            <GripVertical size={16} />
-          </button>
+          <>
+
+            <button
+              {...attributes}
+              {...listeners}
+              className="absolute top-2 left-2 z-10 cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600 transition-colors p-1 rounded bg-white/80 opacity-0 group-hover:opacity-100"
+              title="Arrastar para reordenar"
+            >
+              <GripVertical size={16} />
+            </button>
+            <button
+              onClick={() => { onDeleteItem(contentItem.id) }}
+              className="absolute top-2 left-10 z-10 cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600 transition-colors p-1 rounded opacity-0 group-hover:opacity-100"
+              title="Arrastar para reordenar"
+            >
+              <Trash size={16} />
+            </button>
+          </>
+
         )}
         <ImageCard
           readOnly={readOnly}
@@ -661,14 +688,23 @@ const SortableContentItem = ({
     return (
       <div className='p-6 relative group' ref={setNodeRef} style={style}>
         {!readOnly && (
-          <button
-            {...attributes}
-            {...listeners}
-            className="absolute top-2 left-2 z-10 cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600 transition-colors p-1 rounded opacity-0 group-hover:opacity-100"
-            title="Arrastar para reordenar"
-          >
-            <GripVertical size={16} />
-          </button>
+          <>
+            <button
+              {...attributes}
+              {...listeners}
+              className="absolute top-2 left-2 z-10 cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600 transition-colors p-1 rounded opacity-0 group-hover:opacity-100"
+              title="Arrastar para reordenar"
+            >
+              <GripVertical size={16} />
+            </button>
+            <button
+              onClick={() => { onDeleteItem(contentItem.id) }}
+              className="absolute top-2 left-10 z-10 cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600 transition-colors p-1 rounded opacity-0 group-hover:opacity-100"
+              title="Arrastar para reordenar"
+            >
+              <Trash size={16} />
+            </button>
+          </>
         )}
         <ColumnsSlide
           slide={slide}
@@ -695,9 +731,9 @@ const SortableContentItem = ({
         )}
         <div className="prose prose-sm max-w-none border-l-4 border-blue-500/30 px-4 flex items-center">
           <Textarea
+            slide={slide}
             onDelete={(_id) => { onDeleteItem(contentItem.id) }}
             key={contentItem.id}
-            {...slide}
             contentSlide={contentItem as SlideContentType}
             readOnly={readOnly}
             onUpdate={onUpdate}
@@ -710,14 +746,24 @@ const SortableContentItem = ({
   return null;
 };
 
-export const SlideCard = memo(({ slide, onUpdate, onDelete, readOnly, addText, addImage, addColumns, addQuote, dragHandleProps }: SlideCardProps & { dragHandleProps?: any }) => {
+export const SlideCard = memo(({
+  slide,
+  onUpdate,
+  onDelete,
+  readOnly,
+  addText,
+  addImage,
+  addColumns,
+  addQuote,
+  dragHandleProps
+}: SlideCardProps & { dragHandleProps?: any }) => {
   const mobile = isMobile();
 
   const ht = ['top', 'bottom'].includes(slide?.layout) ? 'h-1/2' : 'h-full';
 
   const isVertical = ['top', 'bottom'].includes(slide?.layout);
 
-  const ImageWithTextSlide: React.FC<ImageWithTextSlideProps> = ({
+  const ImageWithTextSlide = memo<ImageWithTextSlideProps>(({
     slide,
     isVertical,
     mobile,
@@ -731,17 +777,21 @@ export const SlideCard = memo(({ slide, onUpdate, onDelete, readOnly, addText, a
       })
     );
 
-    const sortedContent = [...slide.content].sort((a, b) => a.order - b.order);
+    const sortedContent = useMemo(() =>
+      [...slide.content].sort((a, b) => a.order - b.order),
+      [slide.content]
+    );
 
-    const handleContentDragEnd = (event: DragEndEvent) => {
+    const handleContentDragEnd = useCallback((event: DragEndEvent) => {
       const { active, over } = event;
 
       if (over && active.id !== over.id) {
-        const oldIndex = sortedContent.findIndex((item) => item.id === active.id);
-        const newIndex = sortedContent.findIndex((item) => item.id === over.id);
+        const sorted = [...slide.content].sort((a, b) => a.order - b.order);
+        const oldIndex = sorted.findIndex((item) => item.id === active.id);
+        const newIndex = sorted.findIndex((item) => item.id === over.id);
 
         if (oldIndex !== -1 && newIndex !== -1) {
-          const reorderedContent = arrayMove(sortedContent, oldIndex, newIndex);
+          const reorderedContent = arrayMove(sorted, oldIndex, newIndex);
           const updatedContent = reorderedContent.map((item, index) => ({
             ...item,
             order: index
@@ -749,9 +799,9 @@ export const SlideCard = memo(({ slide, onUpdate, onDelete, readOnly, addText, a
           onUpdate(slide.id, 'content', updatedContent);
         }
       }
-    };
+    }, [slide.content, slide.id, onUpdate]);
 
-    const onDeleteItem = (id: string) => {
+    const onDeleteItem = useCallback((id: string) => {
       const filteredContent = slide.content?.find(c => c.id === id);
       if (filteredContent?.type === 'column') {
         const updatedContent = slide.content?.map(c => {
@@ -767,8 +817,7 @@ export const SlideCard = memo(({ slide, onUpdate, onDelete, readOnly, addText, a
       } else {
         onUpdate(slide.id, 'content', slide.content?.filter(c => c.id !== id))
       }
-    }
-
+    }, [slide.content, slide.id, onUpdate]);
     return (
       <div
         style={{
@@ -800,10 +849,10 @@ export const SlideCard = memo(({ slide, onUpdate, onDelete, readOnly, addText, a
             onDragEnd={handleContentDragEnd}
           >
             <SortableContext
-              items={sortedContent.map(item => item.id)}
+              items={sortedContent.map((item: SlideContentType) => item.id)}
               strategy={verticalListSortingStrategy}
             >
-              {sortedContent?.map((t) => (
+              {sortedContent?.map((t: SlideContentType) => (
                 <SortableContentItem
                   key={t.id}
                   contentItem={t}
@@ -820,7 +869,21 @@ export const SlideCard = memo(({ slide, onUpdate, onDelete, readOnly, addText, a
         {/* {slide.layout !== 'empty' ? <ImageCard slide={slide} onDelete={() => { }} onUpdate={onUpdate} /> : null} */}
       </div>
     )
-  };
+  }, (prevProps, nextProps) => {
+    const prevContentIds = prevProps.slide.content?.map(c => c.id).join(',') || '';
+    const nextContentIds = nextProps.slide.content?.map(c => c.id).join(',') || '';
+
+    return (
+      prevProps.slide.id === nextProps.slide.id &&
+      prevContentIds === nextContentIds &&
+      prevProps.slide.content?.length === nextProps.slide.content?.length &&
+      prevProps.isVertical === nextProps.isVertical &&
+      prevProps.mobile === nextProps.mobile &&
+      prevProps.ht === nextProps.ht &&
+      prevProps.readOnly === nextProps.readOnly
+    );
+  });
+
   const RenderInputs = memo(() => {
     return (
       <ImageWithTextSlide
@@ -831,7 +894,7 @@ export const SlideCard = memo(({ slide, onUpdate, onDelete, readOnly, addText, a
         readOnly={readOnly}
       />
     )
-  });
+  }, () => true);
 
   return (
     <div
@@ -1064,7 +1127,6 @@ const App: React.FC = () => {
     },
     [updateSlide]
   );
-
   return (
     <div className='w-6xl '>
       <DndContext
