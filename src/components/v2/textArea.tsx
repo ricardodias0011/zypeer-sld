@@ -10,7 +10,7 @@ interface SlideEditor extends Slide {
 
 const Textarea: React.FC<SlideEditor> = React.memo((props) => {
   return (
-    <div className='flex my-4'>
+    <div className='flex my-2'>
       <TailwindAdvancedEditor onDelete={props.onDelete} contentSlide={props.contentSlide} onUpdate={props?.onUpdate || (() => { })} slide={props} />
     </div>
   );

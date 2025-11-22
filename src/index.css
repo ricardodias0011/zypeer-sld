@@ -212,6 +212,8 @@ ul[data-type="taskList"] li[data-checked="true"]>div>p {
 .background-blur-contain {
   position: relative;
   overflow: hidden;
+  border-radius: 10px;
+
 }
 
 .background-blur-contain::before {
@@ -227,6 +229,6 @@ ul[data-type="taskList"] li[data-checked="true"]>div>p {
   background-size: cover;
   background-repeat: no-repeat;
   scale: 1.2;
-
+  border-radius: 10px;
   filter: blur(10px);
 }

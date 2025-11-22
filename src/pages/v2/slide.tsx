@@ -4,7 +4,24 @@ import { Dialog, DialogClose, DialogContent, DialogFooter, DialogTitle, DialogTr
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/v2/ui/popover';
 import { cn, isMobile } from '@/lib/utils';
 import { useSlideStore, type Slide, type SlideContentType } from '@/stores/slideStore';
-import { Image, Palette, Plus, Text, Trash2 } from 'lucide-react';
+import {
+  closestCenter,
+  DndContext,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import { GripVertical, Image, Palette, Plus, Text, Trash2 } from 'lucide-react';
 import React, { memo, useCallback, useState } from 'react';
 import { v4 } from 'uuid';
 import { ImageCard } from './image';
@@ -195,9 +212,9 @@ const ColumnsSlide: React.FC<ColumnsSlideProps> = memo(({ slide, readOnly, onUpd
     }
 
     const currentStyle = getColumnStyle(columnIndex);
-    (updatedColumns[columnIndex] as any).bgcolor = style.bgcolor !== undefined ? style.bgcolor : currentStyle.bgcolor;
-    (updatedColumns[columnIndex] as any).border = style.border !== undefined ? style.border : currentStyle.border;
-    (updatedColumns[columnIndex] as any).hasBorder = style.hasBorder !== undefined ? style.hasBorder : currentStyle.hasBorder;
+    (updatedColumns[columnIndex] as any).bgcolor = style.bgcolor;
+    (updatedColumns[columnIndex] as any).border = style.border;
+    (updatedColumns[columnIndex] as any).hasBorder = style.hasBorder;
 
     const otherContent = slide.content.filter(c => c.id !== columnContent.id);
     const updatedContent = [
@@ -237,7 +254,7 @@ const ColumnsSlide: React.FC<ColumnsSlideProps> = memo(({ slide, readOnly, onUpd
         className={cn(
           "rounded-lg transition-all duration-200",
           "flex flex-col gap-3 relative",
-          columnStyle.hasBorder && "border-2",
+          columnStyle.hasBorder && "border-2 px-[1rem]",
           !readOnly && "hover:border-red-500/50"
         )}
         style={{
@@ -463,7 +480,7 @@ const ColumnsSlide: React.FC<ColumnsSlideProps> = memo(({ slide, readOnly, onUpd
                         className="flex items-center justify-start gap-3 px-4 py-2"
                       >
                         <Text className="w-4 h-4 text-purple-600" />
-                        <span className="text-sm font-medium">Texto</span>
+                        <span className="text-sm font-medium text-gray-600">Texto</span>
                       </Button>
                       <Button
                         onClick={(e) => {
@@ -474,7 +491,7 @@ const ColumnsSlide: React.FC<ColumnsSlideProps> = memo(({ slide, readOnly, onUpd
                         className="flex items-center justify-start gap-3 px-4 py-2"
                       >
                         <Image className="w-4 h-4 text-blue-600" />
-                        <span className="text-sm font-medium">Imagem</span>
+                        <span className="text-sm font-medium text-gray-600">Imagem</span>
                       </Button>
                     </div>
                   </PopoverContent>
@@ -523,9 +540,178 @@ const ColumnsSlide: React.FC<ColumnsSlideProps> = memo(({ slide, readOnly, onUpd
   );
 });
 
-export const SlideCard = memo(({ slide, onUpdate, onDelete, readOnly, addText, addImage, addColumns, addQuote }: SlideCardProps) => {
+const SortableSlideCard = ({ slide, onUpdate, onDelete, readOnly, addText, addImage, addColumns, addQuote }: SlideCardProps) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: slide.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <div ref={setNodeRef} style={style}>
+      <SlideCard
+        slide={slide}
+        onUpdate={onUpdate}
+        onDelete={onDelete}
+        readOnly={readOnly}
+        addText={addText}
+        addImage={addImage}
+        addColumns={addColumns}
+        addQuote={addQuote}
+        dragHandleProps={{ ...attributes, ...listeners }}
+      />
+    </div>
+  );
+};
+
+const SortableContentItem = ({
+  contentItem,
+  slide,
+  readOnly,
+  onUpdate,
+  onDeleteItem
+}: {
+  contentItem: SlideContentType;
+  slide: Slide;
+  readOnly?: boolean;
+  onUpdate: (id: string, field: keyof Slide, value: SlideContentType[] | string) => void;
+  onDeleteItem: (id: string) => void;
+}) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: contentItem.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  if (contentItem.type === 'text') {
+    return (
+      <div className='p-6 relative group' ref={setNodeRef} style={style}>
+        {!readOnly && (
+          <button
+            {...attributes}
+            {...listeners}
+            className="absolute top-2 left-2 z-10 cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600 transition-colors p-1 rounded opacity-0 group-hover:opacity-100"
+            title="Arrastar para reordenar"
+          >
+            <GripVertical size={16} />
+          </button>
+        )}
+        <Textarea
+          key={contentItem.id}
+          {...slide}
+          contentSlide={contentItem as SlideContentType}
+          readOnly={readOnly}
+          onUpdate={onUpdate}
+          onDelete={(_id) => { onDeleteItem(contentItem.id) }}
+        />
+      </div>
+    );
+  }
+
+  if (contentItem.type === 'image') {
+    return (
+      <div className='relative group' ref={setNodeRef} style={style}>
+        {!readOnly && (
+          <button
+            {...attributes}
+            {...listeners}
+            className="absolute top-2 left-2 z-10 cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600 transition-colors p-1 rounded bg-white/80 opacity-0 group-hover:opacity-100"
+            title="Arrastar para reordenar"
+          >
+            <GripVertical size={16} />
+          </button>
+        )}
+        <ImageCard
+          readOnly={readOnly}
+          slide={slide}
+          content={[]}
+          slideContent={contentItem}
+          columnId=''
+          contentId={contentItem.id}
+          imageIFit='contain'
+          direction='left'
+          onDelete={(_id) => { onDeleteItem(contentItem.id) }}
+          onUpdate={(_, field, value) => {
+            onUpdate(_, field, value);
+          }}
+        />
+      </div>
+    );
+  }
+
+  if (contentItem.type === 'column') {
+    return (
+      <div className='p-6 relative group' ref={setNodeRef} style={style}>
+        {!readOnly && (
+          <button
+            {...attributes}
+            {...listeners}
+            className="absolute top-2 left-2 z-10 cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600 transition-colors p-1 rounded opacity-0 group-hover:opacity-100"
+            title="Arrastar para reordenar"
+          >
+            <GripVertical size={16} />
+          </button>
+        )}
+        <ColumnsSlide
+          slide={slide}
+          readOnly={readOnly}
+          onUpdate={onUpdate}
+          id={contentItem.id}
+        />
+      </div>
+    );
+  }
+
+  if (contentItem.type === 'quote') {
+    return (
+      <div className='p-6 relative group' ref={setNodeRef} style={style}>
+        {!readOnly && (
+          <button
+            {...attributes}
+            {...listeners}
+            className="absolute top-2 left-2 z-10 cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600 transition-colors p-1 rounded opacity-0 group-hover:opacity-100"
+            title="Arrastar para reordenar"
+          >
+            <GripVertical size={16} />
+          </button>
+        )}
+        <div className="prose prose-sm max-w-none border-l-4 border-blue-500/30 px-4 flex items-center">
+          <Textarea
+            onDelete={(_id) => { onDeleteItem(contentItem.id) }}
+            key={contentItem.id}
+            {...slide}
+            contentSlide={contentItem as SlideContentType}
+            readOnly={readOnly}
+            onUpdate={onUpdate}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  return null;
+};
+
+export const SlideCard = memo(({ slide, onUpdate, onDelete, readOnly, addText, addImage, addColumns, addQuote, dragHandleProps }: SlideCardProps & { dragHandleProps?: any }) => {
   const mobile = isMobile();
-  const sortedContentSlides = [...slide.content].sort((a, b) => a.order - b.order);
 
   const ht = ['top', 'bottom'].includes(slide?.layout) ? 'h-1/2' : 'h-full';
 
@@ -538,10 +724,35 @@ export const SlideCard = memo(({ slide, onUpdate, onDelete, readOnly, addText, a
     ht,
     readOnly
   }) => {
+    const contentSensors = useSensors(
+      useSensor(PointerSensor),
+      useSensor(KeyboardSensor, {
+        coordinateGetter: sortableKeyboardCoordinates,
+      })
+    );
+
+    const sortedContent = [...slide.content].sort((a, b) => a.order - b.order);
+
+    const handleContentDragEnd = (event: DragEndEvent) => {
+      const { active, over } = event;
+
+      if (over && active.id !== over.id) {
+        const oldIndex = sortedContent.findIndex((item) => item.id === active.id);
+        const newIndex = sortedContent.findIndex((item) => item.id === over.id);
+
+        if (oldIndex !== -1 && newIndex !== -1) {
+          const reorderedContent = arrayMove(sortedContent, oldIndex, newIndex);
+          const updatedContent = reorderedContent.map((item, index) => ({
+            ...item,
+            order: index
+          }));
+          onUpdate(slide.id, 'content', updatedContent);
+        }
+      }
+    };
 
     const onDeleteItem = (id: string) => {
       const filteredContent = slide.content?.find(c => c.id === id);
-      console.log(filteredContent?.type)
       if (filteredContent?.type === 'column') {
         const updatedContent = slide.content?.map(c => {
           if (c.type === 'column') {
@@ -583,61 +794,27 @@ export const SlideCard = memo(({ slide, onUpdate, onDelete, readOnly, addText, a
             // slide.type === '' ? 'border-l-4 border-primary' : 'border-l-4 border-primary'
           )}
         >
-          {
-            sortedContentSlides?.map((t) => {
-              if (t.type === 'text') {
-                return (
-                  <div className='p-6'>
-                    <Textarea key={t.id} {...slide} contentSlide={t as SlideContentType} readOnly={readOnly} onUpdate={onUpdate}
-                      onDelete={(_id) => { onDeleteItem(t.id) }}
-                    />
-                  </div>
-                )
-              }
-              if (t.type === 'image') {
-                return (
-                  <ImageCard
-                    readOnly={readOnly}
-                    slide={slide}
-                    content={[]}
-                    slideContent={t}
-                    columnId=''
-                    contentId={t.id}
-                    imageIFit='contain'
-                    direction='left'
-                    onDelete={(_id) => { onDeleteItem(t.id) }}
-                    onUpdate={(_, field, value) => {
-                      onUpdate(_, field, value);
-                    }} />
-                )
-              }
-              if (t.type === 'column') {
-                return (
-                  <div className='p-6'>
-                    <ColumnsSlide
-                      slide={slide}
-                      readOnly={readOnly}
-                      onUpdate={onUpdate}
-                      id={t.id}
-                    />
-                  </div>
-                )
-              }
-              if (t.type === 'quote') {
-                return (
-                  <div className='p-6 '>
-                    <div className="prose prose-sm max-w-none border-l-4 border-blue-500/30 px-4 flex items-center">
-                      <Textarea
-                        onDelete={(_id) => { onDeleteItem(t.id) }}
-                        key={t.id} {...slide} contentSlide={t as SlideContentType} readOnly={readOnly} onUpdate={onUpdate} />
-                    </div>
-                  </div>
-                )
-              }
-              return null;
-            })
-          }
-
+          <DndContext
+            sensors={contentSensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleContentDragEnd}
+          >
+            <SortableContext
+              items={sortedContent.map(item => item.id)}
+              strategy={verticalListSortingStrategy}
+            >
+              {sortedContent?.map((t) => (
+                <SortableContentItem
+                  key={t.id}
+                  contentItem={t}
+                  slide={slide}
+                  readOnly={readOnly}
+                  onUpdate={onUpdate}
+                  onDeleteItem={onDeleteItem}
+                />
+              ))}
+            </SortableContext>
+          </DndContext>
         </div>
 
         {/* {slide.layout !== 'empty' ? <ImageCard slide={slide} onDelete={() => { }} onUpdate={onUpdate} /> : null} */}
@@ -667,6 +844,15 @@ export const SlideCard = memo(({ slide, onUpdate, onDelete, readOnly, addText, a
       </div>
       {readOnly ? null : <div className="border-t border-gray-100 px-6 py-3 flex justify-between items-center bg-gray-50 rounded-b-xl relative">
         <div className="flex items-center gap-2">
+          {dragHandleProps && (
+            <button
+              {...dragHandleProps}
+              className="cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600 transition-colors p-1 rounded"
+              title="Arrastar para reordenar"
+            >
+              <GripVertical size={20} />
+            </button>
+          )}
           <Popover>
             <PopoverTrigger asChild>
               <button
@@ -764,8 +950,26 @@ export const SlideCard = memo(({ slide, onUpdate, onDelete, readOnly, addText, a
 
 
 const App: React.FC = () => {
-  const { slides, updateSlide, deleteSlide } = useSlideStore();
+  const { slides, updateSlide, deleteSlide, reorderSlides } = useSlideStore();
   const sortedSlides = [...slides].sort((a, b) => a.order - b.order);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id) {
+      const oldIndex = sortedSlides.findIndex((slide) => slide.id === active.id);
+      const newIndex = sortedSlides.findIndex((slide) => slide.id === over.id);
+
+      reorderSlides(oldIndex, newIndex);
+    }
+  };
 
   const handleDeleteSlide = (id: string) => {
     deleteSlide(id);
@@ -863,18 +1067,29 @@ const App: React.FC = () => {
 
   return (
     <div className='w-6xl '>
-      {sortedSlides?.map((slide, _index) => (
-        <SlideCard
-          key={slide.id}
-          slide={slide}
-          onUpdate={handleUpdateSlide}
-          onDelete={handleDeleteSlide}
-          addText={addText}
-          addImage={addImage}
-          addColumns={addColumns}
-          addQuote={addQuote}
-        />
-      ))}
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragEnd={handleDragEnd}
+      >
+        <SortableContext
+          items={sortedSlides.map(slide => slide.id)}
+          strategy={verticalListSortingStrategy}
+        >
+          {sortedSlides?.map((slide, _index) => (
+            <SortableSlideCard
+              key={slide.id}
+              slide={slide}
+              onUpdate={handleUpdateSlide}
+              onDelete={handleDeleteSlide}
+              addText={addText}
+              addImage={addImage}
+              addColumns={addColumns}
+              addQuote={addQuote}
+            />
+          ))}
+        </SortableContext>
+      </DndContext>
       {/* <AddSlideToolbar onAddSlide={handleAddSlide} /> */}
     </div>
   );
