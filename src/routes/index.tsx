@@ -7,6 +7,7 @@ import SlidePage from "../pages/slides"
 import FullApresentation from "../pages/slides/full"
 import TemplatesPage from "../pages/templates"
 import UserStorage from "../services/storage/auth"
+import CardBoardGen from "@/pages/v2/gen"
 
 const Routes = () => {
   const account = UserStorage.getTokenStorage()
@@ -45,6 +46,10 @@ const Routes = () => {
     {
       path: '/docs/v2',
       Component: MainSlide
+    },
+    {
+      path: '/docs/v2/gen',
+      Component: CardBoardGen
     },
   ] : [
     {
