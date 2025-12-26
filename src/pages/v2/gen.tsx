@@ -97,7 +97,7 @@ export default function MarkdownCardEditor() {
               <input
                 value={theme}
                 onChange={(e) => setTheme(e.target.value)}
-                className="w-full pl-5 pr-24 py-4 bg-slate-50 rounded-xl border-none focus:ring-2 focus:ring-blue-500/20 transition-all text-lg font-medium"
+                className="w-full py-4 bg-slate-50 rounded-xl border-none focus:ring-2 focus:ring-blue-500/20 transition-all text-lg font-medium overflow-hidden text-ellipsis"
                 placeholder="Ex: Revolução Industrial"
               />
               <div className="absolute right-4 top-1/2 -translate-y-1/2 flex gap-2">
@@ -152,7 +152,6 @@ export default function MarkdownCardEditor() {
                                   <textarea
                                     className="w-full text-sm bg-transparent border-none p-0 focus:ring-0 resize-none overflow-hidden"
                                     defaultValue={item}
-                                    rows={1}
                                   />
                                 </li>
                               ))}
