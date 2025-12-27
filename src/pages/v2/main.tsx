@@ -4,18 +4,18 @@ import { useSlideContext } from "@/context/slides";
 import { isDesktop } from "@/lib/utils";
 import { PresentationsService } from "@/services/presentations";
 import { useSlideStore } from "@/stores/slideStore";
-import { useEffect, useLayoutEffect, useRef } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import { PresentationMode } from "./presentationMode";
 import Slide from "./slide";
 
 const MainSlide = () => {
   const { id } = useParams();
-  const { slides, reorderSlides, addSlide } = useSlideStore();
+  const { addSlide } = useSlideStore();
+  const [dataPresentation, setDataPresentation] = useState(null);
 
   const {
-    isPresentationMode,
-    updateSlide
+    isPresentationMode
   } = useSlideContext(state => ({
     isPresentationMode: state.isPresentationMode,
     updateSlide: state.updateSlide
@@ -25,9 +25,9 @@ const MainSlide = () => {
     PresentationsService.list(id)
       .then(({ data }) => {
         data?.presentations.forEach((slide: any) => {
-          addSlide("type-1", slide.content);
+          addSlide("type-1", slide.content, slide.id);
         })
-
+        setDataPresentation(data);
       })
   }
 
@@ -72,7 +72,7 @@ const MainSlide = () => {
         <SlidesPanel />
         <div className="flex-1 flex h-full overflow-auto py-8 w-full">
           <main ref={mainRef} className="h-full max-w-6xl mx-auto">
-            <Slide />
+            <Slide dataPresentation={dataPresentation} />
             <div style={{ height: '60px' }} />
           </main>
         </div>

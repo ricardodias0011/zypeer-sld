@@ -4,6 +4,7 @@ import { Dialog, DialogClose, DialogContent, DialogFooter, DialogTitle, DialogTr
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/v2/ui/popover';
 import { useSlideContext } from '@/context/slides';
 import { cn, isMobile } from '@/lib/utils';
+import { PresentationsService } from '@/services/presentations';
 import { useSlideStore, type Slide, type SlideContentType } from '@/stores/slideStore';
 import {
   closestCenter,
@@ -1012,8 +1013,11 @@ export const SlideCard = memo(({
   );
 });
 
+interface AppSlideProps {
+  dataPresentation: any
+}
 
-const App: React.FC = () => {
+const App: React.FC<AppSlideProps> = (props) => {
   const { updateSlide, deleteSlide, currentSlideId } = useSlideContext(state => ({
     slides: state.slides,
     updateSlide: state.updateSlide,
@@ -1048,9 +1052,21 @@ const App: React.FC = () => {
 
   const handleUpdateSlide = React.useCallback(
     (id: string, field: keyof Slide, value: SlideContentType[] | string) => {
-      updateSlide(id, {
+      const updates = {
         [field]: value,
-      });
+      }
+      const slides = props.dataPresentation?.presentations.map(slide =>
+        slide.id === id ? { ...slide, ...updates } : slide
+      );
+      PresentationsService.update({
+        presentations: slides
+
+      }, props.dataPresentation.id)
+        .then(() => {
+        })
+      // updateSlide(id, {
+      //   [field]: value,
+      // });
     },
     [updateSlide]
   );
