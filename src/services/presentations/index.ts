@@ -55,4 +55,8 @@ export class PresentationsService {
             }
         });
     }
+
+    static async v2Create(data: any) {
+        return api.post(`/presentations/v2/create`, data);
+    }
 }

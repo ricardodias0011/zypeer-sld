@@ -4,7 +4,7 @@ import { Dialog, DialogClose, DialogContent, DialogFooter, DialogTitle, DialogTr
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/v2/ui/popover';
 import { useSlideContext } from '@/context/slides';
 import { cn, isMobile } from '@/lib/utils';
-import { type Slide, type SlideContentType } from '@/stores/slideStore';
+import { useSlideStore, type Slide, type SlideContentType } from '@/stores/slideStore';
 import {
   closestCenter,
   DndContext,
@@ -1014,13 +1014,14 @@ export const SlideCard = memo(({
 
 
 const App: React.FC = () => {
-  const { slides, updateSlide, deleteSlide, reorderSlides } = useSlideContext(state => ({
+  const { updateSlide, deleteSlide, currentSlideId } = useSlideContext(state => ({
     slides: state.slides,
     updateSlide: state.updateSlide,
     deleteSlide: state.deleteSlide,
-    reorderSlides: state.reorderSlides
+    currentSlideId: state.currentSlideId,
   }));
 
+  const { slides, reorderSlides } = useSlideStore();
   const sortedSlides = [...slides].sort((a, b) => a.order - b.order);
 
   const sensors = useSensors(
@@ -1134,6 +1135,9 @@ const App: React.FC = () => {
     },
     [updateSlide]
   );
+
+  console.log(slides)
+
   return (
     <div className='w-6xl '>
       <DndContext

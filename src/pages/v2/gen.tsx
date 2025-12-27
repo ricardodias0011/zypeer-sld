@@ -1,4 +1,6 @@
 import { Popover, PopoverClose, PopoverContent, PopoverTrigger } from '@/components/v2/ui/popover';
+import { EventsService } from '@/services/events';
+import { PresentationsService } from '@/services/presentations';
 import UserStorage from '@/services/storage/auth';
 import { URLS } from '@/utils/urls';
 import {
@@ -12,6 +14,7 @@ import {
 } from 'lucide-react';
 import { useEffect, useState, type FormEventHandler } from 'react';
 import { DragDropContext, Draggable, Droppable } from 'react-beautiful-dnd';
+import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
 interface Card {
@@ -21,10 +24,13 @@ interface Card {
 }
 
 export default function MarkdownCardEditor() {
+  const navigate = useNavigate();
   const [cards, setCards] = useState<Card[]>([]);
   const [theme, setTheme] = useState('');
   const [cardCount, setCardCount] = useState(5);
   const [generating, setGenerating] = useState(false);
+  const [eventID, setEventID] = useState<string | null>("");
+  const [statusCreate, setStatusCreate] = useState(0);
 
   const onCreateCards: FormEventHandler<HTMLFormElement> = async (e) => {
     e.preventDefault();
@@ -116,8 +122,49 @@ export default function MarkdownCardEditor() {
     setCards(cards.filter(card => card.id !== id));
   };
 
+  const onCreate = () => {
+    PresentationsService.v2Create({
+      title: "teste",
+      numberOfSlides: cards.length,
+      cards: cards,
+      topic: theme
+    })
+      .then(({ data }) => {
+        toast.success("Apresentação criada com sucesso!");
+        setEventID(data?.id)
+      })
+      .catch(() => {
+        toast.error("Não foi possível criar a apresentação.");
+      });
+  }
+
+  useEffect(() => {
+    if (eventID) {
+      const interval = setInterval(() => {
+        EventsService.consult("presentation", eventID ?? "")
+          .then(({ data }) => {
+            if (data?.status) {
+              setStatusCreate(data.status);
+              if (data.status === 0) {
+                clearInterval(interval);
+                return
+              }
+              if (data.status === 4 && data?.metadata) {
+                setTimeout(() => {
+                  navigate("/docs/v2/" + data?.metadata?.[0].id);
+                }, 500)
+                clearInterval(interval);
+              }
+            }
+          })
+      }, 3000);
+
+      return () => clearInterval(interval);
+    }
+  }, [eventID]);
+
   return (
-    <div className="min-h-screen overflow-auto bg-gradient-to-br from-blue-200  to-white text-slate-900 font-sans p-6 md:p-12">
+    <div className="h-screen overflow-auto bg-gradient-to-br from-blue-200  to-white text-slate-900 font-sans p-6 md:p-12">
       <div className="max-w-4xl mx-auto space-y-10">
 
         <header className="flex justify-between items-center">
@@ -128,14 +175,14 @@ export default function MarkdownCardEditor() {
             <p className="text-slate-500 text-sm mt-1">Organize seus tópicos e gere apresentações.</p>
           </div>
           {cards.length > 0 ? <button
-            onClick={() => console.log('Gerando slides...', cards)}
+            onClick={onCreate}
             className="flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold shadow-lg shadow-blue-200 transition-all active:scale-95"
           >
             <Presentation size={20} />
             Gerar Slides
           </button> : <></>}
         </header>
-        <div className="max-w-4xl overflow-auto  mx-auto space-y-8 max-h-[50vh]">
+        <div className="max-w-4xl mx-auto space-y-8 max-h-[50vh]">
           <div className="flex flex-wrap justify-center gap-3">
             <div className="relative">
               <Popover>
@@ -165,7 +212,7 @@ export default function MarkdownCardEditor() {
             </div>
           </div>
         </div>
-        <section className="grid overflow-auto  gap-4 bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
+        <section className="grid gap-4 bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
           <div className="relative">
             <label className="text-xs font-bold text-slate-400 uppercase tracking-wider ml-1">Tema Principal</label>
             <div className="relative mt-2">
@@ -245,7 +292,6 @@ export default function MarkdownCardEditor() {
             )}
           </Droppable>
         </DragDropContext>
-
         <button
           onClick={addCard}
           className="w-full py-6 border-2 border-dashed border-slate-200 rounded-3xl text-slate-400 hover:text-blue-500 hover:border-blue-200 hover:bg-blue-50/30 transition-all flex items-center justify-center gap-2 font-medium"

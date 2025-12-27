@@ -1,3 +1,4 @@
+import CardBoardGen from "@/pages/v2/gen"
 import MainSlide from "@/pages/v2/main"
 import { Navigate, useRoutes } from "react-router-dom"
 import Layout from "../components/layout"
@@ -7,7 +8,6 @@ import SlidePage from "../pages/slides"
 import FullApresentation from "../pages/slides/full"
 import TemplatesPage from "../pages/templates"
 import UserStorage from "../services/storage/auth"
-import CardBoardGen from "@/pages/v2/gen"
 
 const Routes = () => {
   const account = UserStorage.getTokenStorage()
@@ -44,6 +44,9 @@ const Routes = () => {
       Component: SlidePage
     },
     {
+      path: '/docs/v2/:id',
+      Component: MainSlide
+    }, {
       path: '/docs/v2',
       Component: MainSlide
     },

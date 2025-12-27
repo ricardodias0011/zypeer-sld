@@ -2,15 +2,34 @@ import { SlidesPanel } from "@/components/v2/panel";
 import { Toolbar } from "@/components/v2/topbar";
 import { useSlideContext } from "@/context/slides";
 import { isDesktop } from "@/lib/utils";
-import { useLayoutEffect, useRef } from "react";
+import { PresentationsService } from "@/services/presentations";
+import { useSlideStore } from "@/stores/slideStore";
+import { useEffect, useLayoutEffect, useRef } from "react";
+import { useParams } from "react-router-dom";
 import { PresentationMode } from "./presentationMode";
 import Slide from "./slide";
 
 const MainSlide = () => {
+  const { id } = useParams();
+  const { slides, reorderSlides, addSlide } = useSlideStore();
 
-  const { isPresentationMode } = useSlideContext(state => ({
-    isPresentationMode: state.isPresentationMode
+  const {
+    isPresentationMode,
+    updateSlide
+  } = useSlideContext(state => ({
+    isPresentationMode: state.isPresentationMode,
+    updateSlide: state.updateSlide
   }));
+
+  const getPresentations = () => {
+    PresentationsService.list(id)
+      .then(({ data }) => {
+        data?.presentations.forEach((slide: any) => {
+          addSlide("type-1", slide.content);
+        })
+
+      })
+  }
 
   const mainRef = useRef<HTMLElement>(null);
   useLayoutEffect(() => {
@@ -35,6 +54,11 @@ const MainSlide = () => {
       return () => window.removeEventListener('resize', handleResize);
     }
   }, []);
+
+  useEffect(() => {
+    if (id)
+      getPresentations();
+  }, [id])
 
 
   if (isPresentationMode) {
