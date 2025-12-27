@@ -1,6 +1,8 @@
-import type { LayoutType } from '@/types/slide-v2';
+import React, { createContext, useContext, useRef } from 'react';
 import { v4 } from 'uuid';
-import { create } from 'zustand';
+import { create, useStore } from 'zustand';
+
+export type LayoutType = 'half-right' | 'half-left' | 'full';
 
 export type SlideType = 'type-1';
 
@@ -37,6 +39,7 @@ export type SlideContentType = {
   }[];
 }
 
+// Interface de Estado do Store
 interface SlideState {
   slides: Slide[];
   currentSlideId: string | null;
@@ -79,9 +82,7 @@ const createDefaultSlide = (order: number, type: SlideType): Slide => ({
   bgcolor: '#ffffff',
 });
 
-const initialSlides = [createDefaultSlide(0, 'type-1')];
-
-export const useSlideStore = create<SlideState>((set, get) => ({
+const createSlideStore = (initialSlides: Slide[]) => create<SlideState>((set, get) => ({
   slides: initialSlides,
   currentSlideId: initialSlides[0]?.id || null,
   isPresentationMode: false,
@@ -205,3 +206,33 @@ export const useSlideStore = create<SlideState>((set, get) => ({
     }
   },
 }));
+
+type SlideStore = ReturnType<typeof createSlideStore>;
+const SlideContext = createContext<SlideStore | null>(null);
+interface SlideProviderProps {
+  children: React.ReactNode;
+}
+
+export const SlideProvider: React.FC<SlideProviderProps> = ({ children }) => {
+  const initialSlides = [createDefaultSlide(0, 'type-1')];
+  const storeRef = useRef<SlideStore>(null);
+  if (!storeRef.current) {
+    storeRef.current = createSlideStore(initialSlides);
+  }
+
+  return (
+    <SlideContext.Provider value={storeRef.current}>
+      {children}
+    </SlideContext.Provider>
+  );
+};
+export const useSlideContext = <T,>(
+  selector: (state: SlideState) => T,
+): T => {
+  const store = useContext(SlideContext);
+
+  if (!store) {
+    throw new Error('useSlideContext must be used within a SlideProvider');
+  }
+  return useStore(store, selector);
+};

@@ -2,8 +2,9 @@ import Textarea from '@/components/v2/textArea';
 import { Button } from '@/components/v2/ui/button';
 import { Dialog, DialogClose, DialogContent, DialogFooter, DialogTitle, DialogTrigger } from '@/components/v2/ui/dialog';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/v2/ui/popover';
+import { useSlideContext } from '@/context/slides';
 import { cn, isMobile } from '@/lib/utils';
-import { useSlideStore, type Slide, type SlideContentType } from '@/stores/slideStore';
+import { type Slide, type SlideContentType } from '@/stores/slideStore';
 import {
   closestCenter,
   DndContext,
@@ -1013,7 +1014,13 @@ export const SlideCard = memo(({
 
 
 const App: React.FC = () => {
-  const { slides, updateSlide, deleteSlide, reorderSlides } = useSlideStore();
+  const { slides, updateSlide, deleteSlide, reorderSlides } = useSlideContext(state => ({
+    slides: state.slides,
+    updateSlide: state.updateSlide,
+    deleteSlide: state.deleteSlide,
+    reorderSlides: state.reorderSlides
+  }));
+
   const sortedSlides = [...slides].sort((a, b) => a.order - b.order);
 
   const sensors = useSensors(

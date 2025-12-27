@@ -1,15 +1,18 @@
-import React, { useState, useEffect } from 'react';
-import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
+import { Popover, PopoverClose, PopoverContent, PopoverTrigger } from '@/components/v2/ui/popover';
+import UserStorage from '@/services/storage/auth';
+import { URLS } from '@/utils/urls';
 import {
-  GripVertical,
-  RotateCcw,
-  CheckCircle2,
   ChevronDown,
+  GripVertical,
   Plus,
   Presentation,
-  Trash2,
-  Sparkles
+  RotateCcw,
+  Sparkles,
+  Trash2
 } from 'lucide-react';
+import { useEffect, useState, type FormEventHandler } from 'react';
+import { DragDropContext, Draggable, Droppable } from 'react-beautiful-dnd';
+import { toast } from 'sonner';
 
 interface Card {
   id: string;
@@ -20,6 +23,58 @@ interface Card {
 export default function MarkdownCardEditor() {
   const [cards, setCards] = useState<Card[]>([]);
   const [theme, setTheme] = useState('');
+  const [cardCount, setCardCount] = useState(5);
+  const [generating, setGenerating] = useState(false);
+
+  const onCreateCards: FormEventHandler<HTMLFormElement> = async (e) => {
+    e.preventDefault();
+    if (generating) return
+    setGenerating(true);
+    try {
+      const token = UserStorage.getTokenStorage()
+      const response = await fetch(`${URLS.api}tools/generate/s/cards`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token?.access_token}`,
+        },
+        body: JSON.stringify({
+          text: theme,
+          cardCount: cardCount
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(response.status === 400 ? "Créditos insuficientes!" : "Não foi possível completar a conexão.");
+      }
+      if (!response.body) throw new Error("Resposta vazia do servidor.");
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let fullMessage = "";
+
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        fullMessage += decoder.decode(value, { stream: true });
+        parseMarkdownToCards(fullMessage);
+      }
+    } catch (error: any) {
+      toast.error(error.message || "Não foi possível gerar cards.");
+    } finally {
+      setGenerating(false);
+    }
+    // const mockApiMarkdown = `
+    // ---
+    // # Introdução à Revolução Industrial
+    // - Transição para novos processos de manufatura.
+    // ---
+    // # O Que Foi a Revolução
+    // - Substituição da produção artesanal pela mecanizada.
+    // - Impacto na estrutura da sociedade moderna.
+    // ---`;
+
+  }
 
   const parseMarkdownToCards = (md: string) => {
     const sections = md.split('---').filter(section => section.trim() !== '');
@@ -37,16 +92,7 @@ export default function MarkdownCardEditor() {
   };
 
   useEffect(() => {
-    const mockApiMarkdown = `
----
-# Introdução à Revolução Industrial
-- Transição para novos processos de manufatura.
----
-# O Que Foi a Revolução
-- Substituição da produção artesanal pela mecanizada.
-- Impacto na estrutura da sociedade moderna.
----`;
-    parseMarkdownToCards(mockApiMarkdown);
+
   }, []);
 
   const onDragEnd = (result: any) => {
@@ -71,7 +117,7 @@ export default function MarkdownCardEditor() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-200  to-white text-slate-900 font-sans p-6 md:p-12">
+    <div className="min-h-screen overflow-auto bg-gradient-to-br from-blue-200  to-white text-slate-900 font-sans p-6 md:p-12">
       <div className="max-w-4xl mx-auto space-y-10">
 
         <header className="flex justify-between items-center">
@@ -81,25 +127,57 @@ export default function MarkdownCardEditor() {
             </h1>
             <p className="text-slate-500 text-sm mt-1">Organize seus tópicos e gere apresentações.</p>
           </div>
-          <button
+          {cards.length > 0 ? <button
             onClick={() => console.log('Gerando slides...', cards)}
             className="flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold shadow-lg shadow-blue-200 transition-all active:scale-95"
           >
             <Presentation size={20} />
             Gerar Slides
-          </button>
+          </button> : <></>}
         </header>
-
-        <section className="grid gap-4 bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
+        <div className="max-w-4xl overflow-auto  mx-auto space-y-8 max-h-[50vh]">
+          <div className="flex flex-wrap justify-center gap-3">
+            <div className="relative">
+              <Popover>
+                <PopoverTrigger asChild>
+                  <button className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/80 backdrop-blur border border-slate-200 text-sm font-medium text-slate-700 hover:bg-white hover:shadow transition outline-none focus:ring-2 focus:ring-blue-500/20">
+                    <Sparkles size={14} />
+                    Numero de Cartões: {cardCount}
+                    <ChevronDown size={14} className="text-slate-500" />
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent className="bg-white rounded-xl overflow-hidden shadow-lg border border-slate-200">
+                  <ul className="space-y-2">
+                    {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
+                      <PopoverClose className='w-full' key={num}>
+                        <button
+                          onClick={() => setCardCount(Number(num))}
+                          className="w-full text-left px-3 py-2 rounded-lg text-gray-700 hover:bg-blue-50 transition text-sm"
+                        >
+                          {num} cartões
+                        </button>
+                      </PopoverClose>
+                    ))}
+                  </ul>
+                </PopoverContent>
+              </Popover>
+              <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
+            </div>
+          </div>
+        </div>
+        <section className="grid overflow-auto  gap-4 bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
           <div className="relative">
             <label className="text-xs font-bold text-slate-400 uppercase tracking-wider ml-1">Tema Principal</label>
             <div className="relative mt-2">
-              <input
-                value={theme}
-                onChange={(e) => setTheme(e.target.value)}
-                className="w-full py-4 bg-slate-50 rounded-xl border-none focus:ring-2 focus:ring-blue-500/20 transition-all text-lg font-medium overflow-hidden text-ellipsis"
-                placeholder="Ex: Revolução Industrial"
-              />
+              <form onSubmit={onCreateCards}>
+                <input
+                  value={theme}
+                  disabled={generating}
+                  onChange={(e) => setTheme(e.target.value)}
+                  className="w-full py-4 bg-slate-50 rounded-xl border-none focus:ring-2 focus:ring-blue-500/20 transition-all text-lg font-medium overflow-hidden text-ellipsis"
+                  placeholder="Ex: Revolução Industrial"
+                />
+              </form>
               <div className="absolute right-4 top-1/2 -translate-y-1/2 flex gap-2">
                 <RotateCcw size={20} className="text-slate-300 hover:text-blue-500 cursor-pointer transition" />
                 <Sparkles size={20} className="text-blue-500" />

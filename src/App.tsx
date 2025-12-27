@@ -5,6 +5,7 @@ import { BrowserRouter } from 'react-router-dom';
 import './App.css';
 import "./assets/styles/index.css";
 import { AuthProvider } from './context/auth';
+import { SlideProvider } from './context/slides';
 import Routes from './routes';
 moment.locale('pt-br');
 
@@ -14,7 +15,9 @@ function App() {
     <BrowserRouter>
       <AuthProvider>
         <Theme hasBackground={false} style={{ overflow: 'hidden' }}>
-          <Routes />
+          <SlideProvider>
+            <Routes />
+          </SlideProvider>
         </Theme>
       </AuthProvider>
     </BrowserRouter>

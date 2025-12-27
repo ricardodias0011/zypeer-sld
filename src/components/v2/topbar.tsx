@@ -46,9 +46,9 @@ export const Toolbar = () => {
   };
 
   return (
-    <div className="border-b border-gray-200 bg-white flex items-center justify-between p-2">
+    <div className="border-b border-gray-200 bg-linear-to-r from-blue-700 from-30% via-blue-500 via-50% to-blue-700 flex items-center justify-between p-2">
       <div className="flex items-center gap-2">
-        <img src={Logo} alt="Logo" className="h-8 w-8" />
+        <img src={Logo} alt="Logo" className="h-8 w-32" />
       </div>
 
       <div className="flex items-center gap-2">
@@ -78,13 +78,13 @@ export const Toolbar = () => {
           onClick={saveToLocalStorage}
           title="Save (Ctrl+S)"
         >
-          <Save className="h-4 w-8" />
+          <Save className="h-4 w-8 text-white" />
         </Button>
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" title="Export">
-              <Download className="h-4 w-8" />
+              <Download className="h-4 w-8 text-white" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent>

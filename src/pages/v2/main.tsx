@@ -1,13 +1,17 @@
 import { SlidesPanel } from "@/components/v2/panel";
 import { Toolbar } from "@/components/v2/topbar";
+import { useSlideContext } from "@/context/slides";
 import { isDesktop } from "@/lib/utils";
-import { useSlideStore } from "@/stores/slideStore";
 import { useLayoutEffect, useRef } from "react";
 import { PresentationMode } from "./presentationMode";
 import Slide from "./slide";
 
 const MainSlide = () => {
-  const { isPresentationMode } = useSlideStore();
+
+  const { isPresentationMode } = useSlideContext(state => ({
+    isPresentationMode: state.isPresentationMode
+  }));
+
   const mainRef = useRef<HTMLElement>(null);
   useLayoutEffect(() => {
     if (isDesktop()) {
@@ -36,7 +40,6 @@ const MainSlide = () => {
   if (isPresentationMode) {
     return <PresentationMode />;
   }
-
 
   return (
     <div className="bg-gray-100 font-sans text-gray-800 min-h-screen" style={{ overflow: 'hidden' }}>

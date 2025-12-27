@@ -83,8 +83,7 @@ export const PresentationMode = () => {
           <X className="h-4 w-4" />
         </Button>
       </div>
-
-      <div className="flex-1 flex items-center justify-center">
+      <div className="flex-1 flex items-center justify-center h-screen">
         <div
           className="w-full"
           style={{
