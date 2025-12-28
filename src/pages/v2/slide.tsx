@@ -1000,7 +1000,31 @@ export const SlideCard = memo(({
                 </Button>
 
                 <Button
-                  onClick={() => addColumns(slide)}
+                  onClick={() => {
+                    onUpdateCurrent(currentSlide.id, 'content', [
+                      ...(currentSlide.content || []),
+                      {
+                        type: 'column',
+                        id: v4().slice(0, 10),
+                        order: slide.content.length + 1,
+                        columns: [
+                          {
+                            direction: 'left',
+                            type: 'text',
+                            text: 'Coluna 1',
+                            id: v4().slice(0, 10)
+                          },
+                          {
+                            direction: 'right',
+                            type: 'text',
+                            text: 'Coluna 2',
+                            id: v4().slice(0, 10)
+                          }
+                        ]
+                      }
+                    ]);
+                    addColumns(slide)
+                  }}
                   variant="secondary"
                   className="flex items-center justify-start gap-3 px-4 py-0"
                 >
@@ -1043,6 +1067,14 @@ const App: React.FC<AppSlideProps> = (props) => {
   const { slides, reorderSlides, deleteSlide, updateSlide } = useSlideStore();
   const sortedSlides = [...slides].sort((a, b) => a.order - b.order);
 
+  const updateIncloud = (_slides: Slide[]) => {
+    PresentationsService.update({
+      presentations: _slides
+    }, props?.dataPresentation?.id || "")
+      .then(() => {
+      })
+  }
+
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
@@ -1067,7 +1099,6 @@ const App: React.FC<AppSlideProps> = (props) => {
 
   const handleUpdateSlide = React.useCallback(
     (id: string, field: keyof Slide, value: SlideContentType[] | string) => {
-      console.log('Updating slide:', id, field, value);
       if (!props?.dataPresentation?.id) return;
       const updates = {
         [field]: value,
@@ -1075,11 +1106,7 @@ const App: React.FC<AppSlideProps> = (props) => {
       const slides = props.dataPresentation?.presentations.map(slide =>
         slide.id === id ? { ...slide, ...updates } : slide
       );
-      PresentationsService.update({
-        presentations: slides
-      }, props?.dataPresentation?.id || "")
-        .then(() => {
-        })
+      updateIncloud(slides || []);
       // updateSlide(id, {
       //   [field]: value,
       // });
@@ -1140,32 +1167,31 @@ const App: React.FC<AppSlideProps> = (props) => {
 
   const addColumns = React.useCallback(
     (slide: SlideEditor) => {
-      updateSlide(slide.id, {
-        content: [
-          ...(slide.content || []),
-          {
-            type: 'column',
-            id: v4().slice(0, 10),
-            order: slide.content.length + 1,
-            columns: [
-              {
-                direction: 'left',
-                type: 'text',
-                text: 'Coluna 1',
-                id: v4().slice(0, 10)
-              },
-              {
-                direction: 'right',
-                type: 'text',
-                text: 'Coluna 2',
-                id: v4().slice(0, 10)
-              }
-            ]
-          }
-        ],
-      });
+      handleUpdateSlide(slide.id, "content", [
+        ...(slide.content || []),
+        {
+          type: 'column',
+          id: v4().slice(0, 10),
+          order: slide.content.length + 1,
+          columns: [
+            {
+              direction: 'left',
+              type: 'text',
+              text: 'Coluna 1',
+              id: v4().slice(0, 10)
+            },
+            {
+              direction: 'right',
+              type: 'text',
+              text: 'Coluna 2',
+              id: v4().slice(0, 10)
+            }
+          ]
+        }
+      ]);
+
     },
-    [updateSlide]
+    [updateSlide, props?.dataPresentation]
   );
 
   return (

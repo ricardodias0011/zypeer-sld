@@ -83,9 +83,9 @@ export const PresentationMode = () => {
           <X className="h-4 w-4" />
         </Button>
       </div>
-      <div className="flex-1 flex items-center justify-center h-screen">
+      <div className="flex-1 flex items-center justify-center">
         <div
-          className="w-full"
+          className="w-full h-screen overflow-scroll"
           style={{
             backgroundColor: currentSlide.bgcolor || 'transparent',
             backgroundImage: currentSlide.backgroundImage
@@ -95,7 +95,7 @@ export const PresentationMode = () => {
             backgroundPosition: 'center',
           }}
         >
-          <div className="aspect-video overflow-y-auto" ref={slideRef} >
+          <div className="overflow-visible" ref={slideRef} >
             <SlideCard
               addText={() => { }}
               addImage={() => { }}
