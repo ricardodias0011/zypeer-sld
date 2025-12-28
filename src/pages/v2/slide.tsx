@@ -983,7 +983,18 @@ export const SlideCard = memo(({
                   <span className="text-gray-700 font-medium">Texto</span>
                 </Button>
                 <Button
-                  onClick={() => addImage(slide)}
+                  onClick={() => {
+                    onUpdateCurrent(currentSlide.id, 'content', [
+                      ...slide.content,
+                      {
+                        type: 'image',
+                        text: '',
+                        id: v4().slice(0, 10),
+                        order: slide.content.length + 1
+                      },
+                    ])
+                    addImage(slide);
+                  }}
                   variant="secondary"
                   className="flex items-center justify-start gap-3 px-4 py-0"
                 >
@@ -1116,53 +1127,46 @@ const App: React.FC<AppSlideProps> = (props) => {
 
   const addText = React.useCallback(
     (slide: SlideEditor) => {
-      updateSlide(slide.id, {
-        content: [
-          ...slide.content,
-          {
-            type: 'text',
-            text: 'Novo texto',
-            id: v4().slice(0, 10),
-            order: slide.content.length + 1
-          },
-        ],
-      });
+      handleUpdateSlide(slide.id, "content", [
+        ...slide.content,
+        {
+          type: 'text',
+          text: 'Novo texto',
+          id: v4().slice(0, 10),
+          order: slide.content.length + 1
+        },
+      ]);
     },
     [updateSlide]
   );
 
   const addQuote = React.useCallback(
     (slide: SlideEditor) => {
-      updateSlide(slide.id, {
-        content: [
-          ...slide.content,
-          {
-            type: 'quote',
-            text: '*Nova citação*',
-            id: v4().slice(0, 10),
-            order: slide.content.length + 1
-          }
-        ],
-      });
+      handleUpdateSlide(slide.id, "content", [
+        ...slide.content,
+        {
+          type: 'quote',
+          text: '*Nova citação*',
+          id: v4().slice(0, 10),
+          order: slide.content.length + 1
+        }
+      ]);
     },
     [updateSlide]
   );
   const addImage = React.useCallback(
     (slide: SlideEditor) => {
-      updateSlide(slide.id, {
-        type: 'type-1',
-        content: [
-          ...slide.content,
-          {
-            type: 'image',
-            text: '',
-            id: v4().slice(0, 10),
-            order: slide.content.length + 1
-          },
-        ],
-      });
+      handleUpdateSlide(slide.id, "content", [
+        ...slide.content,
+        {
+          type: 'image',
+          text: '',
+          id: v4().slice(0, 10),
+          order: slide.content.length + 1
+        },
+      ]);
     },
-    [updateSlide]
+    [updateSlide, props?.dataPresentation]
   );
 
   const addColumns = React.useCallback(

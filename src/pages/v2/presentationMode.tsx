@@ -1,6 +1,6 @@
 import { Button } from '@/components/v2/ui/button';
 import { useSlideStore } from '@/stores/slideStore';
-import { ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useEffect, useLayoutEffect, useRef } from 'react';
 import { SlideCard } from './slide';
 
@@ -73,16 +73,6 @@ export const PresentationMode = () => {
 
   return (
     <div className="fixed inset-0 bg-background z-50 flex flex-col">
-      <div className="absolute top-4 right-4 z-50 flex gap-2">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={togglePresentationMode}
-          className="bg-card/80 backdrop-blur hover:bg-card hover:text-gray-700"
-        >
-          <X className="h-4 w-4" />
-        </Button>
-      </div>
       <div className="flex-1 flex items-center justify-center">
         <div
           className="w-full h-screen overflow-scroll"
