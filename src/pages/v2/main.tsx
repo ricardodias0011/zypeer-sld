@@ -12,11 +12,13 @@ const MainSlide = () => {
   const { id } = useParams();
   const { addSlide, isPresentationMode } = useSlideStore();
   const [dataPresentation, setDataPresentation] = useState<{ presentations: Slide[]; id: string; } | null>(null);
+  const [slides, setSlides] = useState<Slide[]>([]);
 
   const getPresentations = () => {
     PresentationsService.list(id)
       .then(({ data }) => {
         setDataPresentation(data);
+        setSlides(data?.presentations || []);
         data?.presentations.forEach((slide: any) => {
           addSlide("type-1", slide, slide.id);
         })
@@ -61,10 +63,12 @@ const MainSlide = () => {
     <div className="bg-gray-100 font-sans text-gray-800 min-h-screen" style={{ overflow: 'hidden' }}>
       <Toolbar />
       <div className="flex-1 flex h-full overflow-hidden w-full" style={{ height: 'calc(100vh - 75px)' }}>
-        <SlidesPanel />
+        <SlidesPanel id={id} />
         <div className="flex-1 flex h-full overflow-auto py-8 w-full">
           <main ref={mainRef} className="h-full max-w-6xl mx-auto">
-            <SlideContent dataPresentation={dataPresentation} />
+            <SlideContent dataPresentation={dataPresentation} slides={slides} updatePresentation={(slides) => {
+              setSlides(slides)
+            }} />
             <div style={{ height: '60px' }} />
           </main>
         </div>

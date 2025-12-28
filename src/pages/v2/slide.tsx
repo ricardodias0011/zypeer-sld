@@ -23,7 +23,7 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { GripVertical, Image, Palette, Plus, Text, Trash, Trash2 } from 'lucide-react';
-import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
+import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { v4 } from 'uuid';
 import { ImageCard } from './image';
 import StylePopover from './settingsPanel';
@@ -40,10 +40,6 @@ interface SlideCardProps {
   onUpdate: (d: string, field: keyof Slide, value: SlideContentType[] | string) => void;
   onDelete: (id: string) => void;
   readOnly?: boolean;
-  addText: (slide: SlideEditor) => void;
-  addImage: (slide: SlideEditor) => void;
-  addColumns: (slide: SlideEditor) => void;
-  addQuote: (slide: SlideEditor) => void;
 }
 
 interface ImageWithTextSlideProps {
@@ -543,11 +539,7 @@ const SortableSlideCard = ({
   slide,
   onUpdate,
   onDelete,
-  readOnly,
-  addText,
-  addImage,
-  addColumns,
-  addQuote
+  readOnly
 }: SlideCardProps) => {
   const {
     attributes,
@@ -570,10 +562,6 @@ const SortableSlideCard = ({
         onUpdate={onUpdate}
         onDelete={onDelete}
         readOnly={readOnly}
-        addText={addText}
-        addImage={addImage}
-        addColumns={addColumns}
-        addQuote={addQuote}
         dragHandleProps={{ ...attributes, ...listeners }}
       />
     </div>
@@ -751,11 +739,7 @@ export const SlideCard = memo(({
   slide,
   onDelete,
   readOnly,
-  addText,
   onUpdate,
-  addImage,
-  addColumns,
-  addQuote,
   dragHandleProps
 }: SlideCardProps & { dragHandleProps?: any }) => {
 
@@ -833,10 +817,6 @@ export const SlideCard = memo(({
         onUpdateCurrent(currentSlide.id, 'content', currentSlide.content?.filter(c => c.id !== id))
       }
     }, [currentSlide.content, currentSlide.id, onUpdate, onUpdateCurrent]);
-
-    useEffect(() => {
-      console.log(currentSlide)
-    }, [currentSlide])
 
     return (
       <div
@@ -975,7 +955,17 @@ export const SlideCard = memo(({
             <PopoverContent className="w-60 p-3">
               <div className="flex flex-col gap-2">
                 <Button
-                  onClick={() => addText(slide)}
+                  onClick={() => {
+                    onUpdateCurrent(currentSlide.id, 'content', [
+                      ...slide.content,
+                      {
+                        type: 'text',
+                        text: 'Novo texto',
+                        id: v4().slice(0, 10),
+                        order: slide.content.length + 1
+                      }
+                    ])
+                  }}
                   variant="secondary"
                   className="flex items-center justify-start gap-3 px-4 py-0"
                 >
@@ -993,7 +983,6 @@ export const SlideCard = memo(({
                         order: slide.content.length + 1
                       },
                     ])
-                    addImage(slide);
                   }}
                   variant="secondary"
                   className="flex items-center justify-start gap-3 px-4 py-0"
@@ -1004,7 +993,18 @@ export const SlideCard = memo(({
                 <Button
                   variant="secondary"
                   className="flex items-center justify-start gap-3 px-4 py-0"
-                  onClick={() => addQuote(slide)}
+                  onClick={() => {
+                    onUpdateCurrent(currentSlide.id, 'content', [
+                      ...(currentSlide.content || []),
+                      {
+                        type: 'quote',
+                        text: '*Nova citação*',
+                        id: v4().slice(0, 10),
+                        order: slide.content.length + 1
+                      }
+                    ]);
+
+                  }}
                 >
                   <span className="text-emerald-600 text-xl leading-none">“</span>
                   <span className="text-gray-700 font-medium">Citação</span>
@@ -1034,7 +1034,6 @@ export const SlideCard = memo(({
                         ]
                       }
                     ]);
-                    addColumns(slide)
                   }}
                   variant="secondary"
                   className="flex items-center justify-start gap-3 px-4 py-0"
@@ -1072,9 +1071,12 @@ interface AppSlideProps {
     presentations: Slide[],
     id: string
   } | null;
+  updatePresentation: (a: Slide[]) => void;
+  slides: Slide[]
 }
 
 const App: React.FC<AppSlideProps> = (props) => {
+  const currentSlidesRef = useRef<Slide[]>([]);
   const { slides, reorderSlides, deleteSlide, updateSlide } = useSlideStore();
   const sortedSlides = [...slides].sort((a, b) => a.order - b.order);
 
@@ -1114,89 +1116,24 @@ const App: React.FC<AppSlideProps> = (props) => {
       const updates = {
         [field]: value,
       }
-      const slides = props.dataPresentation?.presentations.map(slide =>
+      const slides = currentSlidesRef.current?.map(slide =>
         slide.id === id ? { ...slide, ...updates } : slide
       );
       updateIncloud(slides || []);
+      currentSlidesRef.current = slides || [];
+      // props.updatePresentation(slides || []);
       // updateSlide(id, {
       //   [field]: value,
       // });
     },
-    [updateSlide, props?.dataPresentation]
+    [updateSlide, props?.dataPresentation, currentSlidesRef.current, props.updatePresentation]
   );
 
-  const addText = React.useCallback(
-    (slide: SlideEditor) => {
-      handleUpdateSlide(slide.id, "content", [
-        ...slide.content,
-        {
-          type: 'text',
-          text: 'Novo texto',
-          id: v4().slice(0, 10),
-          order: slide.content.length + 1
-        },
-      ]);
-    },
-    [updateSlide]
-  );
-
-  const addQuote = React.useCallback(
-    (slide: SlideEditor) => {
-      handleUpdateSlide(slide.id, "content", [
-        ...slide.content,
-        {
-          type: 'quote',
-          text: '*Nova citação*',
-          id: v4().slice(0, 10),
-          order: slide.content.length + 1
-        }
-      ]);
-    },
-    [updateSlide]
-  );
-  const addImage = React.useCallback(
-    (slide: SlideEditor) => {
-      handleUpdateSlide(slide.id, "content", [
-        ...slide.content,
-        {
-          type: 'image',
-          text: '',
-          id: v4().slice(0, 10),
-          order: slide.content.length + 1
-        },
-      ]);
-    },
-    [updateSlide, props?.dataPresentation]
-  );
-
-  const addColumns = React.useCallback(
-    (slide: SlideEditor) => {
-      handleUpdateSlide(slide.id, "content", [
-        ...(slide.content || []),
-        {
-          type: 'column',
-          id: v4().slice(0, 10),
-          order: slide.content.length + 1,
-          columns: [
-            {
-              direction: 'left',
-              type: 'text',
-              text: 'Coluna 1',
-              id: v4().slice(0, 10)
-            },
-            {
-              direction: 'right',
-              type: 'text',
-              text: 'Coluna 2',
-              id: v4().slice(0, 10)
-            }
-          ]
-        }
-      ]);
-
-    },
-    [updateSlide, props?.dataPresentation]
-  );
+  useEffect(() => {
+    if ((props?.dataPresentation?.presentations?.length || 0) > 0) {
+      currentSlidesRef.current = props?.dataPresentation?.presentations || [];
+    }
+  }, [props?.dataPresentation])
 
   return (
     <div className='w-6xl '>
@@ -1215,10 +1152,6 @@ const App: React.FC<AppSlideProps> = (props) => {
               slide={slide}
               onUpdate={handleUpdateSlide}
               onDelete={handleDeleteSlide}
-              addText={addText}
-              addImage={addImage}
-              addColumns={addColumns}
-              addQuote={addQuote}
             />
           ))}
         </SortableContext>

@@ -1,12 +1,13 @@
 import { Button } from '@/components/v2/ui/button';
 import { cn } from '@/lib/utils';
 import { SlideCard } from '@/pages/v2/slide';
+import { PresentationsService } from '@/services/presentations';
 import { useSlideStore, type Slide } from '@/stores/slideStore';
 import { closestCenter, DndContext, type DragEndEvent } from '@dnd-kit/core';
 import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Copy, Trash2 } from 'lucide-react';
-import { useLayoutEffect, useRef } from 'react';
+import { useLayoutEffect, useRef, useState } from 'react';
 
 const SlideThumbnail = ({ slide }: { slide: Slide }) => {
   const { currentSlideId, setCurrentSlide, deleteSlide, duplicateSlide } = useSlideStore();
@@ -66,10 +67,6 @@ const SlideThumbnail = ({ slide }: { slide: Slide }) => {
             readOnly
             key={slide.id}
             slide={slide}
-            addColumns={() => { }}
-            addImage={() => { }}
-            addText={() => { }}
-            addQuote={() => { }}
             onUpdate={() => { }}
             onDelete={() => { }}
           /> : <></>
@@ -108,8 +105,17 @@ const SlideThumbnail = ({ slide }: { slide: Slide }) => {
   );
 };
 
-export const SlidesPanel = () => {
-  const { slides, reorderSlides, addSlide } = useSlideStore();
+export const SlidesPanel = ({ id }: { id?: string }) => {
+  const [slides, setSlides] = useState<Slide[]>([]);
+
+  const getPresentations = () => {
+    PresentationsService.list(id)
+      .then(({ data }) => {
+        setSlides(data?.presentations || []);
+      })
+  }
+
+  const { reorderSlides, addSlide } = useSlideStore();
   const sortedSlides = [...slides].sort((a, b) => a.order - b.order);
 
   const handleDragEnd = (event: DragEndEvent) => {
@@ -121,6 +127,15 @@ export const SlidesPanel = () => {
       reorderSlides(oldIndex, newIndex);
     }
   };
+
+  // useEffect(() => {
+  //   if (id) {
+  //     const interval = setInterval(() => {
+  //       getPresentations();
+  //     }, 10000);
+  //     return () => clearInterval(interval);
+  //   }
+  // }, [id])
 
   return (
     <div className="w-64 hidden md:flex bg-white border-r border-gray-300 overflow-y-auto">

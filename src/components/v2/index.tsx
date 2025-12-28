@@ -9,7 +9,8 @@ import {
   handleImageDrop,
   handleImagePaste,
   ImageResizer,
-  type EditorInstance
+  type EditorInstance,
+  type JSONContent
 } from "novel";
 
 import { memo, useEffect, useMemo, useRef, useState } from "react";
@@ -48,7 +49,7 @@ const TailwindAdvancedEditor = ({ slide, onUpdate, contentSlide, onDelete }: Tai
   const [openColor, setOpenColor] = useState(false);
   const [openAI, setOpenAI] = useState(false);
 
-  const [content, setContent] = useState("");
+  const contentRef = useRef("");
   const [canUpdate, setCanUpdate] = useState(false);
 
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -77,7 +78,7 @@ const TailwindAdvancedEditor = ({ slide, onUpdate, contentSlide, onDelete }: Tai
 
     isInternalUpdateRef.current = true;
     lastSyncedRef.current = markdown;
-    setContent(markdown);
+    contentRef.current = markdown;
     setCanUpdate(true);
   }, 500);
 
@@ -93,7 +94,7 @@ const TailwindAdvancedEditor = ({ slide, onUpdate, contentSlide, onDelete }: Tai
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
 
     timeoutRef.current = setTimeout(() => {
-      if (content !== contentSlide?.text && contentSlide?.id) {
+      if (contentRef.current !== contentSlide?.text && contentSlide?.id) {
         isInternalUpdateRef.current = true;
         const _s = slide.content.filter(a => a.id !== contentSlide?.id);
         // if (content?.trim().length === 0) {
@@ -104,7 +105,7 @@ const TailwindAdvancedEditor = ({ slide, onUpdate, contentSlide, onDelete }: Tai
           ..._s,
           {
             ...(contentSlide as SlideContentType || {}),
-            text: content
+            text: contentRef.current
           }
         ]);
       }
@@ -116,13 +117,18 @@ const TailwindAdvancedEditor = ({ slide, onUpdate, contentSlide, onDelete }: Tai
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [content, canUpdate, slide.content, contentSlide?.text]);
+  }, [contentRef.current, canUpdate, slide.content, contentSlide?.text]);
 
   useEffect(() => {
     if (contentSlide?.id && contentSlide.id !== editorKeyRef.current) {
       editorKeyRef.current = contentSlide.id;
     }
   }, [contentSlide?.id]);
+
+  useEffect(() => {
+    console.log('mounted editor effect');
+    () => console.log('destroyed editor effect');
+  }, [])
 
   useEffect(() => {
     const editor = editorRef.current;
@@ -142,7 +148,7 @@ const TailwindAdvancedEditor = ({ slide, onUpdate, contentSlide, onDelete }: Tai
           if (editor && !editor.isDestroyed) {
             editor.commands.setContent(contentSlide.text || 'Texto');
             lastSyncedRef.current = contentSlide.text || 'Texto';
-            setContent(contentSlide.text || 'Texto');
+            contentRef.current = contentSlide.text || 'Texto';
           }
         });
       }
@@ -183,7 +189,7 @@ const TailwindAdvancedEditor = ({ slide, onUpdate, contentSlide, onDelete }: Tai
     <EditorRoot>
       <EditorContent
         key={editorKeyRef.current}
-        initialContent={editorRef.current?.getJSON() || undefined}
+        initialContent={contentSlide?.text as unknown as JSONContent || undefined}
         onCreate={({ editor }) => {
           editorRef.current = editor;
           const currentMarkdown = editor.storage.markdown.getMarkdown();
@@ -194,10 +200,10 @@ const TailwindAdvancedEditor = ({ slide, onUpdate, contentSlide, onDelete }: Tai
           if (initialContent && initialContent !== currentMarkdown) {
             editor.commands.setContent(initialContent);
             lastSyncedRef.current = initialContent;
-            setContent(initialContent);
+            contentRef.current = initialContent;
           } else {
             lastSyncedRef.current = currentMarkdown || '';
-            setContent(currentMarkdown || '');
+            contentRef.current = currentMarkdown || '';
           }
         }}
         extensions={memoizedExtensions}
