@@ -2,7 +2,6 @@ import Textarea from '@/components/v2/textArea';
 import { Button } from '@/components/v2/ui/button';
 import { Dialog, DialogClose, DialogContent, DialogFooter, DialogTitle, DialogTrigger } from '@/components/v2/ui/dialog';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/v2/ui/popover';
-import { useSlideContext } from '@/context/slides';
 import { cn, isMobile } from '@/lib/utils';
 import { PresentationsService } from '@/services/presentations';
 import { useSlideStore, type Slide, type SlideContentType } from '@/stores/slideStore';
@@ -24,7 +23,7 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { GripVertical, Image, Palette, Plus, Text, Trash, Trash2 } from 'lucide-react';
-import React, { memo, useCallback, useMemo, useState } from 'react';
+import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { v4 } from 'uuid';
 import { ImageCard } from './image';
 import StylePopover from './settingsPanel';
@@ -750,20 +749,34 @@ const SortableContentItem = ({
 
 export const SlideCard = memo(({
   slide,
-  onUpdate,
   onDelete,
   readOnly,
   addText,
+  onUpdate,
   addImage,
   addColumns,
   addQuote,
   dragHandleProps
 }: SlideCardProps & { dragHandleProps?: any }) => {
+
+  const [currentSlide, setCurrentSlide] = useState<Slide>(slide);
+
+  const onUpdateCurrent = useCallback((id: string, field: keyof Slide, value: SlideContentType[] | string) => {
+    if (id === slide.id) {
+      const updatedSlide = {
+        ...currentSlide,
+        [field]: value
+      };
+      setCurrentSlide(updatedSlide);
+      onUpdate(id, field, value);
+    }
+  }, [currentSlide])
+
   const mobile = isMobile();
 
-  const ht = ['top', 'bottom'].includes(slide?.layout) ? 'h-1/2' : 'h-full';
+  const ht = ['top', 'bottom'].includes(currentSlide?.layout) ? 'h-1/2' : 'h-full';
 
-  const isVertical = ['top', 'bottom'].includes(slide?.layout);
+  const isVertical = ['top', 'bottom'].includes(currentSlide?.layout);
 
   const ImageWithTextSlide = memo<ImageWithTextSlideProps>(({
     slide,
@@ -780,8 +793,8 @@ export const SlideCard = memo(({
     );
 
     const sortedContent = useMemo(() =>
-      [...slide.content].sort((a, b) => a.order - b.order),
-      [slide.content]
+      [...currentSlide.content].sort((a, b) => a.order - b.order),
+      [currentSlide.content]
     );
 
     const handleContentDragEnd = useCallback((event: DragEndEvent) => {
@@ -798,10 +811,10 @@ export const SlideCard = memo(({
             ...item,
             order: index
           }));
-          onUpdate(slide.id, 'content', updatedContent);
+          onUpdateCurrent(slide.id, 'content', updatedContent);
         }
       }
-    }, [slide.content, slide.id, onUpdate]);
+    }, [currentSlide.content, currentSlide.id, onUpdateCurrent, onUpdate]);
 
     const onDeleteItem = useCallback((id: string) => {
       const filteredContent = slide.content?.find(c => c.id === id);
@@ -815,15 +828,21 @@ export const SlideCard = memo(({
           }
           return c;
         })
-        onUpdate(slide.id, 'content', updatedContent || []);
+        onUpdateCurrent(currentSlide.id, 'content', updatedContent || []);
       } else {
-        onUpdate(slide.id, 'content', slide.content?.filter(c => c.id !== id))
+        onUpdateCurrent(currentSlide.id, 'content', currentSlide.content?.filter(c => c.id !== id))
       }
-    }, [slide.content, slide.id, onUpdate]);
+    }, [currentSlide.content, currentSlide.id, onUpdate, onUpdateCurrent]);
+
+    useEffect(() => {
+      console.log(currentSlide)
+    }, [currentSlide])
+
     return (
       <div
         style={{
           gridTemplate: '"body accent" minmax(24em, auto) / 62.5% 37.5%',
+          backgroundColor: currentSlide?.bgcolor || 'transparent',
         }}
         className={cn(
           'flex',
@@ -831,8 +850,8 @@ export const SlideCard = memo(({
           mobile
             ? 'flex-col sm:flex-row'
             : isVertical
-              ? `${slide.layout === 'bottom' ? 'flex-col' : 'flex-col-reverse'} max-h-96`
-              : slide.layout.includes('left')
+              ? `${currentSlide.layout === 'bottom' ? 'flex-col' : 'flex-col-reverse'} max-h-96`
+              : currentSlide.layout.includes('left')
                 ? 'flex-row-reverse'
                 : 'flex-row',
           readOnly ? 'h-full' : '',
@@ -858,9 +877,9 @@ export const SlideCard = memo(({
                 <SortableContentItem
                   key={t.id}
                   contentItem={t}
-                  slide={slide}
+                  slide={currentSlide}
                   readOnly={readOnly}
-                  onUpdate={onUpdate}
+                  onUpdate={onUpdateCurrent}
                   onDeleteItem={onDeleteItem}
                 />
               ))}
@@ -929,13 +948,13 @@ export const SlideCard = memo(({
             <PopoverContent>
               <StylePopover
                 onChangeBgColor={e => {
-                  onUpdate(slide.id, 'bgcolor', e)
+                  onUpdateCurrent(currentSlide.id, 'bgcolor', e)
                 }}
-                layout={slide.layout}
+                layout={currentSlide.layout}
                 onChangeLayout={e => {
-                  onUpdate(slide.id, 'layout', e)
+                  onUpdateCurrent(currentSlide.id, 'layout', e)
                 }}
-                initialColor={slide.bgcolor}
+                initialColor={currentSlide.bgcolor}
               // currentType={slide.type}
               // onClose={() => setIsPopoverOpen(false)}
               // onTypeChange={(newType) => {
@@ -1014,18 +1033,14 @@ export const SlideCard = memo(({
 });
 
 interface AppSlideProps {
-  dataPresentation: any
+  dataPresentation: {
+    presentations: Slide[],
+    id: string
+  } | null;
 }
 
 const App: React.FC<AppSlideProps> = (props) => {
-  const { updateSlide, deleteSlide, currentSlideId } = useSlideContext(state => ({
-    slides: state.slides,
-    updateSlide: state.updateSlide,
-    deleteSlide: state.deleteSlide,
-    currentSlideId: state.currentSlideId,
-  }));
-
-  const { slides, reorderSlides } = useSlideStore();
+  const { slides, reorderSlides, deleteSlide, updateSlide } = useSlideStore();
   const sortedSlides = [...slides].sort((a, b) => a.order - b.order);
 
   const sensors = useSensors(
@@ -1052,6 +1067,8 @@ const App: React.FC<AppSlideProps> = (props) => {
 
   const handleUpdateSlide = React.useCallback(
     (id: string, field: keyof Slide, value: SlideContentType[] | string) => {
+      console.log('Updating slide:', id, field, value);
+      if (!props?.dataPresentation?.id) return;
       const updates = {
         [field]: value,
       }
@@ -1060,15 +1077,14 @@ const App: React.FC<AppSlideProps> = (props) => {
       );
       PresentationsService.update({
         presentations: slides
-
-      }, props.dataPresentation.id)
+      }, props?.dataPresentation?.id || "")
         .then(() => {
         })
       // updateSlide(id, {
       //   [field]: value,
       // });
     },
-    [updateSlide]
+    [updateSlide, props?.dataPresentation]
   );
 
   const addText = React.useCallback(
@@ -1151,8 +1167,6 @@ const App: React.FC<AppSlideProps> = (props) => {
     },
     [updateSlide]
   );
-
-  console.log(slides)
 
   return (
     <div className='w-6xl '>

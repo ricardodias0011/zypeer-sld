@@ -44,7 +44,7 @@ interface SlideState {
   history: Slide[][];
   historyIndex: number;
 
-  addSlide: (type: SlideType, content?: any, id?: string) => void;
+  addSlide: (type: SlideType, slide?: Slide, id?: string) => void;
   deleteSlide: (id: string) => void;
   duplicateSlide: (id: string) => void;
   updateSlide: (id: string, updates: Partial<Slide>) => void;
@@ -63,13 +63,13 @@ interface SlideState {
   loadFromLocalStorage: () => void;
 }
 
-const createDefaultSlide = (order: number, type: SlideType, content?: any, id?: string): Slide => ({
+const createDefaultSlide = (order: number, type: SlideType, slide?: Slide, id?: string): Slide => (slide ?? {
   id: id ?? `slide-${Date.now()}-${Math.random()}`,
   order,
   type,
   layout: 'half-right',
   title: 'Novo Título',
-  content: content ?? [{
+  content: [{
     type: 'text',
     text: '# Clique para editar o conteúdo...',
     id: v4().slice(0, 10),
@@ -79,7 +79,7 @@ const createDefaultSlide = (order: number, type: SlideType, content?: any, id?: 
   bgcolor: '#ffffff',
 });
 
-const initialSlides = [createDefaultSlide(0, 'type-1')];
+const initialSlides = [] as Slide[];
 
 export const useSlideStore = create<SlideState>((set, get) => ({
   slides: initialSlides,
@@ -88,9 +88,9 @@ export const useSlideStore = create<SlideState>((set, get) => ({
   history: [initialSlides],
   historyIndex: 0,
 
-  addSlide: (type: SlideType, content?: any, id?: string) => {
+  addSlide: (type: SlideType, slide?: Slide, id?: string) => {
     const slides = get().slides;
-    const newSlide = createDefaultSlide(slides.length, type, content, id);
+    const newSlide = createDefaultSlide(slides.length, type, slide, id);
     set({ slides: [...slides, newSlide], currentSlideId: newSlide.id });
     get().saveToHistory();
     get().saveToLocalStorage();

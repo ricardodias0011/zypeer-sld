@@ -1,33 +1,25 @@
 import { SlidesPanel } from "@/components/v2/panel";
 import { Toolbar } from "@/components/v2/topbar";
-import { useSlideContext } from "@/context/slides";
 import { isDesktop } from "@/lib/utils";
 import { PresentationsService } from "@/services/presentations";
-import { useSlideStore } from "@/stores/slideStore";
+import { useSlideStore, type Slide } from "@/stores/slideStore";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import { PresentationMode } from "./presentationMode";
-import Slide from "./slide";
+import SlideContent from "./slide";
 
 const MainSlide = () => {
   const { id } = useParams();
-  const { addSlide } = useSlideStore();
-  const [dataPresentation, setDataPresentation] = useState(null);
-
-  const {
-    isPresentationMode
-  } = useSlideContext(state => ({
-    isPresentationMode: state.isPresentationMode,
-    updateSlide: state.updateSlide
-  }));
+  const { addSlide, isPresentationMode } = useSlideStore();
+  const [dataPresentation, setDataPresentation] = useState<{ presentations: Slide[]; id: string; } | null>(null);
 
   const getPresentations = () => {
     PresentationsService.list(id)
       .then(({ data }) => {
-        data?.presentations.forEach((slide: any) => {
-          addSlide("type-1", slide.content, slide.id);
-        })
         setDataPresentation(data);
+        data?.presentations.forEach((slide: any) => {
+          addSlide("type-1", slide, slide.id);
+        })
       })
   }
 
@@ -72,7 +64,7 @@ const MainSlide = () => {
         <SlidesPanel />
         <div className="flex-1 flex h-full overflow-auto py-8 w-full">
           <main ref={mainRef} className="h-full max-w-6xl mx-auto">
-            <Slide dataPresentation={dataPresentation} />
+            <SlideContent dataPresentation={dataPresentation} />
             <div style={{ height: '60px' }} />
           </main>
         </div>
