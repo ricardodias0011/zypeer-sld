@@ -1,6 +1,6 @@
-import { CommandGroup, CommandItem, CommandSeparator } from "../ui/command";
-import { useEditor } from "novel";
 import { Check, TextQuote, TrashIcon } from "lucide-react";
+import { useEditor } from "novel";
+import { CommandGroup, CommandItem, CommandSeparator } from "../ui/command";
 
 const AICompletionCommands = ({
   completion,
@@ -31,8 +31,8 @@ const AICompletionCommands = ({
               .run();
           }}
         >
-          <Check className="h-4 w-4 text-muted-foreground" />
-          Replace selection
+          <Check className="h-4 w-4 text-blue-foreground" />
+          Substituir seleção
         </CommandItem>
         <CommandItem
           className="gap-2 px-4"
@@ -45,16 +45,16 @@ const AICompletionCommands = ({
               .run();
           }}
         >
-          <TextQuote className="h-4 w-4 text-muted-foreground" />
-          Insert below
+          <TextQuote className="h-4 w-4 text-blue-foreground" />
+          Insira abaixo
         </CommandItem>
       </CommandGroup>
       <CommandSeparator />
 
       <CommandGroup>
         <CommandItem onSelect={onDiscard} value="thrash" className="gap-2 px-4">
-          <TrashIcon className="h-4 w-4 text-muted-foreground" />
-          Discard
+          <TrashIcon className="h-4 w-4 text-blue-foreground" />
+          Descartar
         </CommandItem>
       </CommandGroup>
     </>

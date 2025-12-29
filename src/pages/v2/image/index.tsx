@@ -1,6 +1,9 @@
 import { cn } from '@/lib/utils';
 import { AssetsService } from '@/services/assets';
+import { EventsService } from '@/services/events';
+import { ToolsService } from '@/services/tools';
 import type { Slide, SlideContentType } from '@/stores/slideStore';
+import { Tooltip } from '@radix-ui/themes';
 import {
   Crop,
   ImageIcon,
@@ -14,6 +17,7 @@ import {
   X
 } from 'lucide-react';
 import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { toast } from 'sonner';
 
 interface SlideCardProps {
   slide: Slide;
@@ -47,20 +51,6 @@ interface ImagePreviewProps {
   onReplace: (e: React.MouseEvent) => void;
   onAdjust: (e: React.MouseEvent) => void;
 }
-
-const Tooltip: React.FC<{ content: string; children: React.ReactNode }> = ({
-  content,
-  children,
-}) => {
-  return (
-    <div className="group relative flex">
-      {children}
-      <span className="absolute bottom-full left-1/2 z-50 mb-2 -translate-x-1/2 transform whitespace-nowrap rounded-md bg-black px-2 py-1 text-xs text-white opacity-0 shadow-md transition-opacity group-hover:opacity-100">
-        {content}
-      </span>
-    </div>
-  );
-};
 
 const Modal: React.FC<{
   title: string;
@@ -113,14 +103,55 @@ const GenerateAIModal: React.FC<{
   );
   const [isLoading, setIsLoading] = useState(false);
 
+  const [eventId, setEventId] = useState<string | null>(null);
+
   const handleGenerate = () => {
     setIsLoading(true);
-    setTimeout(() => {
-      onGenerate(prompt);
-      setIsLoading(false);
-      onClose();
-    }, 1500);
-  };
+    ToolsService.generateImage(prompt).then(res => {
+      if (res?.data?.id) {
+        setEventId(res.data.id)
+      }
+    })
+      .catch(() => {
+        setIsLoading(false);
+        toast.error("Não foi possível gerar imagem.");
+      })
+  }
+
+  useEffect(() => {
+    if (eventId) {
+      const interval = setInterval(() => {
+        EventsService.consult("generate-image", eventId ?? "")
+          .then(({ data }) => {
+            if (data?.status) {
+              if (data.status === 0) {
+                clearInterval(interval);
+                toast.error("Não foi possível gerar imagem.")
+                setIsLoading(false);
+                return
+              }
+              if (data.status === 4 && data.metadata?.[0].id) {
+                ToolsService.findMaterial(data.metadata?.[0].id)
+                  .then((response) => {
+                    setEventId(null);
+                    if (response?.data?.content) {
+                      onGenerate(response.data.content as string);
+                      setIsLoading(false);
+                    }
+                    clearInterval(interval);
+                  })
+              }
+            }
+          })
+          .catch((err) => {
+            toast.error(err?.response?.data?.message ?? "Não foi possível gerar imagem");
+            setIsLoading(false);
+          })
+      }, 4000);
+      return () => clearInterval(interval);
+    }
+  }, [eventId]);
+
 
   return (
     <div className="flex flex-col gap-4">
@@ -393,16 +424,13 @@ export const ImageCard: React.FC<SlideCardProps> = memo(({
     setActiveModal('adjust');
   }, []);
 
-  const handleGenerateImageAction = useCallback((prompt: string) => {
+  const handleGenerateImageAction = useCallback((link: string) => {
     onUpdate(slide.id, 'content', [
       ...slide.content.filter(a => a.id !== slideContent.id),
       {
         ...slideContent,
         image: {
-          url: `https://placehold.co/600x400/random/white?text=IA:${prompt.substring(
-            0,
-            10
-          )}`
+          url: link
         }
       }
     ]);
@@ -442,7 +470,7 @@ export const ImageCard: React.FC<SlideCardProps> = memo(({
           } : {
             ...currentContent,
             image: {
-              imageFit: slideContent.image?.imageFit || 'contain',
+              imageFit: slideContent.image?.imageFit || 'cover',
               url: link
             }
           }),
@@ -474,7 +502,7 @@ export const ImageCard: React.FC<SlideCardProps> = memo(({
                 "type": "image",
                 image: {
                   url: slideContent.image?.url,
-                  imageFit: fit
+                  imageFit: fit || 'cover'
                 },
               }
             ],

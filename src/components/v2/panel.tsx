@@ -7,10 +7,10 @@ import { closestCenter, DndContext, type DragEndEvent } from '@dnd-kit/core';
 import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Copy, Trash2 } from 'lucide-react';
-import { useLayoutEffect, useRef, useState } from 'react';
+import { useLayoutEffect, useRef } from 'react';
 
 const SlideThumbnail = ({ slide }: { slide: Slide }) => {
-  const { currentSlideId, setCurrentSlide, deleteSlide, duplicateSlide } = useSlideStore();
+  const { setCurrentSlide, deleteSlide, duplicateSlide } = useSlideStore();
 
   const slideRef = useRef<HTMLDivElement>(null);
   useLayoutEffect(() => {
@@ -55,7 +55,7 @@ const SlideThumbnail = ({ slide }: { slide: Slide }) => {
       {...attributes}
       {...listeners}
       className={cn(
-        'group relative rounded-lg border-2 cursor-pointer transition-all', 'border-gray-300 hover:border-primary/50 bg-card'
+        'group relative rounded-lg border-2 overflow-hidden cursor-pointer transition-all', 'border-gray-300 hover:border-primary/50 bg-card'
       )}
       onClick={() => {
         setCurrentSlide(slide.id)
@@ -72,7 +72,7 @@ const SlideThumbnail = ({ slide }: { slide: Slide }) => {
           /> : <></>
         }
       </div>
-      <div className="text-sm font-medium z-50 absolute bottom-2 left-2 text-foreground truncate p-2 bg-gray-200 w-8 h-8 rounded-md text-center">
+      <div className="text-sm font-medium z-40 absolute bottom-2 left-2 text-foreground truncate p-2 bg-gray-200 w-8 h-8 rounded-md text-center">
         {slide.order + 1}
       </div>
 
@@ -105,18 +105,19 @@ const SlideThumbnail = ({ slide }: { slide: Slide }) => {
   );
 };
 
-export const SlidesPanel = ({ id }: { id?: string }) => {
-  const [slides, setSlides] = useState<Slide[]>([]);
-
-  const getPresentations = () => {
-    PresentationsService.list(id)
-      .then(({ data }) => {
-        setSlides(data?.presentations || []);
-      })
-  }
+export const SlidesPanel = ({ slides, id }: { slides: Slide[], id?: string }) => {
 
   const { reorderSlides, addSlide } = useSlideStore();
   const sortedSlides = [...slides].sort((a, b) => a.order - b.order);
+
+  const updateIncloud = (_slides: Slide[]) => {
+    if (!id) return;
+    PresentationsService.update({
+      presentations: _slides
+    }, id || "")
+      .then(() => {
+      })
+  }
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
@@ -128,21 +129,15 @@ export const SlidesPanel = ({ id }: { id?: string }) => {
     }
   };
 
-  // useEffect(() => {
-  //   if (id) {
-  //     const interval = setInterval(() => {
-  //       getPresentations();
-  //     }, 10000);
-  //     return () => clearInterval(interval);
-  //   }
-  // }, [id])
-
   return (
     <div className="w-64 hidden md:flex bg-white border-r border-gray-300 overflow-y-auto">
       <div className="p-4 w-full">
         <div className='px-2 w-full'>
           <Button onClick={() => {
-            addSlide('type-1');
+            let currentSlides = slides;
+            const newSlide = addSlide('type-1');
+            currentSlides.push(newSlide as unknown as Slide);
+            updateIncloud(currentSlides);
           }} className='mb-4 w-full px-1 py-1 pr-0' variant={'secondary'}>Novo</Button>
         </div>
         <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>

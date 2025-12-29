@@ -189,6 +189,7 @@ const TailwindAdvancedEditor = ({ slide, onUpdate, contentSlide, onDelete }: Tai
     <EditorRoot>
       <EditorContent
         key={editorKeyRef.current}
+        editable={!slide.readOnly}
         initialContent={contentSlide?.text as unknown as JSONContent || undefined}
         onCreate={({ editor }) => {
           editorRef.current = editor;
@@ -241,7 +242,7 @@ const TailwindAdvancedEditor = ({ slide, onUpdate, contentSlide, onDelete }: Tai
             ))}
           </EditorCommandList>
         </EditorCommand>
-        <GenerativeMenuSwitch open={openAI} onOpenChange={setOpenAI}>
+        <GenerativeMenuSwitch open={openAI} onOpenChange={setOpenAI} onChanged={(value) => contentRef.current = value}>
           <Separator orientation="vertical" />
           <NodeSelector open={openNode} onOpenChange={setOpenNode} />
           <Separator orientation="vertical" />

@@ -8,8 +8,9 @@ interface GenerativeMenuSwitchProps {
   children: ReactNode;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onChanged: (e: string) => void;
 }
-const GenerativeMenuSwitch = ({ children, open, onOpenChange }: GenerativeMenuSwitchProps) => {
+const GenerativeMenuSwitch = ({ children, open, onOpenChange, onChanged }: GenerativeMenuSwitchProps) => {
   const { editor } = useEditor();
 
   useEffect(() => {
@@ -26,13 +27,13 @@ const GenerativeMenuSwitch = ({ children, open, onOpenChange }: GenerativeMenuSw
           editor.chain().unsetHighlight().run();
         },
       }}
-      className="flex w-fit max-w-[90vw] items-center gap-2  overflow-hidden rounded-md border border-gray-300 bg-white text-zinc-800 shadow-xl EditorBubble"
+      className="flex w-fit max-w-[90vw] max-h-[300px] items-center gap-2  overflow-auto rounded-md border border-gray-300 bg-white text-zinc-800 shadow-xl EditorBubble"
     >
-      {open && <AISelector open={open} onOpenChange={onOpenChange} />}
+      {open && <AISelector open={open} onOpenChange={onOpenChange} onChanged={onChanged} />}
       {!open && (
         <Fragment>
           <Button
-            className="gap-1 rounded-none text-blue-500! flex flex-row"
+            className="gap-1 rounded-none text-blue-500! flex flex-row hover:bg-blue-50!"
             variant="ghost"
             onClick={() => onOpenChange(true)}
             size="sm"

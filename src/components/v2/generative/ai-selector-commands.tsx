@@ -4,23 +4,23 @@ import { CommandGroup, CommandItem, CommandSeparator } from "../ui/command";
 
 const options = [
   {
-    value: "improve",
-    label: "Improve writing",
+    value: "Aprimore a escrita",
+    label: "Aprimore a escrita",
     icon: RefreshCcwDot,
   },
   {
-    value: "fix",
-    label: "Fix grammar",
+    value: "Corrigir gramática",
+    label: "Corrigir gramática",
     icon: CheckCheck,
   },
   {
-    value: "shorter",
-    label: "Make shorter",
+    value: "mais curto",
+    label: "Cais curto",
     icon: ArrowDownWideNarrow,
   },
   {
-    value: "longer",
-    label: "Make longer",
+    value: "Mais longo",
+    label: "Mais longo",
     icon: WrapText,
   },
 ];
@@ -46,7 +46,7 @@ const AISelectorCommands = ({ onSelect }: AISelectorCommandsProps) => {
             key={option.value}
             value={option.value}
           >
-            <option.icon className="h-4 w-4 text-purple-500" />
+            <option.icon className="h-4 w-4 text-blue-500" />
             {option.label}
           </CommandItem>
         ))}
@@ -58,14 +58,14 @@ const AISelectorCommands = ({ onSelect }: AISelectorCommandsProps) => {
             const pos = editor?.state.selection.from;
             if (editor) {
               const text = getPrevText(editor, pos as number);
-              onSelect(text, "continue")
+              onSelect(text, "Continue escrevendo");
             }
           }}
-          value="continue"
+          value="Continue escrevendo"
           className="gap-2 px-4"
         >
-          <StepForward className="h-4 w-4 text-purple-500" />
-          Continue writing
+          <StepForward className="h-4 w-4 text-blue-500" />
+          Continue escrevendo
         </CommandItem>
       </CommandGroup>
     </>
