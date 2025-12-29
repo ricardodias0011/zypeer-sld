@@ -1,7 +1,7 @@
 import { cn } from '@/lib/utils';
 import type { LayoutType } from '@/types/slide-v2';
 import React, { useEffect, useRef, useState } from 'react';
-import { LuBan, LuChevronDown, LuImage, LuPalette } from 'react-icons/lu';
+import { LuChevronDown, LuPalette } from 'react-icons/lu';
 
 type SettingsPanelProps = {
   initialColor?: string;
@@ -85,7 +85,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
           );
         })}
       </div>
-      <div className="flex justify-between items-center">
+      {/* <div className="flex justify-between items-center">
         <div className="flex items-center gap-2 text-gray-800">
           <LuImage className="w-5 h-5 text-gray-600" />
           <span className="text-sm font-medium">Imagem de fundo</span>
@@ -96,7 +96,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
           </button>
           <LuBan className="w-4 h-4 text-red-500" />
         </div>
-      </div>
+      </div> */}
       <div className="flex justify-between gap-4 flex-col">
         <div className="flex items-center gap-2 text-gray-800">
           <LuPalette className="w-5 h-5 text-gray-600" />

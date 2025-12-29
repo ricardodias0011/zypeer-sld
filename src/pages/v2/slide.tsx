@@ -1077,7 +1077,7 @@ interface AppSlideProps {
 
 const App: React.FC<AppSlideProps> = (props) => {
   const currentSlidesRef = useRef<Slide[]>([]);
-  const { slides, reorderSlides, updateSlide } = useSlideStore();
+  const { slides, reorderSlides } = useSlideStore();
   const sortedSlides = [...slides].sort((a, b) => a.order - b.order);
 
   const updateIncloud = (_slides: Slide[]) => {
@@ -1108,9 +1108,9 @@ const App: React.FC<AppSlideProps> = (props) => {
 
   const handleDeleteSlide = (id: string) => {
     const update_slide = currentSlidesRef.current?.filter(slide => slide.id !== id);
-    updateIncloud(slides || []);
+    updateIncloud(update_slide || []);
     currentSlidesRef.current = update_slide || [];
-    props?.updatePresentation(slides || []);
+    props?.updatePresentation(update_slide || []);
   };
 
   const handleUpdateSlide = React.useCallback(
@@ -1119,14 +1119,14 @@ const App: React.FC<AppSlideProps> = (props) => {
       const updates = {
         [field]: value,
       }
-      const slides = currentSlidesRef.current?.map(slide =>
+      const update_slide = currentSlidesRef.current?.map(slide =>
         slide.id === id ? { ...slide, ...updates } : slide
       );
-      updateIncloud(slides || []);
-      currentSlidesRef.current = slides || [];
-      props?.updatePresentation(slides || []);
+      updateIncloud(update_slide || []);
+      currentSlidesRef.current = update_slide || [];
+      props?.updatePresentation(update_slide || []);
     },
-    [updateSlide, props?.dataPresentation, props?.updatePresentation, currentSlidesRef.current, props.updatePresentation]
+    [props?.dataPresentation, currentSlidesRef.current, props.updatePresentation]
   );
 
   useEffect(() => {

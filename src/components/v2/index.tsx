@@ -125,10 +125,6 @@ const TailwindAdvancedEditor = ({ slide, onUpdate, contentSlide, onDelete }: Tai
     }
   }, [contentSlide?.id]);
 
-  useEffect(() => {
-    console.log('mounted editor effect');
-    () => console.log('destroyed editor effect');
-  }, [])
 
   useEffect(() => {
     const editor = editorRef.current;
@@ -210,9 +206,7 @@ const TailwindAdvancedEditor = ({ slide, onUpdate, contentSlide, onDelete }: Tai
         extensions={memoizedExtensions}
         className={editorClassName}
         editorProps={editorProps}
-        onDestroy={(e) => {
-          console.log('editor destroyed', e);
-        }}
+        onDestroy={(e) => { editorRef.current = null; }}
         onUpdate={({ editor }) => {
           if (!slide.readOnly) debouncedUpdates(editor);
         }}
