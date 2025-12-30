@@ -59,11 +59,14 @@ const MainSlide = () => {
     return <PresentationMode />;
   }
 
+
   return (
     <div className="bg-gray-100 font-sans text-gray-800 min-h-screen" style={{ overflow: 'hidden' }}>
       <Toolbar />
       <div className="flex-1 flex h-full overflow-hidden w-full" style={{ height: 'calc(100vh - 75px)' }}>
-        <SlidesPanel slides={slides} id={id} />
+        <SlidesPanel slides={slides} id={id} updatePresentation={(slides) => {
+          setSlides(slides)
+        }} />
         <div className="flex-1 flex h-full overflow-auto py-8 w-full">
           <main ref={mainRef} className="h-full max-w-6xl mx-auto">
             <SlideContent dataPresentation={dataPresentation} slides={slides} updatePresentation={(slides) => {

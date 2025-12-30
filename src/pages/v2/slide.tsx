@@ -1077,8 +1077,8 @@ interface AppSlideProps {
 
 const App: React.FC<AppSlideProps> = (props) => {
   const currentSlidesRef = useRef<Slide[]>([]);
-  const { slides, reorderSlides } = useSlideStore();
-  const sortedSlides = [...slides].sort((a, b) => a.order - b.order);
+  const { reorderSlides } = useSlideStore();
+  const sortedSlides = [...props.slides].sort((a, b) => a.order - b.order);
 
   const updateIncloud = (_slides: Slide[]) => {
     PresentationsService.update({
