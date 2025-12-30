@@ -1156,7 +1156,6 @@ const App: React.FC<AppSlideProps> = (props) => {
           ))}
         </SortableContext>
       </DndContext>
-      {/* <AddSlideToolbar onAddSlide={handleAddSlide} /> */}
     </div>
   );
 };

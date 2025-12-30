@@ -94,7 +94,7 @@ const TailwindAdvancedEditor = ({ slide, onUpdate, contentSlide, onDelete }: Tai
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
 
     timeoutRef.current = setTimeout(() => {
-      if (contentRef.current !== contentSlide?.text && contentSlide?.id) {
+      if (contentRef.current !== contentSlide?.text && contentSlide?.id && !openAI) {
         isInternalUpdateRef.current = true;
         const _s = slide.content.filter(a => a.id !== contentSlide?.id);
         // if (content?.trim().length === 0) {
@@ -117,7 +117,7 @@ const TailwindAdvancedEditor = ({ slide, onUpdate, contentSlide, onDelete }: Tai
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [contentRef.current, canUpdate, slide.content, contentSlide?.text]);
+  }, [contentRef.current, canUpdate, slide.content, contentSlide?.text, openAI]);
 
   useEffect(() => {
     if (contentSlide?.id && contentSlide.id !== editorKeyRef.current) {
