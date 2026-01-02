@@ -9,6 +9,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { Copy, Trash2 } from 'lucide-react';
 import { useLayoutEffect, useRef } from 'react';
 import { v4 } from 'uuid';
+import Alert from './ui/alert';
 
 const SlideThumbnail = ({ slide, duplicateSlide, handleDeleteSlide }: { slide: Slide, duplicateSlide: (id: string) => void, handleDeleteSlide: (id: string) => void }) => {
   const { setCurrentSlide } = useSlideStore();
@@ -88,17 +89,19 @@ const SlideThumbnail = ({ slide, duplicateSlide, handleDeleteSlide }: { slide: S
           <Copy className="h-3 w-3" />
         </Button>
 
-        <Button
-          variant="destructive"
-          size="icon"
-          className="h-7 w-7 shadow-sm"
-          onClick={(e) => {
-            e.stopPropagation();
-            handleDeleteSlide(slide.id);
-          }}
+        <Alert
+          title="Deseja deletar?"
+          description="Essa ação não poderá ser desfeita."
+          buttonHandleAccept={() => handleDeleteSlide(slide.id)}
         >
-          <Trash2 className="h-3 w-3" />
-        </Button>
+          <Button
+            variant="destructive"
+            size="icon"
+            className="h-7 w-7 shadow-sm"
+          >
+            <Trash2 className="h-3 w-3" />
+          </Button>
+        </Alert>
       </div>
     </div>
   );
