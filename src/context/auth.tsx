@@ -1,16 +1,17 @@
 import { createContext, useContext, useEffect, useState, type JSX } from "react";
 
+import { AuthService } from "@/services/auth";
+import { jwtDecode } from "jwt-decode";
 import { toast } from "react-toastify";
+import useQuery from "../hooks/useQuery";
 import UserStorage from "../services/storage/auth";
 import type { UserProps } from "../types/user";
-import useQuery from "../hooks/useQuery";
-import { jwtDecode } from "jwt-decode";
 
 
 interface ContextProvider {
   user: UserProps | null;
   Authentication: (token: string, refresh_token: string) => void;
-
+  account: UserProps | null;
 }
 
 export const AuthManager = createContext<ContextProvider>({} as ContextProvider);
@@ -21,6 +22,7 @@ export const AuthProvider = ({ children }: { children: JSX.Element }) => {
   const { query, handleChangeQuery } = useQuery();
   const findToken = query.get("token");
   const [user, setUser] = useState<UserProps | null>(null)
+  const [account, setAccount] = useState<UserProps | null>(null)
 
   const isValidToken = (token: string) => {
     try {
@@ -51,10 +53,28 @@ export const AuthProvider = ({ children }: { children: JSX.Element }) => {
     }
   }, [findToken])
 
+  const findAccount = async () => {
+    try {
+      const { data } = await AuthService.me()
+      if (data) {
+        setAccount(data);
+      }
+    }
+    catch (err) {
+
+    }
+  }
+
+  useEffect(() => {
+    if (user) {
+      findAccount();
+    }
+  }, [user])
+
 
   return (
     <AuthManager.Provider value={{
-      Authentication, user
+      Authentication, user, account
     }}>
       {children}
     </AuthManager.Provider>

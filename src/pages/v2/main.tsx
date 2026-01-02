@@ -41,7 +41,9 @@ const MainSlide = () => {
         setDataPresentation(data);
         const list = data?.presentations || [];
         setSlides(list);
-        list.forEach((slide: Slide) => addSlide("type-1", slide, slide.id));
+        list.forEach((slide: Slide) => {
+          addSlide("type-1", slide, slide.id)
+        });
       })
       .finally(() => {
         if (!targetId)
@@ -106,7 +108,7 @@ const MainSlide = () => {
     return () => clearInterval(interval);
   }, [eventID, navigate, getPresentations]);
 
-  if (isPresentationMode) return <PresentationMode />;
+  if (isPresentationMode) return <PresentationMode slides={slides} />;
 
   return (
     <div className="bg-gray-100 font-sans text-gray-800 min-h-screen overflow-hidden">

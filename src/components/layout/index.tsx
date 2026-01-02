@@ -1,9 +1,11 @@
-import { Box, Button, Flex, IconButton, Text } from '@radix-ui/themes';
-import { Outlet, useLocation, useNavigate } from 'react-router-dom';
-import Logo from "../../assets/logo.png"
-import { HiMiniPresentationChartBar } from "react-icons/hi2";
+import { Box, Flex, IconButton } from '@radix-ui/themes';
 import { useEffect, useState } from 'react';
 import { AiFillHome } from 'react-icons/ai';
+import { HiMiniPresentationChartBar } from "react-icons/hi2";
+import { PiPresentation, PiPresentationChart } from 'react-icons/pi';
+import { Outlet, useLocation, useNavigate } from 'react-router-dom';
+import Logo from "../../assets/micro-logo.svg";
+import { Button } from '../v2/ui/button';
 
 const Layout = () => {
   const { pathname } = useLocation();
@@ -24,25 +26,26 @@ const Layout = () => {
   return (
     <Flex direction="row" width="100vw">
       <Box width={"280px"} height={"100vh"} style={{ backgroundColor: "#fff" }} position='relative' className='box-menu'>
-        <Flex gap={"6"} p='4' direction="column" >
-          <img src={Logo} width={120} alt="logo" />
-          <Flex gap={"4"} direction="column" >
+        <Flex gap={"6"} p='4' direction="column" className='w-full'>
+          <div className='flex flex-row gap-2 items-center'>
+            <img src={Logo} width={150} alt="logo" />
+          </div>
+          <Flex gap={"2"} direction="column" className='w-full'>
             {
               [
-                { link: 'dashboard', icon: <AiFillHome size={24} />, title: 'Seus slides' },
-                { link: 'templates', icon: <HiMiniPresentationChartBar size={24} />, title: 'Modelos' }
+                { link: 'dashboard', icon: <PiPresentationChart size={20} />, title: 'Seus slides' },
+                { link: 'templates', icon: <PiPresentation size={20} />, title: 'Modelos' }
               ].map(({ icon, link, title }) => (
                 <Button
-                  color={currentPage === link ? "cyan" : "gray"}
-                  style={{ alignItems: 'center', justifyContent: 'flex-start', gap: 8, paddingLeft: currentPage === link ? 10 : 20 }}
-                  variant={currentPage === link ? 'soft' : 'ghost'}
+                  style={{ alignItems: 'center', justifyContent: 'flex-start', gap: 8, paddingLeft: 10 }}
+                  variant={currentPage === link ? 'default' : 'ghost'}
                   onClick={_e => navigate("/app/" + link)}
-                  radius='full'
-                  size={'2'}>
+                  className='p-2 py-0'
+                >
                   {icon}
-                  <Text size={'4'} weight="light">
+                  <span className='text-md'>
                     {title}
-                  </Text>
+                  </span>
                 </Button>
               ))
             }
@@ -51,6 +54,7 @@ const Layout = () => {
       </Box >
       <Box
         width={"100%"}
+        className='bg-gray-100'
       >
         <Flex overflow={"scroll"} className='main-app'>
           <Outlet />
@@ -60,7 +64,6 @@ const Layout = () => {
           height={"60px"}
           align="center"
           justify="center"
-          style={{ backgroundColor: "#fff" }}
           position='relative' className='box-menu-mobile'>
           <Flex gap={"4"} direction="row" >
             {

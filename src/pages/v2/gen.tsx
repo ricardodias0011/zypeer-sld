@@ -76,7 +76,7 @@ export default function MarkdownCardEditor() {
       const items = lines.filter(l => l.startsWith('-')).map(l => l.replace('-', '').trim());
       return {
         id: `card-${Date.now()}-${index}`,
-        title: titleLine.replace('#', '').trim() || 'Sem título',
+        title: titleLine.replace('#', '').trim() || '',
         items
       };
     }).filter(card => card.title !== '');
@@ -109,7 +109,9 @@ export default function MarkdownCardEditor() {
     })
       .then(({ data }) => {
         toast.success("Iniciando geração dos slides...");
-        setEventID(data?.id);
+        if (data?.id) {
+          navigate(`/docs/v2/creating?slide_count=${cards.length}&event_id=${data?.id}`);
+        }
       })
       .catch(() => {
         toast.error("Erro ao criar apresentação.");
@@ -124,7 +126,7 @@ export default function MarkdownCardEditor() {
         .then(({ data }) => {
           if (data?.status) {
             if (data?.metadata?.[0]?.id) {
-              navigate(`/docs/v2/${data.metadata[0].id}?slide_count=${cards.length}&event_id=${eventID}`);
+              navigate(`/docs/v2/creating?slide_count=${cards.length}&event_id=${eventID}`);
             }
             setStatusCreate(data.status);
             if (data.status === 0) clearInterval(interval);
@@ -174,7 +176,7 @@ export default function MarkdownCardEditor() {
                 {generating ? <Loader2 className="animate-spin text-blue-500" size={20} /> : <Sparkles size={20} className="text-blue-500" />}
               </div>
             </div>
-            <Button disabled={!theme} type='submit'>
+            <Button disabled={!theme || generating} type='submit'>
               Gerar cartões
             </Button>
           </form>

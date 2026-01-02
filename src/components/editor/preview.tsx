@@ -1,9 +1,8 @@
-import { forwardRef } from "react";
-import { Circle, Line, Path, Rect, Star, Text, Image as KonvaImage, Stage, Layer } from "react-konva";
-import type { PresentationSlide } from "../../types/presentations-sliders";
-import useImage from "use-image";
-import { useEffect, useState } from "react";
 import type Konva from "konva";
+import { forwardRef, useEffect, useState } from "react";
+import { Circle, Image as KonvaImage, Layer, Line, Path, Rect, Stage, Star, Text } from "react-konva";
+import useImage from "use-image";
+import type { PresentationSlide } from "../../types/presentations-sliders";
 
 const PreviewSlide = forwardRef<Konva.Stage, {
   currentSlide: PresentationSlide | null;
@@ -90,7 +89,7 @@ const PreviewSlide = forwardRef<Konva.Stage, {
           {currentSlide?.background?.type === 'image' && (
             <BackgroundImage src={currentSlide.background.url as string} />
           )}
-          {currentSlide?.items.map(shape =>
+          {currentSlide?.items?.map(shape =>
             shape.show ? <ItemShape key={shape.id} {...shape} /> : null
           )}
         </Layer>

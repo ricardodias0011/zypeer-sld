@@ -40,6 +40,7 @@ interface SlideCardProps {
   onUpdate: (d: string, field: keyof Slide, value: SlideContentType[] | string) => void;
   onDelete: (id: string) => void;
   readOnly?: boolean;
+  activeAnimate?: boolean
 }
 
 interface ImageWithTextSlideProps {
@@ -740,7 +741,8 @@ export const SlideCard = memo(({
   onDelete,
   readOnly,
   onUpdate,
-  dragHandleProps
+  dragHandleProps,
+  activeAnimate
 }: SlideCardProps & { dragHandleProps?: any }) => {
 
   const [currentSlide, setCurrentSlide] = useState<Slide>(slide);
@@ -826,6 +828,7 @@ export const SlideCard = memo(({
         }}
         className={cn(
           'flex',
+          (activeAnimate && currentSlide?.effectTransition) ? `animate-${currentSlide.effectTransition}` : '',
           'gap-4 relative min-h-[25rem]',
           mobile
             ? 'flex-col sm:flex-row'
@@ -927,6 +930,10 @@ export const SlideCard = memo(({
             </PopoverTrigger>
             <PopoverContent>
               <StylePopover
+                onChangeAnimate={e => {
+                  onUpdateCurrent(currentSlide.id, 'effectTransition', e)
+                }}
+                animate={currentSlide?.effectTransition}
                 onChangeBgColor={e => {
                   onUpdateCurrent(currentSlide.id, 'bgcolor', e)
                 }}

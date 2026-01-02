@@ -15,6 +15,7 @@ export interface Slide {
   imageFit?: 'cover' | 'contain' | 'fill';
   bgcolor?: string;
   backgroundImage?: string;
+  effectTransition?: string
 }
 
 export type SlideContentType = {
