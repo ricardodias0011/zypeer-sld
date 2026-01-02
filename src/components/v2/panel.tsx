@@ -114,11 +114,19 @@ const SlideThumbnail = ({ slide, duplicateSlide, handleDeleteSlide }: { slide: S
   );
 };
 
+const Skeleton = () => (
+  <div className="animate-pulse flex flex-col gap-4 w-full h-full max-h-36 my-4">
+    <div className="bg-gray-300 h-full w-full rounded-lg" />
+  </div>
+);
 
-export const SlidesPanel = ({ slides, id, updatePresentation }: {
+
+export const SlidesPanel = ({ slides, id, updatePresentation, loading, loadingCount }: {
   slides: Slide[],
   id?: string,
   updatePresentation: (a: Slide[]) => void;
+  loading: boolean,
+  loadingCount: number
 }) => {
 
   const { reorderSlides, addSlide } = useSlideStore();
@@ -157,6 +165,9 @@ export const SlidesPanel = ({ slides, id, updatePresentation }: {
     updateIncloud(updatedSlides);
     updatePresentation(updatedSlides);
   };
+
+
+
   return (
     <div className="w-64 hidden md:flex bg-white border-r border-gray-300 overflow-y-auto">
       <div className="p-4 w-full">
@@ -168,15 +179,22 @@ export const SlidesPanel = ({ slides, id, updatePresentation }: {
             updateIncloud(currentSlides);
           }} className='mb-4 w-full px-1 py-1 pr-0' variant={'secondary'}>Novo</Button>
         </div>
-        <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-          <SortableContext items={sortedSlides.map(s => s.id)} strategy={verticalListSortingStrategy}>
-            <div className="space-y-3">
-              {sortedSlides.map(slide => (
-                <SlideThumbnail key={slide.id} slide={slide} duplicateSlide={duplicateSlide} handleDeleteSlide={handleDeleteSlide} />
-              ))}
-            </div>
-          </SortableContext>
-        </DndContext>
+        {loading ? (
+          Array.from({ length: loadingCount ? Number(loadingCount) : 5 }).map((_, i) => (
+            <Skeleton key={i} />
+          ))
+        ) : (
+          <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+            <SortableContext items={sortedSlides.map(s => s.id)} strategy={verticalListSortingStrategy}>
+              <div className="space-y-3">
+                {sortedSlides.map(slide => (
+                  <SlideThumbnail key={slide.id} slide={slide} duplicateSlide={duplicateSlide} handleDeleteSlide={handleDeleteSlide} />
+                ))}
+              </div>
+            </SortableContext>
+          </DndContext>
+        )}
+
       </div>
     </div>
   );
