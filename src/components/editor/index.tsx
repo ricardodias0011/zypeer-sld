@@ -451,7 +451,6 @@ export const Editor = (props: {
     if (updaloadImages.images.length === downloads.length && updaloadImages.canUpload) {
       createDocPDF();
     }
-    console.log(updaloadImages.images.length)
   }, [updaloadImages, downloads])
 
   const getImageForUpload = async (stage: any, filename: string) => {
