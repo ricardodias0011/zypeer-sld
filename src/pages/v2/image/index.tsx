@@ -1,5 +1,5 @@
 import { Button } from '@/components/v2/ui/button';
-import { cn } from '@/lib/utils';
+import { cn, isDesktop } from '@/lib/utils';
 import { AssetsService } from '@/services/assets';
 import { EventsService } from '@/services/events';
 import { ToolsService } from '@/services/tools';
@@ -731,7 +731,12 @@ export const ImageCard: React.FC<SlideCardProps> = memo(({
           isToolbarVisible && !readOnly && 'border-4 border-blue-400',
         )}
         style={{ '--image-url': isContain ? `url(${image})` : 'none' } as React.CSSProperties}
-        onClick={() => setIsToolbarVisible(prev => !prev)}
+        onClick={() => {
+          if (!isDesktop()) {
+            toast.warning("Para editar compartilhe um link para você mesmo abrir no desktop.")
+          }
+          setIsToolbarVisible(prev => !prev);
+        }}
       >
         {!readOnly && isToolbarVisible && (
           <ImageToolbar onGenerateAI={onGenerateAI} onDelete={onDelete} onReplace={onReplace} onAdjust={onAdjust} />
@@ -741,7 +746,7 @@ export const ImageCard: React.FC<SlideCardProps> = memo(({
           <div className="animate-pulse flex flex-col gap-4 w-full h-72">
             <div className="bg-gray-300 h-full w-full" />
           </div>
-        ) : !image && slideContent.image?.prompt && !eventId && !readOnly ? (
+        ) : !image && slideContent.image?.prompt && !eventId && (!readOnly || !isDesktop()) ? (
           <div className="h-full min-h-[320px] w-full bg-slate-50 border-2 border-dashed border-slate-200 rounded-xl flex flex-col items-center justify-center gap-4 transition-all hover:bg-slate-100/50">
             <div className="p-4 bg-white rounded-full shadow-sm border border-slate-100">
               <Sparkles className="w-8 h-8 text-blue-500 animate-pulse" />

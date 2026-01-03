@@ -2,7 +2,7 @@ import Textarea from '@/components/v2/textArea';
 import { Button } from '@/components/v2/ui/button';
 import { Dialog, DialogClose, DialogContent, DialogFooter, DialogTitle, DialogTrigger } from '@/components/v2/ui/dialog';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/v2/ui/popover';
-import { cn, isMobile } from '@/lib/utils';
+import { cn, isDesktop, isMobile } from '@/lib/utils';
 import { PresentationsService } from '@/services/presentations';
 import { useSlideStore, type Slide, type SlideContentType, type TypeImageContent } from '@/stores/slideStore';
 import {
@@ -909,8 +909,8 @@ export const SlideCard = memo(({
             :
             (
               <div
-                style={readOnly ? { minHeight: (currentScale ?? 0) > 1 ? window.innerHeight / (currentScale ?? 0) : window.innerHeight * (currentScale ?? 1) } : undefined}
-                className={cn("w-[250px] h-auto relative aspect-video")}>
+                style={readOnly ? { minHeight: (currentScale ?? 0) > 1 ? (window.innerHeight - 8) / (currentScale ?? 0) : window.innerHeight * (currentScale ?? 1) } : undefined}
+                className={cn("w-full md:w-[250px] h-auto relative aspect-video")}>
                 <img
                   src={currentSlide?.backgroundImage}
                   className="absolute inset-0 w-full h-full object-cover"
@@ -1194,7 +1194,7 @@ const App: React.FC<AppSlideProps> = (props) => {
   }, [props?.dataPresentation])
 
   return (
-    <div className='w-6xl '>
+    <div className='w-full md:w-6xl'>
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}
@@ -1210,6 +1210,7 @@ const App: React.FC<AppSlideProps> = (props) => {
               slide={slide}
               onUpdate={handleUpdateSlide}
               onDelete={handleDeleteSlide}
+              readOnly={!isDesktop()}
             />
           ))}
         </SortableContext>

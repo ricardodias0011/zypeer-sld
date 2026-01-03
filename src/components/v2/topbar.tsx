@@ -1,16 +1,8 @@
 import Logo from '@/assets/logo-white.png';
 import { Button } from '@/components/v2/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/v2/ui/dropdown-menu';
 import { useSlideStore } from '@/stores/slideStore';
 import {
-  Download,
-  Play,
-  Save
+  Play
 } from 'lucide-react';
 
 export const Toolbar = () => {
@@ -72,7 +64,7 @@ export const Toolbar = () => {
 
         {/* <div className="w-px h-6 bg-gray-400 mx-2" /> */}
 
-        <Button
+        {/* <Button
           variant="ghost"
           size="icon"
           onClick={saveToLocalStorage}
@@ -95,9 +87,9 @@ export const Toolbar = () => {
               Export as HTML
             </DropdownMenuItem>
           </DropdownMenuContent>
-        </DropdownMenu>
+        </DropdownMenu> */}
 
-        <div className="w-px h-6 bg-gray-400 mx-2" />
+        {/* <div className="w-px h-6 bg-gray-400 mx-2" /> */}
 
         <Button
           onClick={togglePresentationMode}

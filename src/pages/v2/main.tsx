@@ -55,17 +55,17 @@ const MainSlide = () => {
     if (!isDesktop() || !mainRef.current) return;
 
     const handleResize = () => {
-      const targetWidth = 1024;
-      const viewportWidth = document.body.clientWidth;
-      const mainEl = mainRef.current!;
+      // const targetWidth = 1024;
+      // const viewportWidth = document.body.clientWidth;
+      // const mainEl = mainRef.current!;
 
-      if (viewportWidth < targetWidth) {
-        const scale = viewportWidth / (targetWidth + 32);
-        mainEl.style.transform = `scale(${scale})`;
-        mainEl.style.transformOrigin = "top center";
-      } else {
-        mainEl.style.transform = "none";
-      }
+      // if (viewportWidth < targetWidth) {
+      //   const scale = viewportWidth / (targetWidth + 32);
+      //   mainEl.style.transform = `scale(${scale})`;
+      //   mainEl.style.transformOrigin = "top center";
+      // } else {
+      //   mainEl.style.transform = "none";
+      // }
     };
 
     window.addEventListener('resize', handleResize);
