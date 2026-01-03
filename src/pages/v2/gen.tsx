@@ -121,53 +121,54 @@ export default function MarkdownCardEditor() {
   };
 
   return (
-    <div className="h-screen overflow-auto bg-gradient-to-br from-blue-200 to-white text-slate-900 p-6 md:p-12">
-      <div className="max-w-4xl mx-auto space-y-10">
-        <header className="flex justify-between items-center">
+    <div className="min-h-screen overflow-auto bg-gradient-to-br from-blue-200 to-white text-slate-900 p-4 md:p-12">
+      <div className="max-w-4xl mx-auto space-y-6 md:space-y-10">
+        <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+            <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
               Editor de Conteúdo
             </h1>
-            <p className="text-slate-500 text-sm mt-1">Organize seus tópicos e gere apresentações.</p>
+            <p className="text-slate-500 text-xs md:text-sm mt-1">Organize seus tópicos e gere apresentações.</p>
           </div>
           {cards.length > 0 && (
             <button
               onClick={onCreate}
               disabled={isCreatingPresentation}
-              className="flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-xl font-semibold shadow-lg transition-all active:scale-95"
+              className="w-full md:w-auto flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-xl font-semibold shadow-lg transition-all active:scale-95"
             >
               {isCreatingPresentation ? <Loader2 className="animate-spin" size={20} /> : <Presentation size={20} />}
               {isCreatingPresentation ? 'Gerando...' : 'Gerar Slides'}
             </button>
           )}
         </header>
-        <section className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
+
+        <section className="bg-white p-4 md:p-6 rounded-2xl md:rounded-3xl shadow-sm border border-slate-100">
           <div className="flex flex-col">
             <select
               value={cardCount}
               onChange={(e) => setCardCount(Number(e.target.value))}
-              className="h-12 cursor-pointer px-4 max-w-60 mb-4 bg-slate-50 border border-slate-200 rounded-xl outline-none font-semibold text-slate-700"
+              className="h-11 md:h-12 cursor-pointer px-4 w-full md:max-w-60 mb-4 bg-slate-50 border border-slate-200 rounded-xl outline-none font-semibold text-slate-700 text-sm md:text-base"
             >
               {[...Array(10)].map((_, i) => (
                 <option key={i + 1} value={i + 1}>{i + 1} Cartões</option>
               ))}
             </select>
           </div>
-          <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Tema Principal</label>
-          <form onSubmit={onCreateCards} className="mt-2 flex gap-6">
+          <label className="text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-wider">Tema Principal</label>
+          <form onSubmit={onCreateCards} className="mt-2 flex flex-col md:flex-row gap-3 md:gap-6">
             <div className='relative flex-1'>
               <input
                 value={theme}
                 disabled={generating}
                 onChange={(e) => setTheme(e.target.value)}
-                className="w-full py-3.5 px-2 bg-slate-50 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none text-lg font-medium"
+                className="w-full py-3 px-3 bg-slate-50 rounded-xl focus:ring-2 focus:ring-blue-500/20 outline-none text-base md:text-lg font-medium"
                 placeholder="Ex: Revolução Industrial"
               />
               <div className="absolute right-4 top-1/2 -translate-y-1/2 flex gap-2">
-                {generating ? <Loader2 className="animate-spin text-blue-500" size={20} /> : <Sparkles size={20} className="text-blue-500" />}
+                {generating ? <Loader2 className="animate-spin text-blue-500" size={18} /> : <Sparkles size={18} className="text-blue-500" />}
               </div>
             </div>
-            <Button disabled={!theme || generating} type='submit'>
+            <Button className="h-12 md:h-auto" disabled={!theme || generating} type='submit'>
               Gerar cartões
             </Button>
           </form>
@@ -183,27 +184,32 @@ export default function MarkdownCardEditor() {
                       <div
                         ref={provided.innerRef}
                         {...provided.draggableProps}
-                        className={`group bg-white border border-slate-200 rounded-3xl p-6 transition-all ${snapshot.isDragging ? 'shadow-2xl ring-2 ring-blue-500/10' : ''}`}
+                        className={`group bg-white border border-slate-200 rounded-2xl md:rounded-3xl p-4 md:p-6 transition-all ${snapshot.isDragging ? 'shadow-2xl ring-2 ring-blue-500/10' : ''}`}
                       >
-                        <div className="flex items-start gap-4">
-                          <div {...provided.dragHandleProps} className="mt-1 text-slate-300">
-                            <GripVertical size={22} />
+                        <div className="flex items-start gap-2 md:gap-4">
+                          <div {...provided.dragHandleProps} className="mt-2 text-slate-300 touch-none">
+                            <GripVertical size={20} />
                           </div>
-                          <div className="flex-1">
-                            <div className="flex justify-between items-center mb-4">
-                              <div className="flex items-center gap-3">
-                                <span className="flex items-center justify-center w-7 h-7 text-xs font-black text-blue-600 bg-blue-50 rounded-lg">{index + 1}</span>
-                                <input className="text-lg font-bold bg-transparent border-none focus:ring-0" defaultValue={card.title} />
+                          <div className="flex-1 min-w-0">
+                            <div className="flex justify-between items-center mb-3 md:mb-4">
+                              <div className="flex items-center gap-2 md:gap-3 flex-1">
+                                <span className="flex items-center justify-center w-6 h-6 md:w-7 md:h-7 text-[10px] md:text-xs font-black text-blue-600 bg-blue-50 rounded-lg shrink-0">{index + 1}</span>
+                                <input className="text-base md:text-lg font-bold bg-transparent border-none focus:ring-0 w-full truncate" defaultValue={card.title} />
                               </div>
-                              <button onClick={() => removeCard(card.id)} className="opacity-0 group-hover:opacity-100 p-2 text-slate-400 hover:text-red-500 transition-all">
+                              <button onClick={() => removeCard(card.id)} className="md:opacity-0 group-hover:opacity-100 p-2 text-slate-400 hover:text-red-500 transition-all">
                                 <Trash2 size={18} />
                               </button>
                             </div>
-                            <ul className="space-y-3 ml-10">
+                            <ul className="space-y-3 ml-2 md:ml-10">
                               {card.items.map((item, i) => (
-                                <li key={i} className="flex gap-3 text-slate-600">
+                                <li key={i} className="flex gap-2 md:gap-3 text-slate-600">
                                   <span className="mt-2.5 w-1.5 h-1.5 bg-blue-300 rounded-full shrink-0" />
-                                  <TextArea disabled={isCreatingPresentation || generating} className="w-full text-sm bg-transparent border-none focus:ring-0 resize-none" defaultValue={item} rows={1} />
+                                  <TextArea
+                                    disabled={isCreatingPresentation || generating}
+                                    className="w-full text-xs md:text-sm bg-transparent border-none focus:ring-0 resize-none p-0"
+                                    defaultValue={item}
+                                    rows={1}
+                                  />
                                 </li>
                               ))}
                             </ul>
@@ -221,7 +227,7 @@ export default function MarkdownCardEditor() {
 
         <button
           onClick={addCard}
-          className="w-full py-6 border-2 border-dashed border-slate-300 rounded-3xl text-slate-500 hover:text-blue-500 hover:border-blue-200 hover:bg-blue-50/30 transition-all flex items-center justify-center gap-2 font-medium"
+          className="w-full py-4 md:py-6 border-2 border-dashed border-slate-300 rounded-2xl md:rounded-3xl text-slate-500 hover:text-blue-500 hover:border-blue-200 hover:bg-blue-50/30 transition-all flex items-center justify-center gap-2 font-medium text-sm md:text-base"
         >
           <Plus size={20} />
           Adicionar Novo Cartão
