@@ -26,7 +26,7 @@ interface CreateApresentationProps {
 
 import type { Slide } from "@/stores/slideStore";
 import { BsGrid, BsListUl } from "react-icons/bs";
-import { RiHistoryLine, RiLayoutGridLine, RiStarLine, RiUserLine } from "react-icons/ri";
+import { RiHistoryLine, RiLayoutGridLine, RiUserLine } from "react-icons/ri";
 
 const HomePage = () => {
   const navigate = useNavigate();
@@ -91,10 +91,10 @@ const HomePage = () => {
   return (
     <Flex direction="column" gap="6" p="6" width="100%" className="min-h-screen">
       <Flex justify="between" align="center" width="100%">
-        <Flex gap="3">
+        <Flex gap="3" wrap={'wrap'}>
           <Button
             onClick={() => navigate("/docs/v2/gen")}
-            size="3" radius="full" className="bg-gradient-to-r to-blue-500 from-blue-600 hover:opacity-90 transition-all cursor-pointer px-6">
+            size="3" radius="full" className="w-full md:w-52 bg-gradient-to-r to-blue-500 from-blue-600 hover:opacity-90 transition-all cursor-pointer px-6">
             <BsStars />
             <Text weight="medium">Criar novo</Text>
             <Badge variant="surface" color="blue" size="1" className="ml-1 opacity-80">AI</Badge>
@@ -102,7 +102,7 @@ const HomePage = () => {
 
           <Dialog.Root>
             <Dialog.Trigger>
-              <Button size="3" variant="outline" color="gray" radius="full" className="px-6 hover:bg-gray-50 cursor-pointer">
+              <Button size="3" variant="outline" color="gray" radius="full" className="w-full md:w-52 px-6 hover:bg-gray-50 cursor-pointer">
                 <BsPlusLg />
                 <Text weight="medium">Novo em branco</Text>
               </Button>
@@ -114,7 +114,7 @@ const HomePage = () => {
           </Dialog.Root>
         </Flex>
 
-        <Flex align="center" gap="4">
+        <Flex className="hidden md:flex" align="center" gap="4">
           <Text size="2" color="gray" weight="medium">{account?.credits ?? 0} créditos</Text>
           <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white text-xs font-bold">
             {(account && account?.avatar) ? <img className="w-full h-full rounded-full" src={account.avatar} alt="avatar" /> : user?.name?.charAt(0).toUpperCase()}
@@ -122,7 +122,7 @@ const HomePage = () => {
         </Flex>
       </Flex>
 
-      <Flex justify="between" align="center" className="border-b border-gray-100 pb-2">
+      <Flex justify="between" wrap={'wrap'} align="center" className="border-b border-gray-100 pb-2">
         <Flex gap="5">
           <Button variant="ghost" color="blue" radius="full" className="text-gray-600 hover:text-blue-600">
             <RiLayoutGridLine /> Todos
@@ -133,12 +133,12 @@ const HomePage = () => {
           <Button variant="ghost" color="gray" radius="full" className="text-gray-500 hover:text-blue-600">
             <RiUserLine /> Meus Projetos
           </Button>
-          <Button variant="ghost" color="gray" radius="full" className="text-gray-500 hover:text-blue-600">
+          {/* <Button variant="ghost" color="gray" radius="full" className="text-gray-500 hover:text-blue-600">
             <RiStarLine /> Favoritos
-          </Button>
+          </Button> */}
         </Flex>
 
-        <Flex gap="2" className="bg-gray-100 p-2 rounded-lg flex gap-6">
+        <Flex gap="2" className="bg-gray-100 p-2 rounded-lg flex gap-6 wrap">
           <Button size="1" variant="ghost" color="blue" className="bg-blue-500 rounded-xl text-white">
             <BsGrid size={20} /> Grade
           </Button>
