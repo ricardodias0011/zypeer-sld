@@ -1,8 +1,9 @@
+import { Button } from '@/components/v2/ui/button';
 import { cn } from '@/lib/utils';
 import { AssetsService } from '@/services/assets';
 import { EventsService } from '@/services/events';
 import { ToolsService } from '@/services/tools';
-import type { Slide, SlideContentType } from '@/stores/slideStore';
+import type { Slide, SlideContentType, TypeImageContent } from '@/stores/slideStore';
 import { Tooltip } from '@radix-ui/themes';
 import {
   Crop,
@@ -17,6 +18,8 @@ import {
   X
 } from 'lucide-react';
 import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { PiMagicWand } from 'react-icons/pi';
+import { TfiLayoutMediaCenter, TfiLayoutMediaLeft, TfiLayoutMediaRight } from 'react-icons/tfi';
 import { toast } from 'sonner';
 
 interface SlideCardProps {
@@ -31,6 +34,7 @@ interface SlideCardProps {
   content: SlideContentType[];
   direction?: 'right' | 'left';
   imageIFit?: 'cover' | 'contain' | 'fill';
+  imagePostion?: TypeImageContent['position'];
 }
 
 interface ImageToolbarProps {
@@ -50,6 +54,7 @@ interface ImagePreviewProps {
   onDelete: (e: React.MouseEvent) => void;
   onReplace: (e: React.MouseEvent) => void;
   onAdjust: (e: React.MouseEvent) => void;
+  onGenerate: (e: string) => void;
 }
 
 const Modal: React.FC<{
@@ -74,7 +79,7 @@ const Modal: React.FC<{
   }, [onClose]);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+    <div className="inset-0 bg-[#00000099] data-[state=open]:animate-overlayShow w-screen h-screen top-0 fixed z-[60] flex items-center justify-center backdrop-blur-sm">
       <div
         ref={modalRef}
         className="w-full max-w-lg rounded-xl bg-white p-6 shadow-2xl"
@@ -290,9 +295,11 @@ const ReplaceModal: React.FC<{
 const AdjustModal: React.FC<{
   onClose: () => void;
   currentFit: Slide['imageFit'];
-  onAdjust: (fit: Slide['imageFit']) => void;
-}> = ({ onClose, currentFit, onAdjust }) => {
+  currentPosition: TypeImageContent['position'];
+  onAdjust: (fit: Slide['imageFit'], position: TypeImageContent['position']) => void;
+}> = ({ onClose, currentFit, onAdjust, currentPosition }) => {
   const [fit, setFit] = useState(currentFit || 'cover');
+  const [position, setPosition] = useState(currentPosition || 'center');
 
   const options: {
     value: Slide['imageFit'];
@@ -304,8 +311,18 @@ const AdjustModal: React.FC<{
       { value: 'fill', label: 'Esticar', icon: Scale },
     ];
 
+  const positionOptions: {
+    value: TypeImageContent['position'];
+    label: string;
+    icon: React.ElementType;
+  }[] = [
+      { value: 'center', label: 'Centro', icon: TfiLayoutMediaCenter },
+      { value: 'left', label: 'Esquerda', icon: TfiLayoutMediaLeft },
+      { value: 'right', label: 'Direita', icon: TfiLayoutMediaRight },
+    ];
+
   const handleSave = () => {
-    onAdjust(fit);
+    onAdjust(fit, position);
     onClose();
   };
 
@@ -332,6 +349,24 @@ const AdjustModal: React.FC<{
           </button>
         ))}
       </div>
+      {/* <div className="grid grid-cols-3 gap-3">
+        {positionOptions.map((option) => (
+          <button
+            key={option.value}
+            // @ts-ignore
+            onClick={() => setPosition(option.value)}
+            className={cn(
+              'flex flex-col items-center justify-center gap-2 rounded-lg border-2 p-4 transition-colors',
+              position === option.value
+                ? 'border-blue-600 bg-blue-50 text-blue-700'
+                : 'border-gray-300 bg-white text-gray-600 hover:border-gray-400 hover:bg-gray-50'
+            )}
+          >
+            <option.icon size={24} />
+            <span className="font-medium">{option.label}</span>
+          </button>
+        ))}
+      </div> */}
       <div className="flex justify-end gap-3">
         <button
           onClick={onClose}
@@ -394,7 +429,8 @@ export const ImageCard: React.FC<SlideCardProps> = memo(({
   contentId,
   columnId,
   direction,
-  imageIFit
+  imageIFit,
+  imagePostion
 }) => {
   const [isLoading, setIsLoading] = useState(false);
 
@@ -425,13 +461,38 @@ export const ImageCard: React.FC<SlideCardProps> = memo(({
   }, []);
 
   const handleGenerateImageAction = useCallback((link: string) => {
+    const currentContent = slide.content.find(a => a.id === contentId)
+    const currentColunm = isColumn ? currentContent?.columns?.find(e => e.id === columnId) : null;
     onUpdate(slide.id, 'content', [
-      ...slide.content.filter(a => a.id !== slideContent.id),
+      ...slide.content.filter(a => a.id !== contentId),
       {
-        ...slideContent,
-        image: {
-          url: link
-        }
+        ...currentContent,
+        ...(isColumn ? {
+          columns: [...currentContent?.columns?.filter(a => a.id !== columnId) || [], {
+            id: columnId,
+            type: 'image',
+            items: [
+              ...(currentColunm?.items ?? []).filter((a: any) => a.id !== slideContent.id),
+              {
+                id: slideContent.id,
+                "type": "image",
+                image: {
+                  url: link,
+                  imageFit: imageIFit || 'contain',
+                  position: imagePostion || 'center'
+                },
+              }
+            ],
+            direction: direction || '',
+          }]
+        } : {
+          ...currentContent,
+          image: {
+            imageFit: slideContent.image?.imageFit || 'cover',
+            url: link,
+            position: imagePostion || 'center'
+          }
+        }),
       }
     ]);
   }, [slide.id, slide.content, slideContent, onUpdate]);
@@ -461,7 +522,8 @@ export const ImageCard: React.FC<SlideCardProps> = memo(({
                   "type": "image",
                   image: {
                     url: link,
-                    imageFit: imageIFit || 'contain'
+                    imageFit: imageIFit || 'contain',
+                    position: imagePostion || 'center'
                   },
                 }
               ],
@@ -471,7 +533,8 @@ export const ImageCard: React.FC<SlideCardProps> = memo(({
             ...currentContent,
             image: {
               imageFit: slideContent.image?.imageFit || 'cover',
-              url: link
+              url: link,
+              position: imagePostion || 'center'
             }
           }),
         }
@@ -484,7 +547,7 @@ export const ImageCard: React.FC<SlideCardProps> = memo(({
     }
   }, [slide.id, slide.content, slideContent, onUpdate]);
 
-  const handleAdjustImageAction = useCallback((fit: Slide['imageFit']) => {
+  const handleAdjustImageAction = useCallback((value: Slide['imageFit'], position: TypeImageContent['position']) => {
     const currentSlide = slide.content.find(a => a.id === contentId)
     const currentColunm = isColumn ? currentSlide?.columns?.find(e => e.id === columnId) : null;
     if (isColumn) {
@@ -502,7 +565,8 @@ export const ImageCard: React.FC<SlideCardProps> = memo(({
                 "type": "image",
                 image: {
                   url: slideContent.image?.url,
-                  imageFit: fit || 'cover'
+                  position: position || 'center',
+                  imageFit: value || 'contain'
                 },
               }
             ],
@@ -518,7 +582,8 @@ export const ImageCard: React.FC<SlideCardProps> = memo(({
       {
         ...slideContent,
         image: {
-          imageFit: fit || 'contain',
+          position: position || 'center',
+          imageFit: value || 'contain',
           url: slideContent.image?.url || ''
         }
       }
@@ -583,66 +648,134 @@ export const ImageCard: React.FC<SlideCardProps> = memo(({
     onGenerateAI,
     onDelete,
     onReplace,
-    onAdjust
+    onAdjust,
+    onGenerate
   }) => {
     const [isToolbarVisible, setIsToolbarVisible] = useState(false);
+    const [eventId, setEventId] = useState<string | null>(null);
+    const [loadingGenerating, setLoadingGenerating] = useState(false);
+    const [image, setImage] = useState("");
+
+    const resetLoading = () => {
+      setEventId(null);
+      setLoadingGenerating(false);
+    };
+
+    const handleGenerate = (prompt: string) => {
+      if (loadingGenerating && image) return;
+      setLoadingGenerating(true);
+
+      ToolsService.generateImage(prompt)
+        .then(res => res?.data?.id ? setEventId(res.data.id) : setLoadingGenerating(false))
+        .catch(() => {
+          setLoadingGenerating(false);
+          toast.error("Não foi possível gerar imagem.");
+        });
+    };
 
     useEffect(() => {
-      if (activeModal) {
-        setIsToolbarVisible(false);
-      }
+      if (!eventId) return;
+
+      const interval = setInterval(() => {
+        EventsService.consult("generate-image", eventId)
+          .then(({ data }) => {
+            if (!data?.status) return;
+
+            if (data.status === 0) {
+              clearInterval(interval);
+              resetLoading();
+              toast.error("Não foi possível gerar imagem.");
+            }
+
+            if (data.status === 4 && data.metadata?.[0]?.id) {
+              clearInterval(interval);
+              ToolsService.findMaterial(data.metadata[0].id)
+                .then((res) => {
+                  if (res?.data?.content) {
+                    const content = res.data.content as string;
+                    onGenerate(content);
+                    setImage(content);
+                  }
+                })
+                .finally(resetLoading);
+            }
+          })
+          .catch((err) => {
+            clearInterval(interval);
+            resetLoading();
+            toast.error(err?.response?.data?.message ?? "Erro ao consultar status");
+          });
+      }, 4000);
+
+      return () => clearInterval(interval);
+    }, [eventId, onGenerate]);
+
+    useEffect(() => {
+      if (activeModal) setIsToolbarVisible(false);
     }, [activeModal]);
+
+    useEffect(() => {
+      if (slideContent?.image?.url) setImage(slideContent.image.url)
+    }, [slideContent.image])
+
+    const imageFit = slideContent.image?.imageFit;
+    const isContain = imageFit === 'contain';
 
     return (
       <div
         className={cn(
-          'relative flex-1 cursor-pointer sm:mt-0 w-full flex items-center justify-center',
-          slideContent.image?.imageFit === 'contain' ? 'p-[1.5em] background-blur-contain max-h-96' :
-            slideContent.image?.imageFit === 'cover' ? 'p-6' : 'max-h-96',
+          'relative flex-1 cursor-pointer w-full flex items-center justify-center sm:mt-0',
+          isContain ? 'p-[1.5em] background-blur-contain max-h-96' : imageFit === 'cover' ? 'p-6' : 'max-h-96',
           ht,
-          slide.layout === 'full' ? 'absolute opacity-35' : '',
-          (isToolbarVisible && !readOnly) ? 'border-4 border-blue-400' : '',
+          slide.layout === 'full' && 'absolute opacity-35',
+          isToolbarVisible && !readOnly && 'border-4 border-blue-400',
         )}
-        style={{
-          '--image-url': slideContent.image?.imageFit === 'contain'
-            ? `url(${slideContent.image?.url})`
-            : 'none',
-        } as React.CSSProperties}
-        onClick={() => setIsToolbarVisible((prev) => !prev)}
+        style={{ '--image-url': isContain ? `url(${image})` : 'none' } as React.CSSProperties}
+        onClick={() => setIsToolbarVisible(prev => !prev)}
       >
         {!readOnly && isToolbarVisible && (
-          <ImageToolbar
-            onGenerateAI={onGenerateAI}
-            onDelete={onDelete}
-            onReplace={onReplace}
-            onAdjust={onAdjust}
-          />
+          <ImageToolbar onGenerateAI={onGenerateAI} onDelete={onDelete} onReplace={onReplace} onAdjust={onAdjust} />
         )}
-        {slideContent.image?.url ? (
+
+        {loadingGenerating ? (
+          <div className="animate-pulse flex flex-col gap-4 w-full h-72">
+            <div className="bg-gray-300 h-full w-full" />
+          </div>
+        ) : !image && slideContent.image?.prompt && !eventId && !readOnly ? (
+          <div className="h-full min-h-[320px] w-full bg-slate-50 border-2 border-dashed border-slate-200 rounded-xl flex flex-col items-center justify-center gap-4 transition-all hover:bg-slate-100/50">
+            <div className="p-4 bg-white rounded-full shadow-sm border border-slate-100">
+              <Sparkles className="w-8 h-8 text-blue-500 animate-pulse" />
+            </div>
+
+            <div className="text-center space-y-1">
+              <p className="text-xs text-slate-500 max-w-[200px]">
+                Use nossa IA para criar algo incrível com base neste assunto.
+              </p>
+            </div>
+
+            <Button
+              onClick={() => handleGenerate(slideContent?.image?.prompt as string)}
+              className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-200 transition-all active:scale-95"
+            >
+              <PiMagicWand className="w-4 h-4 mr-2" />
+              Gerar imagem com IA
+            </Button>
+          </div>
+        ) : image ? (
           <img
-            src={slideContent.image?.url}
+            src={image}
             alt="Preview"
             className={cn(
-              'h-full min-h-60 w-full bg-gray-100 text-gray-600 flex items-center justify-center',
-              slideContent.image?.imageFit === 'contain'
-                ? 'object-contain max-w-80 rounded-lg'
-                : slideContent.image?.imageFit === 'fill'
-                  ? 'object-fill max-h-80'
-                  : 'object-cover'
+              'h-full min-h-60 w-full bg-gray-100 text-gray-600 object-cover',
+              isContain ? 'object-contain max-w-80 rounded-lg' : imageFit === 'fill' && 'object-fill max-h-80'
             )}
             onError={(e) => (e.currentTarget.src = '')}
           />
         ) : (
-          <div
-            className={cn(
-              'h-full min-h-60 w-full bg-gray-100 text-gray-600 flex items-center justify-center',
-              slideContent.image?.imageFit === 'contain'
-                ? 'object-contain max-w-80'
-                : slideContent.image?.imageFit === 'fill'
-                  ? 'object-fill'
-                  : 'object-cover'
-            )}
-          >
+          <div className={cn(
+            'h-full min-h-60 w-full bg-gray-100 text-gray-600 flex items-center justify-center',
+            isContain ? 'object-contain max-w-80' : imageFit === 'fill' && 'object-fill'
+          )}>
             <ImageIcon size={40} />
           </div>
         )}
@@ -662,6 +795,7 @@ export const ImageCard: React.FC<SlideCardProps> = memo(({
   });
 
   const imageFit = slideContent.image?.imageFit;
+  const imagePosition = slideContent.image?.position;
 
   return (
     <>
@@ -675,12 +809,14 @@ export const ImageCard: React.FC<SlideCardProps> = memo(({
         onDelete={handleDeleteImage}
         onReplace={handleReplace}
         onAdjust={handleAdjust}
+        onGenerate={handleGenerateImageAction}
       />
       {activeModal === 'generate' && (
         <Modal
           title="Gerar Imagem com IA"
           onClose={() => setActiveModal(null)}
         >
+
           <GenerateAIModal
             onClose={() => setActiveModal(null)}
             onGenerate={handleGenerateImageAction}
@@ -700,8 +836,9 @@ export const ImageCard: React.FC<SlideCardProps> = memo(({
         <Modal title="Ajustar Imagem" onClose={() => setActiveModal(null)}>
           <AdjustModal
             onClose={() => setActiveModal(null)}
+            currentPosition={imagePosition || 'center'}
             currentFit={imageFit || slide.imageFit}
-            onAdjust={handleAdjustImageAction}
+            onAdjust={(a, b) => handleAdjustImageAction(a, b)}
           />
         </Modal>
       )}

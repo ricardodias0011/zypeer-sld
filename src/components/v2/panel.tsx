@@ -54,7 +54,7 @@ const SlideThumbnail = ({ slide, duplicateSlide, handleDeleteSlide }: { slide: S
       style={style}
       className={cn(
         'group relative rounded-lg border-2 overflow-hidden cursor-pointer transition-all',
-        'border-gray-300 hover:border-primary/50 bg-card'
+        'border-gray-600 hover:border-primary/50 bg-card'
       )}
       onClick={() => setCurrentSlide(slide.id)}
     >
@@ -74,7 +74,7 @@ const SlideThumbnail = ({ slide, duplicateSlide, handleDeleteSlide }: { slide: S
         )}
       </div>
 
-      <div className="text-sm font-medium z-40 absolute bottom-2 left-2 text-foreground p-2 bg-gray-200/80 w-8 h-8 rounded-md text-center">
+      <div className="text-sm font-medium z-10 absolute bottom-2 left-2 text-foreground p-2 bg-gray-200/80 w-8 h-8 rounded-md text-center">
         {slide.order + 1}
       </div>
 
@@ -121,12 +121,13 @@ const Skeleton = () => (
 );
 
 
-export const SlidesPanel = ({ slides, id, updatePresentation, loading, loadingCount }: {
+export const SlidesPanel = ({ slides, id, updatePresentation, loading, loadingCount, dataPresentation }: {
   slides: Slide[],
   id?: string,
   updatePresentation: (a: Slide[]) => void;
   loading: boolean,
-  loadingCount: number
+  loadingCount: number,
+  dataPresentation: any
 }) => {
 
   const { reorderSlides, addSlide } = useSlideStore();
@@ -169,7 +170,7 @@ export const SlidesPanel = ({ slides, id, updatePresentation, loading, loadingCo
 
 
   return (
-    <div className="w-64 hidden md:flex bg-white border-r border-gray-300 overflow-y-auto">
+    <div className={cn(dataPresentation?.thumbnailId === "v2-default" ? "bg-neutral-900 border-r border-gray-900" : "bg-gray-100 border-r border-gray-300 ", "w-64 hidden md:flex overflow-y-auto")}>
       <div className="p-4 w-full">
         <div className='px-2 w-full'>
           <Button onClick={() => {
@@ -177,7 +178,7 @@ export const SlidesPanel = ({ slides, id, updatePresentation, loading, loadingCo
             const newSlide = addSlide('type-1');
             currentSlides.push(newSlide as unknown as Slide);
             updateIncloud(currentSlides);
-          }} className='mb-4 w-full px-1 py-1 pr-0' variant={'secondary'}>Novo</Button>
+          }} className='mb-4 w-full px-1 py-1 pr-0' variant={'default'}>Novo</Button>
         </div>
         {loading ? (
           Array.from({ length: loadingCount ? Number(loadingCount) : 5 }).map((_, i) => (

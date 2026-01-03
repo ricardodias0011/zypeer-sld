@@ -52,32 +52,6 @@ export const PresentationMode = ({ slides }: { slides: Slide[] }) => {
   }, []);
 
   useEffect(() => {
-    const handleWheel = (e: WheelEvent) => {
-      const el = slideRef.current;
-      if (!el) return;
-
-      const isAtBottom = el.scrollHeight - el.scrollTop <= el.clientHeight + 1;
-      const isAtTop = el.scrollTop <= 0;
-
-      scrollAccumulator.current += e.deltaY;
-
-      if (scrollAccumulator.current > 0 && !isAtBottom) {
-        scrollAccumulator.current = 0;
-        return;
-      }
-
-      if (scrollAccumulator.current < 0 && !isAtTop) {
-        scrollAccumulator.current = 0;
-        return;
-      }
-
-      if (Math.abs(scrollAccumulator.current) > 1200) {
-        if (scrollAccumulator.current > 0) nextSlide();
-        else previousSlide();
-        scrollAccumulator.current = 0;
-      }
-    };
-
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') togglePresentationMode();
       else if (e.key === 'ArrowRight' || e.key === ' ') {
@@ -88,10 +62,8 @@ export const PresentationMode = ({ slides }: { slides: Slide[] }) => {
         previousSlide();
       }
     };
-    window.addEventListener('wheel', handleWheel, { passive: true });
     window.addEventListener('keydown', handleKeyDown);
     return () => {
-      window.removeEventListener('wheel', handleWheel);
       window.removeEventListener('keydown', handleKeyDown);
     };
   }, [nextSlide, previousSlide, togglePresentationMode]);
@@ -102,7 +74,7 @@ export const PresentationMode = ({ slides }: { slides: Slide[] }) => {
     <div className="fixed inset-0 bg-background z-50 flex flex-col overflow-hidden cursor-none! group">
       <div
         ref={cursorRef}
-        className="pointer-events-none z fixed w-8 h-8 border-2 bg-gradient-to-r to-blue-500 from-blue-800 rounded-full z-[60] transition-transform duration-100 ease-out mix-blend-difference group-hover:scale-150" />
+        className="pointer-events-none fixed w-8 h-8 border-2 bg-gradient-to-r to-blue-500 from-blue-800 rounded-full z-50 transition-transform duration-100 ease-out mix-blend-difference group-hover:scale-150" />
 
       <div className="flex-1 relative flex items-center justify-center">
         <div
@@ -125,9 +97,6 @@ export const PresentationMode = ({ slides }: { slides: Slide[] }) => {
               onUpdate={() => { }}
               onDelete={() => { }}
             />
-          </div>
-          <div className='absolute top-0 left-0 w-full h-full'>
-
           </div>
         </div>
       </div>

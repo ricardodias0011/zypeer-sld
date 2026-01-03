@@ -1,7 +1,7 @@
 import { SlidesPanel } from "@/components/v2/panel";
 import { Toolbar } from "@/components/v2/topbar";
 import useQuery from "@/hooks/useQuery";
-import { isDesktop } from "@/lib/utils";
+import { cn, isDesktop } from "@/lib/utils";
 import { EventsService } from "@/services/events";
 import { PresentationsService } from "@/services/presentations";
 import { useSlideStore, type Slide } from "@/stores/slideStore";
@@ -25,7 +25,7 @@ const MainSlide = () => {
   const eventID = query.get("event_id");
 
   const { addSlide, isPresentationMode } = useSlideStore();
-  const [dataPresentation, setDataPresentation] = useState<{ presentations: Slide[]; id: string; } | null>(null);
+  const [dataPresentation, setDataPresentation] = useState<{ presentations: Slide[]; id: string; thumbnailId?: string } | null>(null);
   const [slides, setSlides] = useState<Slide[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -111,7 +111,7 @@ const MainSlide = () => {
   if (isPresentationMode) return <PresentationMode slides={slides} />;
 
   return (
-    <div className="bg-gray-100 font-sans text-gray-800 min-h-screen overflow-hidden">
+    <div className={cn(dataPresentation?.thumbnailId === "v2-default" ? "bg-black" : "bg-gray-100", "font-sans text-gray-800 min-h-screen overflow-hidden")}>
       <Toolbar />
       <div className="flex-1 flex h-[calc(100vh-75px)] overflow-hidden w-full">
         <SlidesPanel
@@ -120,6 +120,7 @@ const MainSlide = () => {
           slides={slides}
           id={id}
           updatePresentation={setSlides}
+          dataPresentation={dataPresentation}
         />
 
         <div className="flex-1 flex h-full overflow-auto py-8 w-full">

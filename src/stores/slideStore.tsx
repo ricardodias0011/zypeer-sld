@@ -23,10 +23,7 @@ export type SlideContentType = {
   type: 'text' | 'column' | 'image' | 'quote',
   text?: string,
   columns?: { direction: 'left' | 'right', text?: string, image?: string, type: 'text' | 'image', id: string, items?: any }[],
-  image?: {
-    url: string;
-    imageFit?: 'cover' | 'contain' | 'fill';
-  },
+  image?: TypeImageContent,
   border?: string;
   bgcolor?: string;
   order: number;
@@ -36,6 +33,13 @@ export type SlideContentType = {
     text?: string;
     image?: { url: string; imageFit?: 'cover' | 'contain' | 'fill' };
   }[];
+}
+
+export type TypeImageContent = {
+  url: string;
+  imageFit?: 'cover' | 'contain' | 'fill';
+  prompt?: string;
+  position?: 'center' | 'left' | 'right';
 }
 
 interface SlideState {

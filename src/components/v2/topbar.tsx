@@ -46,10 +46,10 @@ export const Toolbar = () => {
   };
 
   return (
-    <div className="border-b border-gray-200 bg-linear-to-r from-blue-700 from-30% via-blue-500 via-50% to-blue-700 flex items-center justify-between p-2">
-      <div className="flex items-center gap-2">
-        <img src={Logo} alt="Logo" className="h-8 w-32" />
-      </div>
+    <div className="bg-linear-to-r from-blue-700 from-30% via-blue-500 via-50% to-blue-700 flex items-center justify-between p-2">
+      <a href='/' className="flex items-center gap-2">
+        <img src={Logo} alt="Logo" className="h-8 w-36" />
+      </a>
 
       <div className="flex items-center gap-2">
         {/* <Button

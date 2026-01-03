@@ -4,7 +4,7 @@ import { Dialog, DialogClose, DialogContent, DialogFooter, DialogTitle, DialogTr
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/v2/ui/popover';
 import { cn, isMobile } from '@/lib/utils';
 import { PresentationsService } from '@/services/presentations';
-import { useSlideStore, type Slide, type SlideContentType } from '@/stores/slideStore';
+import { useSlideStore, type Slide, type SlideContentType, type TypeImageContent } from '@/stores/slideStore';
 import {
   closestCenter,
   DndContext,
@@ -62,7 +62,7 @@ type ColumnItem = {
   id: string;
   type: 'text' | 'image';
   text?: string;
-  image?: { url: string; imageFit?: 'cover' | 'contain' | 'fill' };
+  image?: { url: string; imageFit?: 'cover' | 'contain' | 'fill', position: TypeImageContent['position'] };
 };
 
 type ColumnStyle = {
@@ -95,7 +95,9 @@ const ColumnsSlide: React.FC<ColumnsSlideProps> = memo(({ slide, readOnly, onUpd
       items.push({
         id: `${columnContent?.id || 'col'}-${columnIndex}-item-${items.length}`,
         type: 'image',
-        image: typeof column.image === 'string' ? { url: column.image } : column.image
+        // @ts-ignore
+        image: typeof column.image === 'string' ? { url: column.image } : column.image,
+
       });
     }
     return items;
@@ -119,7 +121,7 @@ const ColumnsSlide: React.FC<ColumnsSlideProps> = memo(({ slide, readOnly, onUpd
       id: `${columnContent.id}-${columnIndex}-item-${Date.now()}`,
       type: itemType,
       text: itemType === 'text' ? 'Novo texto' : undefined,
-      image: itemType === 'image' ? { url: '' } : undefined
+      image: itemType === 'image' ? { url: '', position: 'center' } : undefined,
     };
 
     (column as any).items = [...items, newItem];
@@ -293,6 +295,7 @@ const ColumnsSlide: React.FC<ColumnsSlideProps> = memo(({ slide, readOnly, onUpd
                 isColumn
                 columnId={columnId}
                 imageIFit={item.image?.imageFit}
+                imagePostion={item.image?.position}
                 content={slide.content}
                 direction={direction}
                 slideContent={{
@@ -306,14 +309,16 @@ const ColumnsSlide: React.FC<ColumnsSlideProps> = memo(({ slide, readOnly, onUpd
                     updateItem(columnIndex, item.id, {
                       image: {
                         url: value,
-                        imageFit: item.image?.imageFit || 'cover'
+                        imageFit: item.image?.imageFit || 'cover',
+                        position: item.image?.position || 'center'
                       }
                     });
                   } else if (field === 'imageFit') {
                     updateItem(columnIndex, item.id, {
                       image: {
                         url: item.image?.url || '',
-                        imageFit: value as 'cover' | 'contain' | 'fill'
+                        imageFit: value as 'cover' | 'contain' | 'fill',
+                        position: item.image?.position || 'center'
                       }
                     });
                   }
@@ -825,6 +830,10 @@ export const SlideCard = memo(({
         style={{
           gridTemplate: '"body accent" minmax(24em, auto) / 62.5% 37.5%',
           backgroundColor: currentSlide?.bgcolor || 'transparent',
+          background: `url(${currentSlide?.backgroundImage})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat'
         }}
         className={cn(
           'flex',
@@ -933,6 +942,10 @@ export const SlideCard = memo(({
                 onChangeAnimate={e => {
                   onUpdateCurrent(currentSlide.id, 'effectTransition', e)
                 }}
+                onChangeBackgroundImage={e => {
+                  onUpdateCurrent(currentSlide.id, 'backgroundImage', e)
+                }}
+                backgroundImage={currentSlide?.backgroundImage}
                 animate={currentSlide?.effectTransition}
                 onChangeBgColor={e => {
                   onUpdateCurrent(currentSlide.id, 'bgcolor', e)

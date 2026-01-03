@@ -7,7 +7,6 @@ import { PiDotsThreeVertical } from "react-icons/pi";
 import { useNavigate } from "react-router-dom";
 import { ReactSearchAutocomplete } from 'react-search-autocomplete';
 import ApresentatioAlien from "../../assets/alien-apresentation.png";
-import PreviewSlide from "../../components/editor/preview";
 import useAuth from "../../context/auth";
 import { AcademicService } from "../../services/academic";
 import { EventsService } from "../../services/events";
@@ -25,6 +24,7 @@ interface CreateApresentationProps {
   isIa: boolean
 }
 
+import type { Slide } from "@/stores/slideStore";
 import { BsGrid, BsListUl } from "react-icons/bs";
 import { RiHistoryLine, RiLayoutGridLine, RiStarLine, RiUserLine } from "react-icons/ri";
 
@@ -234,33 +234,18 @@ const PreviewItem = (props: { project: PresentationProject, reload: () => void; 
       }}
       className="w-[100%]! md:w-[280px]! bg-white"
     >
-      {
-        p?.thumbnailId === "v2-default" ?
-          <div
-            className="bg-gray-100 rounded overflow-hidden mb-2 cursor-pointer"
-            ref={slideRef}
-            onClick={() => navigate('/docs/v2/' + p.id)}
-          >
-            <SlideCard
-              readOnly
-              slide={p?.presentations[0]}
-              onUpdate={() => { }}
-              onDelete={() => { }}
-            />
-          </div>
-          :
-          <Grid
-            className="w-[100%]! md:w-[280px]!"
-            height={'150px'}
-            position={'relative'}
-            overflow={'hidden'}
-            style={{ borderRadius: 20 }}
-            onClick={() => navigate('/docs/' + p.id)}
-          >
-            <PreviewSlide currentSlide={p.presentations[0]} height={160} width={280} />
-          </Grid>
-      }
-
+      <div
+        className="bg-gray-100 rounded overflow-hidden mb-2 cursor-pointer"
+        ref={slideRef}
+        onClick={() => navigate('/docs/v2/' + p.id)}
+      >
+        <SlideCard
+          readOnly
+          slide={p?.presentations[0] as unknown as Slide}
+          onUpdate={() => { }}
+          onDelete={() => { }}
+        />
+      </div>
       <Flex direction={"column"} gap={"2"} p={"4"}>
         <Text weight="light" size={'3'} style={{ fontFamily: "Poppins" }}>
           {p.title}
