@@ -889,7 +889,7 @@ export const SlideCard = memo(({
         </div>
         {currentSlide?.backgroundImage && slide.layout !== 'empty' ?
           (currentSlide?.backgroundImage === "ai-generating" && (!readOnly || !isDesktop())) ?
-            <div className="w-[200px] h-auto relative bg-slate-50 p-2 flex items-center justify-center flex-col gap-4">
+            <div className="full md:w-[200px] h-auto relative bg-slate-50 p-2 flex items-center justify-center flex-col gap-4">
               <div className="flex items-center justify-center rounded-full bg-blue-50 w-12 h-12">
                 <Sparkles className="w-6 h-6 text-blue-600 animate-pulse" />
               </div>
