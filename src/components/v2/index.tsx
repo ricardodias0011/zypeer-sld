@@ -206,7 +206,7 @@ const TailwindAdvancedEditor = ({ slide, onUpdate, contentSlide, onDelete }: Tai
         extensions={memoizedExtensions}
         className={editorClassName}
         editorProps={editorProps}
-        onDestroy={(e) => { editorRef.current = null; }}
+        onDestroy={(_e) => { editorRef.current = null; }}
         onUpdate={({ editor }) => {
           if (!slide.readOnly) debouncedUpdates(editor);
         }}

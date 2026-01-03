@@ -1,5 +1,4 @@
 import { Button } from '@/components/v2/ui/button';
-import { EventsService } from '@/services/events';
 import { PresentationsService } from '@/services/presentations';
 import UserStorage from '@/services/storage/auth';
 import { URLS } from '@/utils/urls';
@@ -12,7 +11,7 @@ import {
   Sparkles,
   Trash2
 } from 'lucide-react';
-import { useEffect, useState, type FormEventHandler } from 'react';
+import { useState, type FormEventHandler } from 'react';
 import { DragDropContext, Draggable, Droppable } from 'react-beautiful-dnd';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -30,8 +29,6 @@ export default function MarkdownCardEditor() {
   const [cardCount, setCardCount] = useState(5);
   const [generating, setGenerating] = useState(false);
   const [isCreatingPresentation, setIsCreatingPresentation] = useState(false);
-  const [eventID, setEventID] = useState<string | null>("");
-  const [statusCreate, setStatusCreate] = useState(0);
 
   const onCreateCards: FormEventHandler<HTMLFormElement> = async (e) => {
     e.preventDefault();
@@ -122,26 +119,6 @@ export default function MarkdownCardEditor() {
         setIsCreatingPresentation(false);
       });
   };
-
-  useEffect(() => {
-    if (!eventID) return;
-    const interval = setInterval(() => {
-      EventsService.consult("presentation", eventID)
-        .then(({ data }) => {
-          if (data?.status) {
-            if (data?.metadata?.[0]?.id) {
-              navigate(`/docs/v2/creating?slide_count=${cards.length}&event_id=${eventID}`);
-            }
-            setStatusCreate(data.status);
-            if (data.status === 0) clearInterval(interval);
-            if (data.status === 4) {
-              clearInterval(interval);
-            }
-          }
-        });
-    }, 3000);
-    return () => clearInterval(interval);
-  }, [eventID, cards.length, navigate]);
 
   return (
     <div className="h-screen overflow-auto bg-gradient-to-br from-blue-200 to-white text-slate-900 p-6 md:p-12">

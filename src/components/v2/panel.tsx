@@ -15,7 +15,6 @@ const SlideThumbnail = ({ slide, duplicateSlide, handleDeleteSlide }: { slide: S
   const { setCurrentSlide } = useSlideStore();
   const slideRef = useRef<HTMLDivElement>(null);
 
-  const [deleteItem, setDeleteItem] = useState(false);
   const [currentScale, setCurrentScale] = useState<number | null>(null);
 
   useLayoutEffect(() => {

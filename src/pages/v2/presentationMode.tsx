@@ -17,7 +17,6 @@ export const PresentationMode = ({ slides }: { slides: Slide[] }) => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const intentBarRef = useRef<SVGCircleElement>(null);
 
-  const lastScrollTime = useRef(0);
   const intentProgressRef = useRef(0);
   const intentDirectionRef = useRef<'up' | 'down' | null>(null);
   const intentLockedRef = useRef(false);

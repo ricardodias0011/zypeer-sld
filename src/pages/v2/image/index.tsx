@@ -19,7 +19,6 @@ import {
 } from 'lucide-react';
 import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { PiMagicWand } from 'react-icons/pi';
-import { TfiLayoutMediaCenter, TfiLayoutMediaLeft, TfiLayoutMediaRight } from 'react-icons/tfi';
 import { toast } from 'sonner';
 
 interface SlideCardProps {
@@ -297,9 +296,8 @@ const AdjustModal: React.FC<{
   currentFit: Slide['imageFit'];
   currentPosition: TypeImageContent['position'];
   onAdjust: (fit: Slide['imageFit'], position: TypeImageContent['position']) => void;
-}> = ({ onClose, currentFit, onAdjust, currentPosition }) => {
+}> = ({ onClose, currentFit, onAdjust }) => {
   const [fit, setFit] = useState(currentFit || 'cover');
-  const [position, setPosition] = useState(currentPosition || 'center');
 
   const options: {
     value: Slide['imageFit'];
@@ -311,18 +309,10 @@ const AdjustModal: React.FC<{
       { value: 'fill', label: 'Esticar', icon: Scale },
     ];
 
-  const positionOptions: {
-    value: TypeImageContent['position'];
-    label: string;
-    icon: React.ElementType;
-  }[] = [
-      { value: 'center', label: 'Centro', icon: TfiLayoutMediaCenter },
-      { value: 'left', label: 'Esquerda', icon: TfiLayoutMediaLeft },
-      { value: 'right', label: 'Direita', icon: TfiLayoutMediaRight },
-    ];
+
 
   const handleSave = () => {
-    onAdjust(fit, position);
+    onAdjust(fit, 'center');
     onClose();
   };
 
