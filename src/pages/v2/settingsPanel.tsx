@@ -129,7 +129,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
           </div>
         )}
       </div>
-      <div className="flex flex-col gap-2">
+      {backgroundImage && <div className="flex flex-col gap-2">
         <div className="flex items-center gap-2 text-gray-800">
           <ImageUpscale className="w-5 h-5 text-gray-600" />
           <span className="text-sm font-medium">Posição da imagem de Fundo</span>
@@ -151,7 +151,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
             </button>
           ))}
         </div>
-      </div>
+      </div>}
       <div className="flex flex-col gap-2">
         <div className="flex items-center gap-2 text-gray-800">
           <LuZap className="w-5 h-5 text-gray-600" />

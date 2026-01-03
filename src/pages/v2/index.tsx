@@ -1,20 +1,20 @@
-import { useEffect, useState } from "react"
-import { PresentationsService } from "../../services/presentations";
-import useAuth from "../../context/auth";
-import { Box, Button, Dialog, Flex, Grid, Text, TextField, Select, Slider, Popover, IconButton, Badge } from "@radix-ui/themes";
+import { Badge, Box, Button, Dialog, Flex, Grid, IconButton, Popover, Select, Slider, Text, TextField } from "@radix-ui/themes";
+import moment from "moment";
+import { useEffect, useState } from "react";
 import { BsStars } from "react-icons/bs";
-import { FiLock } from "react-icons/fi";
-import moment from "moment"
 import { FaPlus } from "react-icons/fa";
-import { useNavigate } from "react-router-dom";
-import type { PresentationProject } from "../../types/presentations-sliders";
-import PreviewSlide from "../../components/editor/preview";
-import ApresentatioAlien from "../../assets/alien-apresentation.png";
-import { ReactSearchAutocomplete } from 'react-search-autocomplete';
-import { AcademicService } from "../../services/academic";
-import type { AdemicSubjectsProps } from "../../types/academic";
-import { EventsService } from "../../services/events";
+import { FiLock } from "react-icons/fi";
 import { PiDotsThreeVertical } from "react-icons/pi";
+import { useNavigate } from "react-router-dom";
+import { ReactSearchAutocomplete } from 'react-search-autocomplete';
+import ApresentatioAlien from "../../assets/alien-apresentation.png";
+import PreviewSlide from "../../components/editor/preview";
+import useAuth from "../../context/auth";
+import { AcademicService } from "../../services/academic";
+import { EventsService } from "../../services/events";
+import { PresentationsService } from "../../services/presentations";
+import type { AdemicSubjectsProps } from "../../types/academic";
+import type { PresentationProject } from "../../types/presentations-sliders";
 
 interface CreateApresentationProps {
   title: string,
@@ -103,20 +103,14 @@ const HomePage = () => {
         Seus Slides
       </Text>
       <Flex gap={"4"} wrap={"wrap"} width={"100%"}>
-        <Dialog.Root>
-          <Dialog.Trigger>
-            <Button className="btn-gradient w-full min-w-[100%]! md:min-w-[240px]!" style={{ padding: 20 }} radius="full">
-              <BsStars size={20} />
-              <Text weight="medium" size={'3'}>
-                Criar com IA
-              </Text>
-            </Button>
-          </Dialog.Trigger>
-          <Dialog.Content maxWidth="450px">
-            <Dialog.Title>Novo slide</Dialog.Title>
-            <CreateSlide CreateApresentation={CreateApresentation} type="auto" loading={loading} subjects={subjects} statusCreate={statusCreate} />
-          </Dialog.Content>
-        </Dialog.Root>
+        <Button
+          onClick={() => navigate("/docs/v2/gen")}
+          className="btn-gradient w-full min-w-[100%]! md:min-w-[240px]!" style={{ padding: 20 }} radius="full">
+          <BsStars size={20} />
+          <Text weight="medium" size={'3'}>
+            Criar com IA
+          </Text>
+        </Button>
         <Dialog.Root>
           <Dialog.Trigger>
             <Button color="blue" className="min-w-[100%]! md:min-w-[240px]!" variant="soft" style={{ padding: 20 }} radius="full">

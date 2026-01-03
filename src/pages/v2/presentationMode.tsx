@@ -1,5 +1,5 @@
 import { useSlideStore, type Slide } from '@/stores/slideStore';
-import { useEffect, useLayoutEffect, useRef } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { SlideCard } from './slide';
 
 export const PresentationMode = ({ slides }: { slides: Slide[] }) => {
@@ -19,6 +19,8 @@ export const PresentationMode = ({ slides }: { slides: Slide[] }) => {
   const currentIndex = sortedCards.findIndex(s => s.id === currentSlide?.id);
   const progress = ((currentIndex + 1) / sortedCards.length) * 100;
 
+  const [currentScale, setCurrentScale] = useState<number | null>(null);
+
   useLayoutEffect(() => {
     const mainEl = slideRef.current;
     if (!mainEl) return;
@@ -29,6 +31,7 @@ export const PresentationMode = ({ slides }: { slides: Slide[] }) => {
         ? viewportWidth / (targetWidth + 32)
         : 1 + (targetWidth / (viewportWidth + 32));
       (mainEl.style as any).zoom = scale;
+      setCurrentScale(scale);
     };
     window.addEventListener('resize', handleResize);
     handleResize();
@@ -81,17 +84,21 @@ export const PresentationMode = ({ slides }: { slides: Slide[] }) => {
           className={`w-full h-screen overflow-scroll`}
           style={{
             backgroundColor: currentSlide.bgcolor || 'transparent',
-            backgroundImage: currentSlide.backgroundImage
-              ? `url(${currentSlide.backgroundImage})`
-              : undefined,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
+            ...(currentSlide.layout === 'empty' ? {
+              background: `url(${currentSlide?.backgroundImage})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              backgroundRepeat: 'no-repeat'
+            } : {
+
+            })
           }}
         >
           <div className="overflow-visible" ref={slideRef} >
             <SlideCard
               readOnly
               key={currentSlide.id}
+              currentScale={currentScale}
               activeAnimate={true}
               slide={currentSlide}
               onUpdate={() => { }}

@@ -752,7 +752,6 @@ export const ImageCard: React.FC<SlideCardProps> = memo(({
                 Use nossa IA para criar algo incrível com base neste assunto.
               </p>
             </div>
-
             <Button
               onClick={() => handleGenerate(slideContent?.image?.prompt as string)}
               className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-200 transition-all active:scale-95"

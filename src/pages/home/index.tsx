@@ -92,19 +92,13 @@ const HomePage = () => {
     <Flex direction="column" gap="6" p="6" width="100%" className="min-h-screen">
       <Flex justify="between" align="center" width="100%">
         <Flex gap="3">
-          <Dialog.Root>
-            <Dialog.Trigger>
-              <Button size="3" radius="full" className="bg-gradient-to-r to-blue-500 from-blue-600 hover:opacity-90 transition-all cursor-pointer px-6">
-                <BsStars />
-                <Text weight="medium">Criar novo</Text>
-                <Badge variant="surface" color="blue" size="1" className="ml-1 opacity-80">AI</Badge>
-              </Button>
-            </Dialog.Trigger>
-            <Dialog.Content maxWidth="450px">
-              <Dialog.Title>Novo slide</Dialog.Title>
-              <CreateSlide CreateApresentation={CreateApresentation} type="auto" loading={loading} subjects={subjects} statusCreate={statusCreate} />
-            </Dialog.Content>
-          </Dialog.Root>
+          <Button
+            onClick={() => navigate("/docs/v2/gen")}
+            size="3" radius="full" className="bg-gradient-to-r to-blue-500 from-blue-600 hover:opacity-90 transition-all cursor-pointer px-6">
+            <BsStars />
+            <Text weight="medium">Criar novo</Text>
+            <Badge variant="surface" color="blue" size="1" className="ml-1 opacity-80">AI</Badge>
+          </Button>
 
           <Dialog.Root>
             <Dialog.Trigger>

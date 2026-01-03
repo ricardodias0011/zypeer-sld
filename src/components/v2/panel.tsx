@@ -16,6 +16,7 @@ const SlideThumbnail = ({ slide, duplicateSlide, handleDeleteSlide }: { slide: S
   const slideRef = useRef<HTMLDivElement>(null);
 
   const [deleteItem, setDeleteItem] = useState(false);
+  const [currentScale, setCurrentScale] = useState<number | null>(null);
 
   useLayoutEffect(() => {
     const mainEl = slideRef.current;
@@ -26,6 +27,7 @@ const SlideThumbnail = ({ slide, duplicateSlide, handleDeleteSlide }: { slide: S
       const viewportWidth = 260;
       const scale = viewportWidth < targetWidth ? viewportWidth / (targetWidth + 32) : 1;
       (mainEl.style as any).zoom = scale;
+      setCurrentScale(scale);
     };
 
     window.addEventListener('resize', handleResize);
@@ -61,12 +63,13 @@ const SlideThumbnail = ({ slide, duplicateSlide, handleDeleteSlide }: { slide: S
       <div
         {...attributes}
         {...listeners}
-        className="bg-gray-100 rounded overflow-hidden mb-2"
+        className="bg-gray-100 rounded overflow-hidden"
         ref={slideRef}
       >
         {slide && (
           <SlideCard
             readOnly
+            currentScale={currentScale}
             slide={slide}
             onUpdate={() => { }}
             onDelete={() => { }}
@@ -189,7 +192,8 @@ export const SlidesPanel = ({ slides, id, updatePresentation, loading, loadingCo
             <SortableContext items={sortedSlides.map(s => s.id)} strategy={verticalListSortingStrategy}>
               <div className="space-y-3">
                 {sortedSlides.map(slide => (
-                  <SlideThumbnail key={slide.id} slide={slide} duplicateSlide={duplicateSlide} handleDeleteSlide={handleDeleteSlide} />
+                  <SlideThumbnail
+                    key={slide.id} slide={slide} duplicateSlide={duplicateSlide} handleDeleteSlide={handleDeleteSlide} />
                 ))}
               </div>
             </SortableContext>

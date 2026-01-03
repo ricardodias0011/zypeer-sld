@@ -92,6 +92,10 @@ export default function MarkdownCardEditor() {
   };
 
   const addCard = () => {
+    if (cards.length >= 10) {
+      toast.error("Você atingiu o limite de cartões.");
+      return;
+    }
     setCards([...cards, { id: `card-${Date.now()}`, title: 'Novo Tópico', items: ['Ponto importante'] }]);
   };
 
@@ -160,8 +164,18 @@ export default function MarkdownCardEditor() {
             </button>
           )}
         </header>
-
         <section className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
+          <div className="flex flex-col">
+            <select
+              value={cardCount}
+              onChange={(e) => setCardCount(Number(e.target.value))}
+              className="h-12 cursor-pointer px-4 max-w-60 mb-4 bg-slate-50 border border-slate-200 rounded-xl outline-none font-semibold text-slate-700"
+            >
+              {[...Array(10)].map((_, i) => (
+                <option key={i + 1} value={i + 1}>{i + 1} Cartões</option>
+              ))}
+            </select>
+          </div>
           <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Tema Principal</label>
           <form onSubmit={onCreateCards} className="mt-2 flex gap-6">
             <div className='relative flex-1'>

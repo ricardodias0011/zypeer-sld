@@ -22,10 +22,11 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { GripVertical, Image, Palette, Plus, Text, Trash, Trash2 } from 'lucide-react';
+import { GripVertical, Image, Palette, Plus, Sparkles, Text, Trash, Trash2 } from 'lucide-react';
 import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { v4 } from 'uuid';
 import { ImageCard } from './image';
+import { MagicGeneratingImage } from './image/generating';
 import StylePopover from './settingsPanel';
 
 export type SlideType = 'title' | 'content' | 'imageWithText';
@@ -747,8 +748,9 @@ export const SlideCard = memo(({
   readOnly,
   onUpdate,
   dragHandleProps,
-  activeAnimate
-}: SlideCardProps & { dragHandleProps?: any }) => {
+  activeAnimate,
+  currentScale
+}: SlideCardProps & { dragHandleProps?: any, currentScale?: number | null }) => {
 
   const [currentSlide, setCurrentSlide] = useState<Slide>(slide);
 
@@ -776,12 +778,15 @@ export const SlideCard = memo(({
     ht,
     readOnly
   }) => {
+
     const contentSensors = useSensors(
       useSensor(PointerSensor),
       useSensor(KeyboardSensor, {
         coordinateGetter: sortableKeyboardCoordinates,
       })
     );
+
+
 
     const sortedContent = useMemo(() =>
       [...currentSlide.content].sort((a, b) => a.order - b.order),
@@ -830,15 +835,19 @@ export const SlideCard = memo(({
         style={{
           gridTemplate: '"body accent" minmax(24em, auto) / 62.5% 37.5%',
           backgroundColor: currentSlide?.bgcolor || 'transparent',
-          background: `url(${currentSlide?.backgroundImage})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat'
+          ...(currentSlide.layout === 'empty' ? {
+            background: `url(${currentSlide?.backgroundImage})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat'
+          } : {
+
+          })
         }}
         className={cn(
           'flex',
           (activeAnimate && currentSlide?.effectTransition) ? `animate-${currentSlide.effectTransition}` : '',
-          'gap-4 relative min-h-[25rem]',
+          'relative min-h-[25rem]',
           mobile
             ? 'flex-col sm:flex-row'
             : isVertical
@@ -878,8 +887,37 @@ export const SlideCard = memo(({
             </SortableContext>
           </DndContext>
         </div>
+        {currentSlide?.backgroundImage && slide.layout !== 'empty' ?
+          (currentSlide?.backgroundImage === "ai-generating" && !readOnly) ?
+            <div className="w-[200px] h-auto relative bg-slate-50 p-2 flex items-center justify-center flex-col gap-4">
+              <div className="flex items-center justify-center rounded-full bg-blue-50 w-12 h-12">
+                <Sparkles className="w-6 h-6 text-blue-600 animate-pulse" />
+              </div>
 
-        {/* {slide.layout !== 'empty' ? <ImageCard slide={slide} onDelete={() => { }} onUpdate={onUpdate} /> : null} */}
+              <div className="text-center">
+                <p className="text-xs text-slate-500 leading-relaxed">
+                  Use nossa IA para criar algo incrível com base neste assunto.
+                </p>
+              </div>
+              <MagicGeneratingImage
+                prompt={currentSlide?.content.find(c => c.type === 'text')?.text || ''}
+                onGenerate={(e) => {
+                  onUpdateCurrent(currentSlide.id, 'backgroundImage', e || []);
+                }}
+              />
+            </div>
+            :
+            (
+              <div
+                style={readOnly ? { minHeight: (currentScale ?? 0) > 1 ? window.innerHeight / (currentScale ?? 0) : window.innerHeight * (currentScale ?? 1) } : undefined}
+                className={cn("w-[250px] h-auto relative aspect-video")}>
+                <img
+                  src={currentSlide?.backgroundImage}
+                  className="absolute inset-0 w-full h-full object-cover"
+                  alt="Background Image"
+                />
+              </div>
+            ) : null}
       </div>
     )
   }, (prevProps, nextProps) => {
@@ -914,7 +952,7 @@ export const SlideCard = memo(({
       style={{
         backgroundColor: slide.bgcolor
       }}
-      className={cn(readOnly ? 'h-full' : 'rounded-xl hover:shadow-xl focus-within:shadow-xl focus-within:ring-2 focus-within:ring-blue-500', "overflow-hidden mb-6 transition-all duration-300")}>
+      className={cn(readOnly ? 'h-full  mb-0' : 'rounded-xl hover:shadow-xl focus-within:shadow-xl focus-within:ring-2 focus-within:ring-blue-500  mb-6 ', "overflow-hidden transition-all duration-300")}>
       <div className={readOnly ? 'h-full' : ''}>
         <RenderInputs />
       </div>
