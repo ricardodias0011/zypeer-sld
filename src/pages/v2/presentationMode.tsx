@@ -93,13 +93,16 @@ export const PresentationMode = ({ slides }: { slides: Slide[] }) => {
   useEffect(() => {
     const moveCursor = (e: MouseEvent) => {
       if (cursorRef.current) {
-        cursorRef.current.style.transform = `translate3d(${e.clientX}px, ${e.clientY}px, 0)`;
+        const x = e.clientX - 16;
+        const y = e.clientY - 16;
+
+        cursorRef.current.style.transform = `translate(${x}px, ${y}px)`;
       }
     };
+
     window.addEventListener('mousemove', moveCursor);
     return () => window.removeEventListener('mousemove', moveCursor);
   }, []);
-
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       switch (e.key) {
@@ -176,6 +179,10 @@ export const PresentationMode = ({ slides }: { slides: Slide[] }) => {
 
   return (
     <div className="fixed inset-0 bg-background z-50 flex flex-col overflow-hidden cursor-none! group">
+      <div
+        ref={cursorRef}
+        className="pointer-events-none fixed top-0 left-0 w-8 h-8 border-2 bg-gradient-to-r to-blue-500 from-blue-800 rounded-full z-[9999] mix-blend-difference will-change-transform"
+      />
       <div className="absolute top-5 left-5 w-full z-50 bg-muted/30 flex items-center justify-end gap-4 px-10">
         <div className="relative size-14">
           <svg className="size-full -rotate-90 bg-white/80 p-2 rounded-xl" viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg">
@@ -188,23 +195,18 @@ export const PresentationMode = ({ slides }: { slides: Slide[] }) => {
         </div>
 
         <div className=" flex gap-4 items-center bg-white/80 backdrop-blur-sm p-2 rounded-2xl shadow-lg pointer-events-auto">
-          <button onClick={previousSlide} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+          <button onClick={previousSlide} className="p-2 hover:bg-gray-100 rounded-full transition-colors cursor-none">
             <ChevronLeft className="size-6 text-gray-700" />
           </button>
-          <button onClick={nextSlide} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+          <button onClick={nextSlide} className="p-2 hover:bg-gray-100 rounded-full transition-colors cursor-none">
             <ChevronRight className="size-6 text-gray-700" />
           </button>
           <div className="w-px h-6 bg-gray-300 mx-1" />
-          <button onClick={toggleFullScreen} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+          <button onClick={toggleFullScreen} className="p-2 hover:bg-gray-100 rounded-full transition-colors cursor-none">
             {isFullscreen ? <Minimize className="size-5 text-gray-700" /> : <Maximize className="size-5 text-gray-700" />}
           </button>
         </div>
       </div>
-
-      <div
-        ref={cursorRef}
-        className="pointer-events-none fixed w-8 h-8 border-2 bg-gradient-to-r to-blue-500 from-blue-800 rounded-full z-50 transition-transform duration-100 ease-out mix-blend-difference group-hover:scale-150"
-      />
 
       <div className="flex-1 relative flex items-center justify-center">
         <div
