@@ -174,6 +174,7 @@ const PreviewItem = (props: { project: PresentationProject, reload: () => void; 
   const [loading, setLoading] = useState(false);
   const [title, setTitle] = useState(p.title);
 
+  const [currentScale, setCurrentScale] = useState<number | null>(null);
 
   useLayoutEffect(() => {
     const mainEl = slideRef.current;
@@ -184,6 +185,7 @@ const PreviewItem = (props: { project: PresentationProject, reload: () => void; 
       const viewportWidth = 260;
       const scale = viewportWidth < targetWidth ? viewportWidth / (targetWidth + 32) : 1;
       (mainEl.style as any).zoom = scale;
+      setCurrentScale(scale);
     };
 
     window.addEventListener('resize', handleResize);
@@ -237,6 +239,7 @@ const PreviewItem = (props: { project: PresentationProject, reload: () => void; 
           readOnly
           slide={p?.presentations[0] as unknown as Slide}
           onUpdate={() => { }}
+          currentScale={currentScale}
           onDelete={() => { }}
         />
       </div>

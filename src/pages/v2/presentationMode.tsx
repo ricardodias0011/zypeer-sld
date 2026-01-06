@@ -2,6 +2,7 @@ import { isDesktop } from '@/lib/utils';
 import { useSlideStore, type Slide } from '@/stores/slideStore';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { SlideCard } from './slide';
+import { Maximize, Minimize, ChevronLeft, ChevronRight } from 'lucide-react';
 
 export const PresentationMode = ({ slides }: { slides: Slide[] }) => {
   const {
@@ -23,6 +24,7 @@ export const PresentationMode = ({ slides }: { slides: Slide[] }) => {
   const intentTimeoutRef = useRef<number | null>(null);
 
   const [currentScale, setCurrentScale] = useState<number | null>(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   const sortedCards = useMemo(() => [...slides].sort((a, b) => a.order - b.order), [slides]);
 
@@ -41,6 +43,16 @@ export const PresentationMode = ({ slides }: { slides: Slide[] }) => {
     [currentIndex, sortedCards.length]
   );
 
+  const toggleFullScreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen();
+      setIsFullscreen(true);
+    } else {
+      document.exitFullscreen();
+      setIsFullscreen(false);
+    }
+  };
+
   const resetIntent = useCallback(() => {
     intentProgressRef.current = 0;
     intentDirectionRef.current = null;
@@ -58,9 +70,6 @@ export const PresentationMode = ({ slides }: { slides: Slide[] }) => {
       const scale = viewportWidth < targetWidth
         ? viewportWidth / (targetWidth + 32)
         : 1 + (targetWidth / (viewportWidth + 32));
-      // if (viewportWidth < 840) {
-      //   return
-      // }
       if (slideRef.current) {
         (slideRef.current.style as any).zoom = scale;
       }
@@ -69,13 +78,17 @@ export const PresentationMode = ({ slides }: { slides: Slide[] }) => {
     window.addEventListener('resize', handleResize);
     handleResize();
     return () => window.removeEventListener('resize', handleResize);
-  }, []);
+  }, [slides]);
 
   useEffect(() => {
     if (!currentSlideId && sortedCards.length > 0) {
       setCurrentSlide(sortedCards[0].id);
     }
   }, [currentSlideId, sortedCards, setCurrentSlide]);
+
+  useEffect(() => {
+    if (slides?.length > 0) setCurrentSlide(slides[0].id);
+  }, [slides])
 
   useEffect(() => {
     const moveCursor = (e: MouseEvent) => {
@@ -144,7 +157,7 @@ export const PresentationMode = ({ slides }: { slides: Slide[] }) => {
 
     container.addEventListener('wheel', handleWheel, { passive: false });
     return () => container.removeEventListener('wheel', handleWheel);
-  }, [nextSlide, previousSlide, resetIntent]);
+  }, [nextSlide, previousSlide, resetIntent, slides]);
 
   useEffect(() => {
     let rafId: number;
@@ -163,29 +176,30 @@ export const PresentationMode = ({ slides }: { slides: Slide[] }) => {
 
   return (
     <div className="fixed inset-0 bg-background z-50 flex flex-col overflow-hidden cursor-none! group">
-      <div className="absolute top-5 left-5 w-full z-50 bg-muted/30 flex items-center justify-center">
-        <div className="relative size-16">
-          <svg className="size-full -rotate-90 bg-white p-2 rounded-xl" viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="18" cy="18" r="16" fill="none" className="stroke-current text-gray-200 dark:text-neutral-700" stroke-width="2"></circle>
+      <div className="absolute top-5 left-5 w-full z-50 bg-muted/30 flex items-center justify-end gap-4 px-10">
+        <div className="relative size-14">
+          <svg className="size-full -rotate-90 bg-white/80 p-2 rounded-xl" viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="18" cy="18" r="16" fill="none" className="stroke-current text-gray-200 dark:text-neutral-700" strokeWidth="2"></circle>
             <circle
               ref={intentBarRef}
-              cx="18" cy="18" r="16" fill="none" className="stroke-current text-blue-600 dark:text-blue-500" stroke-width="2"
-              stroke-dasharray="100" stroke-dashoffset="0" stroke-linecap="round"></circle>
+              cx="18" cy="18" r="16" fill="none" className="stroke-current text-blue-600 dark:text-blue-500" strokeWidth="2"
+              strokeDasharray="100" strokeDashoffset="0" strokeLinecap="round"></circle>
           </svg>
-          <div className="absolute top-1/2 start-1/2 transform -translate-y-1/2 -translate-x-1/2">
-          </div>
+        </div>
+
+        <div className=" flex gap-4 items-center bg-white/80 backdrop-blur-sm p-2 rounded-2xl shadow-lg pointer-events-auto">
+          <button onClick={previousSlide} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+            <ChevronLeft className="size-6 text-gray-700" />
+          </button>
+          <button onClick={nextSlide} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+            <ChevronRight className="size-6 text-gray-700" />
+          </button>
+          <div className="w-px h-6 bg-gray-300 mx-1" />
+          <button onClick={toggleFullScreen} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+            {isFullscreen ? <Minimize className="size-5 text-gray-700" /> : <Maximize className="size-5 text-gray-700" />}
+          </button>
         </div>
       </div>
-      {/* <div className="absolute top-0 left-0 z-50 w-full h-1.5 bg-muted/30 rounded-full overflow-hidden transition-opacity duration-200" style={{ opacity: 0 }}>
-        <div
-          ref={intentBarRef}
-          className="relative h-full bg-blue-500 rounded-full transition-[width] duration-75 ease-linear"
-        >
-          <div className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 bg-blue-500 rounded-full shadow-md" />
-        </div>
-
-      </div> */}
-
 
       <div
         ref={cursorRef}
@@ -212,6 +226,7 @@ export const PresentationMode = ({ slides }: { slides: Slide[] }) => {
               key={currentSlide.id}
               currentScale={currentScale}
               activeAnimate={true}
+              isFullscreen={isFullscreen}
               slide={currentSlide}
               onUpdate={() => { }}
               onDelete={() => { }}

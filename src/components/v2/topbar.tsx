@@ -8,13 +8,17 @@ import {
   DialogTitle,
 } from "@/components/v2/ui/dialog";
 import { cn, isDesktop } from '@/lib/utils';
+import { PresentationsService } from '@/services/presentations';
 import { useSlideStore } from '@/stores/slideStore';
 import { Download, Play, Share2 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
-export const Toolbar = () => {
+export const Toolbar = ({ presentationId }: { presentationId: string }) => {
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isPublic, setIsPublic] = useState(false);
+
   const { togglePresentationMode, slides } = useSlideStore();
 
   const handleExportJSON = () => {
@@ -26,6 +30,23 @@ export const Toolbar = () => {
     linkElement.click();
   };
 
+  const generatingLink = () => {
+    setIsLoading(true);
+    PresentationsService.update({ isPublic: true }, presentationId || "")
+      .then(() => {
+        setIsPublic(true);
+        const shareUrl = `${window.location.origin}/docs/v2/show/${presentationId}`;
+        navigator.clipboard.writeText(shareUrl);
+        toast.success("Link gerado e copiado com sucesso!");
+        setIsShareModalOpen(false);
+      })
+      .catch(() => {
+        toast.error("Erro ao gerar link de apresentação");
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+  };
 
   return (
     <div className="bg-linear-to-r from-blue-700 from-30% via-blue-500 via-50% to-blue-700 flex items-center justify-between p-2">
@@ -68,12 +89,11 @@ export const Toolbar = () => {
             </DialogDescription>
           </DialogHeader>
           <div className="flex flex-col gap-4 py-4">
-            <Button onClick={() => {
-              navigator.clipboard.writeText(window.location.href);
-              setIsShareModalOpen(false);
-              toast.success("Link de acesso copiado com sucesso!");
-            }}>
-              Copiar link de acesso
+            <Button
+              disabled={isLoading}
+              onClick={generatingLink}
+            >
+              {isLoading ? "Gerando..." : isPublic ? "Copiar link de acesso" : "Gerar link de acesso"}
             </Button>
           </div>
         </DialogContent>

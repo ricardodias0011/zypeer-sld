@@ -8,6 +8,7 @@ import SlidePage from "../pages/slides"
 import FullApresentation from "../pages/slides/full"
 import TemplatesPage from "../pages/templates"
 import UserStorage from "../services/storage/auth"
+import ShowApresentation from "@/pages/v2/show"
 
 const Routes = () => {
   const account = UserStorage.getTokenStorage()
@@ -44,9 +45,14 @@ const Routes = () => {
       Component: SlidePage
     },
     {
+      path: '/docs/v2/show/:id',
+      Component: ShowApresentation
+    },
+    {
       path: '/docs/v2/:id',
       Component: MainSlide
-    }, {
+    },
+    {
       path: '/docs/v2',
       Component: MainSlide
     },
@@ -70,7 +76,11 @@ const Routes = () => {
     {
       path: '/docs/show/:id',
       Component: FullApresentation
-    }
+    },
+    {
+      path: '/docs/v2/show/:id',
+      Component: ShowApresentation
+    },
   ])
 }
 

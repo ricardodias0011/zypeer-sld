@@ -192,7 +192,11 @@ export const SlidesPanel = ({ slides, id, updatePresentation, loading, loadingCo
               <div className="space-y-3">
                 {sortedSlides.map(slide => (
                   <SlideThumbnail
-                    key={slide.id} slide={slide} duplicateSlide={duplicateSlide} handleDeleteSlide={handleDeleteSlide} />
+                    key={slide.id}
+                    slide={slide}
+                    duplicateSlide={duplicateSlide}
+                    handleDeleteSlide={handleDeleteSlide}
+                  />
                 ))}
               </div>
             </SortableContext>

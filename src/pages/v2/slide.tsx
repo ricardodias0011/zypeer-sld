@@ -41,7 +41,8 @@ interface SlideCardProps {
   onUpdate: (d: string, field: keyof Slide, value: SlideContentType[] | string) => void;
   onDelete: (id: string) => void;
   readOnly?: boolean;
-  activeAnimate?: boolean
+  activeAnimate?: boolean;
+  isFullscreen?: boolean;
 }
 
 interface ImageWithTextSlideProps {
@@ -546,7 +547,8 @@ const SortableSlideCard = ({
   slide,
   onUpdate,
   onDelete,
-  readOnly
+  readOnly,
+  isFullscreen
 }: SlideCardProps) => {
   const {
     attributes,
@@ -567,6 +569,7 @@ const SortableSlideCard = ({
       <SlideCard
         slide={slide}
         onUpdate={onUpdate}
+        isFullscreen={isFullscreen}
         onDelete={onDelete}
         readOnly={readOnly}
         dragHandleProps={{ ...attributes, ...listeners }}
@@ -749,8 +752,9 @@ export const SlideCard = memo(({
   onUpdate,
   dragHandleProps,
   activeAnimate,
-  currentScale
-}: SlideCardProps & { dragHandleProps?: any, currentScale?: number | null }) => {
+  currentScale,
+  isFullscreen
+}: SlideCardProps & { dragHandleProps?: any, currentScale?: number | null, isFullscreen?: boolean }) => {
 
   const [currentSlide, setCurrentSlide] = useState<Slide>(slide);
 
@@ -766,7 +770,6 @@ export const SlideCard = memo(({
   }, [currentSlide])
 
   const mobile = isMobile();
-
   const ht = ['top', 'bottom'].includes(currentSlide?.layout) ? 'h-1/2' : 'h-full';
 
   const isVertical = ['top', 'bottom'].includes(currentSlide?.layout);
@@ -785,8 +788,6 @@ export const SlideCard = memo(({
         coordinateGetter: sortableKeyboardCoordinates,
       })
     );
-
-
 
     const sortedContent = useMemo(() =>
       [...currentSlide.content].sort((a, b) => a.order - b.order),
@@ -909,7 +910,13 @@ export const SlideCard = memo(({
             :
             (
               <div
-                style={readOnly ? { minHeight: (currentScale ?? 0) > 1 ? (window.innerHeight - 8) / (currentScale ?? 0) : window.innerHeight * (currentScale ?? 1) } : undefined}
+                style={readOnly ?
+                  {
+                    minHeight: (currentScale ?? 0) > 1
+                      ? (isFullscreen ? (window.outerHeight + 16) : window.innerHeight) / (currentScale ?? 0)
+                      : (isFullscreen ? (window.outerHeight + 16) : window.innerHeight) * (currentScale ?? 1)
+                  }
+                  : undefined}
                 className={cn("w-full md:w-[250px] h-auto relative aspect-video")}>
                 <img
                   src={currentSlide?.backgroundImage}

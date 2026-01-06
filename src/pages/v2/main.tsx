@@ -112,7 +112,7 @@ const MainSlide = () => {
 
   return (
     <div className={cn(dataPresentation?.thumbnailId === "v2-default" ? "bg-black" : "bg-gray-100", "font-sans text-gray-800 min-h-screen overflow-hidden")}>
-      <Toolbar />
+      <Toolbar presentationId={(dataPresentation?.id || id) || ""} />
       <div className="flex-1 flex h-[calc(100vh-75px)] overflow-hidden w-full">
         <SlidesPanel
           loading={loading}

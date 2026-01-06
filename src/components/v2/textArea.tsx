@@ -1,4 +1,5 @@
 import TailwindAdvancedEditor from '@/components/v2';
+import { isDesktop } from '@/lib/utils';
 import type { Slide, SlideContentType } from '@/stores/slideStore';
 import React from 'react';
 import { toast } from 'sonner';
@@ -13,7 +14,7 @@ interface SlideEditor {
 const Textarea: React.FC<SlideEditor> = React.memo((props) => {
   return (
     <div className='flex my-1 relative'>
-      {props.readOnly ?
+      {props.readOnly && !isDesktop() ?
         <div className='h-full w-full left-0 top-0 absolute z-50' onClick={() => {
           toast.warning("Para editar compartilhe um link para você mesmo abrir no desktop.")
         }} />
