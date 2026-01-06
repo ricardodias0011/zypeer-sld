@@ -142,7 +142,7 @@ export default function MarkdownCardEditor() {
           )}
         </header>
 
-        <section className="bg-white p-4 md:p-6 rounded-2xl md:rounded-3xl shadow-sm border border-slate-100">
+        <section className="bg-white max-h-screen p-4 md:p-6 rounded-2xl md:rounded-3xl shadow-sm border border-slate-100">
           <div className="flex flex-col">
             <select
               value={cardCount}
