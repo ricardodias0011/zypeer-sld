@@ -894,7 +894,6 @@ export const SlideCard = memo(({
               <div className="flex items-center justify-center rounded-full bg-blue-50 w-12 h-12">
                 <Sparkles className="w-6 h-6 text-blue-600 animate-pulse" />
               </div>
-
               <div className="text-center">
                 <p className="text-xs text-slate-500 leading-relaxed">
                   Use nossa IA para criar algo incrível com base neste assunto.
