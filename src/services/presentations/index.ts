@@ -25,6 +25,10 @@ export class PresentationsService {
         return api.put(`/presentations/${idPresentation}`, data);
     }
 
+    static async downalodPdf(idPresentation: string) {
+        return api.post(`/presentations/download/export/pdf/${idPresentation}`);
+    }
+
     static async list(id?: string, show?: boolean) {
         return api.get(`/presentations${id ? `/${id}` : ''}`, {
             params: { show }
@@ -35,8 +39,12 @@ export class PresentationsService {
         return api.get(`/presentations/templates`);
     }
 
-    static async show(id?: string) {
-        return api.get(`/presentations/show/${id}`);
+    static async show(id?: string, token?: string | null) {
+        return api.get(`/presentations/show/${id}`, {
+            params: {
+                token
+            }
+        });
     }
 
     static async delete(id?: string) {

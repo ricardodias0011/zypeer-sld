@@ -1,5 +1,7 @@
 import CardBoardGen from "@/pages/v2/gen"
 import MainSlide from "@/pages/v2/main"
+import ShowApresentation from "@/pages/v2/show"
+import PresentationViewDownload from "@/pages/v2/show/d"
 import { Navigate, useRoutes } from "react-router-dom"
 import Layout from "../components/layout"
 import { LoginRequiredPage } from "../pages/auth"
@@ -8,7 +10,6 @@ import SlidePage from "../pages/slides"
 import FullApresentation from "../pages/slides/full"
 import TemplatesPage from "../pages/templates"
 import UserStorage from "../services/storage/auth"
-import ShowApresentation from "@/pages/v2/show"
 
 const Routes = () => {
   const account = UserStorage.getTokenStorage()
@@ -60,6 +61,10 @@ const Routes = () => {
       path: '/docs/v2/gen',
       Component: CardBoardGen
     },
+    {
+      Component: PresentationViewDownload,
+      path: '/docs/v2/d/download/item/:id'
+    }
   ] : [
     {
       path: '/',
@@ -81,6 +86,10 @@ const Routes = () => {
       path: '/docs/v2/show/:id',
       Component: ShowApresentation
     },
+    {
+      Component: PresentationViewDownload,
+      path: '/docs/v2/d/download/item/:id'
+    }
   ])
 }
 

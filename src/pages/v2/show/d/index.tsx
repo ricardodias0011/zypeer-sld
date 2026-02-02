@@ -1,27 +1,26 @@
 import useAuth from "@/context/auth";
+import useQuery from "@/hooks/useQuery";
 import { PresentationsService } from "@/services/presentations";
 import { useSlideStore, type Slide } from "@/stores/slideStore";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { PresentationMode } from "../presentationMode";
+import { PresentationViewDownloadItem } from "./p";
 
 
-
-const ShowApresentation = () => {
+const PresentationViewDownload = () => {
   const { id } = useParams();
+  const { query } = useQuery();
+  const token = query.get("temp_token_access");
 
   const { account } = useAuth();
 
   const { addSlide } = useSlideStore();
   const [slides, setSlides] = useState<Slide[]>([]);
-  // const [loading, setLoading] = useState(true);
 
 
-  const getPresentations = useCallback((targetId?: string) => {
-    const activeId = targetId || id;
-    if (!activeId || activeId === "creating") return;
-
-    (account ? PresentationsService.list(activeId) : PresentationsService.show(activeId))
+  const getPresentations = () => {
+    console.log(token)
+    PresentationsService.show(id, token)
       .then(({ data }) => {
         const list = data?.presentations || [];
         setSlides(list);
@@ -29,20 +28,21 @@ const ShowApresentation = () => {
           addSlide("type-1", slide, slide.id)
         });
       })
+      .catch((err) => {
+        console.log(err)
+      })
       .finally(() => {
-        // if (!targetId)
-        //   setLoading(false)
       });
-  }, [id, addSlide]);
+  }
 
 
   useEffect(() => {
     getPresentations();
-  }, [getPresentations, account]);
+  }, [account, id]);
 
 
-  return <PresentationMode slides={slides} />;
+  return <PresentationViewDownloadItem slides={slides} />;
 }
 
 
-export default ShowApresentation;
+export default PresentationViewDownload;

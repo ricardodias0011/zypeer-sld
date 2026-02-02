@@ -10,24 +10,44 @@ import {
 import { cn, isDesktop } from '@/lib/utils';
 import { PresentationsService } from '@/services/presentations';
 import { useSlideStore } from '@/stores/slideStore';
-import { Download, Play, Share2 } from 'lucide-react';
+import { Download, Loader2, Play, Share2 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
+declare global {
+  interface Window {
+    ReactNativeWebView?: {
+      postMessage: (message: string) => void;
+    };
+  }
+}
+
 export const Toolbar = ({ presentationId }: { presentationId: string }) => {
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [isDownloadModalOpen, setIsDownloadModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isPublic, setIsPublic] = useState(false);
+  const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
 
-  const { togglePresentationMode, slides } = useSlideStore();
+  const { togglePresentationMode } = useSlideStore();
 
-  const handleExportJSON = () => {
-    const dataStr = JSON.stringify(slides, null, 2);
-    const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
-    const linkElement = document.createElement('a');
-    linkElement.setAttribute('href', dataUri);
-    linkElement.setAttribute('download', 'presentation.json');
-    linkElement.click();
+  const handleDownloadPdf = () => {
+    setIsDownloadModalOpen(true);
+    setIsLoading(true);
+    setDownloadUrl(null);
+
+    PresentationsService.downalodPdf(presentationId)
+      .then(({ data }) => {
+        const url = data?.url || "";
+        setDownloadUrl(url);
+      })
+      .catch(() => {
+        setIsDownloadModalOpen(false);
+        toast.error("Erro ao gerar PDF");
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
   };
 
   const generatingLink = () => {
@@ -48,6 +68,17 @@ export const Toolbar = ({ presentationId }: { presentationId: string }) => {
       });
   };
 
+  const handleOpenLink = (url: string) => {
+    if (window.ReactNativeWebView) {
+      window.ReactNativeWebView.postMessage(JSON.stringify({
+        type: 'OPEN_EXTERNAL_LINK',
+        url
+      }));
+    } else {
+      window.open(url, '_blank');
+    }
+  };
+
   return (
     <div className="bg-linear-to-r from-blue-700 from-30% via-blue-500 via-50% to-blue-700 flex items-center justify-between p-2">
       <a href='/' className="flex items-center gap-2">
@@ -58,7 +89,7 @@ export const Toolbar = ({ presentationId }: { presentationId: string }) => {
         <Button
           variant="ghost"
           className={cn(isDesktop() ? "" : "p-0 py-1", "gap-2 text-white")}
-          onClick={handleExportJSON}>
+          onClick={handleDownloadPdf}>
           <Download className="h-4 w-8 " />
           Download
         </Button>
@@ -95,6 +126,30 @@ export const Toolbar = ({ presentationId }: { presentationId: string }) => {
             >
               {isLoading ? "Gerando..." : isPublic ? "Copiar link de acesso" : "Gerar link de acesso"}
             </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isDownloadModalOpen} onOpenChange={setIsDownloadModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{isLoading ? 'Gerando PDF...' : 'Download Pronto'}</DialogTitle>
+            <DialogDescription className="hidden">Status do download</DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col items-center justify-center gap-4 py-6">
+            {isLoading ? (
+              <div className="flex flex-col items-center gap-2">
+                <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+                <span className="text-sm text-gray-500">Aguarde um momento...</span>
+              </div>
+            ) : (
+              <Button
+                onClick={() => handleOpenLink(downloadUrl || "#")}
+                className="w-full"
+              >
+                Abrir PDF
+              </Button>
+            )}
           </div>
         </DialogContent>
       </Dialog>

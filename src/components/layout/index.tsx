@@ -2,7 +2,7 @@ import { Box, Flex, IconButton } from '@radix-ui/themes';
 import { useEffect, useState } from 'react';
 import { AiFillHome } from 'react-icons/ai';
 import { HiMiniPresentationChartBar } from "react-icons/hi2";
-import { PiPresentation, PiPresentationChart } from 'react-icons/pi';
+import { PiPresentationChart } from 'react-icons/pi';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import Logo from "../../assets/micro-logo.svg";
 import { Button } from '../v2/ui/button';
@@ -34,7 +34,7 @@ const Layout = () => {
             {
               [
                 { link: 'dashboard', icon: <PiPresentationChart size={20} />, title: 'Seus slides' },
-                { link: 'templates', icon: <PiPresentation size={20} />, title: 'Modelos' }
+                // { link: 'templates', icon: <PiPresentation size={20} />, title: 'Modelos' }
               ].map(({ icon, link, title }) => (
                 <Button
                   style={{ alignItems: 'center', justifyContent: 'flex-start', gap: 8, paddingLeft: 10 }}

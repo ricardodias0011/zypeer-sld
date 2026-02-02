@@ -25,8 +25,6 @@ interface CreateApresentationProps {
 }
 
 import type { Slide } from "@/stores/slideStore";
-import { BsGrid, BsListUl } from "react-icons/bs";
-import { RiHistoryLine, RiLayoutGridLine, RiUserLine } from "react-icons/ri";
 
 const HomePage = () => {
   const navigate = useNavigate();
@@ -102,7 +100,7 @@ const HomePage = () => {
 
           <Dialog.Root>
             <Dialog.Trigger>
-              <Button size="3" variant="outline" color="gray" radius="full" className="w-full md:w-52 px-6 hover:bg-gray-50 cursor-pointer">
+              <Button size="3" variant="outline" color="gray" radius="full" className="w-full md:w-64 px-6 hover:bg-gray-50 cursor-pointer">
                 <BsPlusLg />
                 <Text weight="medium">Novo em branco</Text>
               </Button>
@@ -122,7 +120,7 @@ const HomePage = () => {
         </Flex>
       </Flex>
 
-      <Flex justify="between" wrap={'wrap'} align="center" className="border-b border-gray-100 pb-2">
+      {/* <Flex justify="between" wrap={'wrap'} align="center" className="border-b border-gray-100 pb-2">
         <Flex gap="5">
           <Button variant="ghost" color="blue" radius="full" className="text-gray-600 hover:text-blue-600">
             <RiLayoutGridLine /> Todos
@@ -133,9 +131,9 @@ const HomePage = () => {
           <Button variant="ghost" color="gray" radius="full" className="text-gray-500 hover:text-blue-600">
             <RiUserLine /> Meus Projetos
           </Button>
-          {/* <Button variant="ghost" color="gray" radius="full" className="text-gray-500 hover:text-blue-600">
+          <Button variant="ghost" color="gray" radius="full" className="text-gray-500 hover:text-blue-600">
             <RiStarLine /> Favoritos
-          </Button> */}
+          </Button>
         </Flex>
 
         <Flex gap="2" className="bg-gray-100 p-2 rounded-lg flex gap-6 wrap">
@@ -147,7 +145,7 @@ const HomePage = () => {
             Lista
           </Button>
         </Flex>
-      </Flex>
+      </Flex> */}
 
       <Grid className="flex flex-wrap" gap="5">
         {initialLoading ? (
